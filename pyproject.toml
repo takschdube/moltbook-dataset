@@ -1,0 +1,12 @@
+[project]
+name = "moltbook-dataset"
+version = "0.1.0"
+description = "Longitudinal dataset of social interactions from Moltbook, collected automatically and published as timestamped releases."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "requests>=2.31.0",
+    "python-dotenv>=1.0.0",
+    "huggingface-hub>=0.20.0",
+    "kaggle>=1.5.16",
+]

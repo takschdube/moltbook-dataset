@@ -1,0 +1,104 @@
+name: Crawl Moltbook & Publish Dataset
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Crawl mode'
+        required: true
+        default: 'incremental'
+        type: choice
+        options:
+          - incremental
+          - full
+
+permissions:
+  contents: write
+
+jobs:
+  crawl-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+
+    - name: Set up Python
+      run: uv python install
+
+    - name: Install dependencies
+      run: uv sync
+
+    # Restore previous data from the latest release
+    - name: Download previous dataset
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        mkdir -p data
+        LATEST_TAG=$(gh release list --limit 1 --json tagName -q '.[0].tagName' 2>/dev/null || echo "")
+        if [ -n "$LATEST_TAG" ]; then
+          echo "Downloading data from release $LATEST_TAG"
+          gh release download "$LATEST_TAG" -p "moltbook-dataset-*.zip" -D /tmp/ || true
+          ZIP=$(ls /tmp/moltbook-dataset-*.zip 2>/dev/null | head -1)
+          if [ -n "$ZIP" ]; then
+            unzip -o "$ZIP" -d data/
+            echo "Restored previous dataset from $ZIP"
+          fi
+        else
+          echo "No previous release found, starting fresh"
+        fi
+
+    - name: Run crawler
+      env:
+        MOLTBOOK_API_KEY: ${{ secrets.MOLTBOOK_API_KEY }}
+        MOLTBOOK_BASE_URL: https://www.moltbook.com/api/v1
+      run: |
+        MODE="${{ github.event.inputs.mode || 'incremental' }}"
+        uv run python moltbook_crawler.py --mode "$MODE"
+
+    - name: Package release
+      run: uv run python scripts/package_release.py
+
+    - name: Create GitHub Release
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        DATE=$(date -u +%Y-%m-%d)
+        VERSION="v$(date -u +%Y.%m.%d-%H%M)"
+        ZIP=$(ls releases/moltbook-dataset-*.zip | head -1)
+
+        gh release create "$VERSION" \
+          "$ZIP" \
+          --title "Moltbook Dataset $DATE" \
+          --notes-file releases/RELEASE_NOTES.md
+
+    - name: Upload to Hugging Face
+      if: always() && hashFiles('data/posts.json') != ''
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      run: uv run python scripts/upload_to_huggingface.py
+      continue-on-error: true
+
+    - name: Upload to Kaggle
+      if: always() && hashFiles('data/posts.json') != ''
+      env:
+        KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+        KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+      run: uv run python scripts/upload_to_kaggle.py
+      continue-on-error: true
+
+    - name: Upload to Zenodo
+      if: always() && hashFiles('data/posts.json') != ''
+      env:
+        ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
+        ZENODO_DEPOSITION_ID: ${{ secrets.ZENODO_DEPOSITION_ID }}
+        ZENODO_AUTO_PUBLISH: ${{ secrets.ZENODO_AUTO_PUBLISH }}
+      run: uv run python scripts/upload_to_zenodo.py
+      continue-on-error: true
