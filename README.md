@@ -2,28 +2,78 @@
 
 A longitudinal dataset of social interactions from [Moltbook](https://www.moltbook.com), collected automatically and published as timestamped releases.
 
+## Dataset Statistics
+
+<!-- DATASET_STATS_START -->
+
+| Metric | Count |
+|--------|-------|
+| Posts (platform total) | -- |
+| Comments (platform total) | -- |
+| Posts (collected) | -- |
+| Agents | -- |
+| Social graph edges | -- |
+| Reply graph edges | -- |
+| Submolts (active) | -- |
+
+*Auto-updated after each crawl.*
+
+<!-- DATASET_STATS_END -->
+
 ## What's in the Dataset
+
+### Raw data (`data/raw/`) — direct API responses
 
 | File | Description |
 |------|-------------|
-| `submolts.json` | Communities/topics on the platform |
-| `posts.json` | All posts (lightweight, no comments) |
+| `submolts.json` | All submolts (communities/topics) on the platform |
+| `posts.json` | All posts (lightweight listing, no comments) |
 | `posts_full.json` | Posts with full threaded comment trees |
-| `agents.json` | Agent (Molty) profiles with activity counts |
-| `social_graph.json` | Interaction edges: who replied to whom |
-| `platform_stats.json` | Platform-level aggregate counts |
+| `platform_stats.json` | Platform-wide aggregate counts |
 | `metadata.json` | Crawl history and provenance |
-| `manifest.json` | Record counts, file sizes, timestamps (inside zip) |
+
+### Derived data (`data/derived/`) — computed from raw
+
+| File | Description |
+|------|-------------|
+| `agents.json` | Deduplicated agent (Molty) profiles with activity counts |
+| `social_graph.json` | Post-level interaction edges: commenter → post author |
+| `reply_graph.json` | Thread-level reply edges: replier → parent comment author |
+| `activity_timeline.json` | Daily post and comment counts |
+| `submolt_stats.json` | Per-submolt post/comment/author breakdown |
+
+### Release archive
+
+| File | Description |
+|------|-------------|
+| `manifest.json` | Record counts, file sizes, timestamps (inside zip only) |
 
 ## Data Structure
 
-### Posts (`posts.json` / `posts_full.json`)
+### Submolts (`raw/submolts.json`)
+
+```json
+{
+  "id": "submolt_abc123",
+  "name": "general",
+  "display_name": "General Discussion",
+  "description": "A place for general conversation",
+  "subscriber_count": 500,
+  "created_at": "2025-12-01T00:00:00Z",
+  "last_activity_at": "2026-02-01T12:00:00Z",
+  "featured_at": "2026-01-10T00:00:00Z",
+  "created_by": "agent_xyz"
+}
+```
+
+### Posts (`raw/posts.json`)
 
 ```json
 {
   "id": "post_abc123",
   "title": "Post title",
   "content": "Post body text",
+  "url": "https://www.moltbook.com/post/post_abc123",
   "author": {
     "id": "agent_xyz",
     "name": "MoltyName",
@@ -33,36 +83,70 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
   },
   "submolt": "general",
   "upvotes": 5,
+  "downvotes": 0,
   "comment_count": 3,
-  "created_at": "2026-01-15T12:00:00Z",
+  "created_at": "2026-01-15T12:00:00Z"
+}
+```
+
+### Posts with comments (`raw/posts_full.json`)
+
+Same as above, plus a `comments` array. Author objects from the detail endpoint include additional fields:
+
+```json
+{
+  "...": "same fields as posts.json",
+  "author": {
+    "id": "agent_xyz",
+    "name": "MoltyName",
+    "description": "I am a helpful Molty",
+    "karma": 42,
+    "follower_count": 10,
+    "following_count": 5,
+    "owner": "human_or_org"
+  },
   "comments": [
     {
       "id": "comment_def456",
       "content": "Reply text",
-      "author": { "..." : "..." },
+      "parent_id": null,
+      "author": { "id": "...", "name": "..." },
+      "author_id": "agent_abc",
       "upvotes": 2,
+      "downvotes": 0,
       "created_at": "2026-01-15T13:00:00Z",
-      "replies": []
+      "replies": [
+        {
+          "id": "comment_ghi789",
+          "content": "Nested reply",
+          "parent_id": "comment_def456",
+          "...": "..."
+        }
+      ]
     }
   ]
 }
 ```
 
-### Agents (`agents.json`)
+### Agents (`derived/agents.json`)
 
 ```json
 {
   "id": "agent_xyz",
   "name": "MoltyName",
+  "description": "I am a helpful Molty",
   "karma": 42,
   "follower_count": 10,
+  "following_count": 5,
   "owner": "human_or_org",
   "post_count": 15,
   "comment_count": 87
 }
 ```
 
-### Social Graph (`social_graph.json`)
+### Social graph (`derived/social_graph.json`)
+
+Post-level interactions — counts how many times an agent commented on another agent's posts.
 
 ```json
 {
@@ -72,11 +156,44 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 }
 ```
 
+### Reply graph (`derived/reply_graph.json`)
+
+Thread-level replies — counts how many times an agent replied to another agent's comments using `parent_id`.
+
+```json
+{
+  "from": "ReplierMolty",
+  "to": "ParentCommentAuthor",
+  "replies": 3
+}
+```
+
+### Activity timeline (`derived/activity_timeline.json`)
+
+```json
+{
+  "date": "2026-01-15",
+  "posts": 42,
+  "comments": 310
+}
+```
+
+### Submolt stats (`derived/submolt_stats.json`)
+
+```json
+{
+  "submolt": "general",
+  "posts": 1200,
+  "comments": 8500,
+  "unique_authors": 340
+}
+```
+
 ## Releases
 
 Each release is a timestamped zip: **`moltbook-dataset-YYYY-MM-DD.zip`**
 
-Every zip contains all data files plus a `manifest.json` with record counts, file sizes, and the collection timestamp. Browse them in the [Releases](../../releases) tab.
+Every zip contains all data files (preserving `raw/` and `derived/` directories) plus a `manifest.json` with record counts, file sizes, and the collection timestamp. Browse them in the [Releases](../../releases) tab.
 
 Releases are created automatically every 6 hours via GitHub Actions. Over time this builds a longitudinal archive of snapshots suitable for temporal analysis.
 
@@ -100,6 +217,7 @@ cp .env.example .env
 uv run python moltbook_crawler.py --full         # First run: get everything
 uv run python moltbook_crawler.py                # Later runs: incremental updates
 
+uv run python scripts/build_derived.py           # Build derived datasets from raw
 uv run python scripts/package_release.py         # Package a timestamped zip
 ```
 

@@ -41,14 +41,18 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        mkdir -p data
+        mkdir -p data/raw
         LATEST_TAG=$(gh release list --limit 1 --json tagName -q '.[0].tagName' 2>/dev/null || echo "")
         if [ -n "$LATEST_TAG" ]; then
           echo "Downloading data from release $LATEST_TAG"
           gh release download "$LATEST_TAG" -p "moltbook-dataset-*.zip" -D /tmp/ || true
           ZIP=$(ls /tmp/moltbook-dataset-*.zip 2>/dev/null | head -1)
           if [ -n "$ZIP" ]; then
-            unzip -o "$ZIP" -d data/
+            unzip -o "$ZIP" -d /tmp/dataset/
+            # Move raw files into data/raw/
+            if [ -d "/tmp/dataset/raw" ]; then
+              cp /tmp/dataset/raw/*.json data/raw/ 2>/dev/null || true
+            fi
             echo "Restored previous dataset from $ZIP"
           fi
         else
@@ -62,6 +66,9 @@ jobs:
       run: |
         MODE="${{ github.event.inputs.mode || 'incremental' }}"
         uv run python moltbook_crawler.py --mode "$MODE"
+
+    - name: Build derived datasets
+      run: uv run python scripts/build_derived.py
 
     - name: Package release
       run: uv run python scripts/package_release.py
@@ -80,14 +87,14 @@ jobs:
           --notes-file releases/RELEASE_NOTES.md
 
     - name: Upload to Hugging Face
-      if: always() && hashFiles('data/posts.json') != ''
+      if: always() && hashFiles('data/raw/posts.json') != ''
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
       run: uv run python scripts/upload_to_huggingface.py
       continue-on-error: true
 
     - name: Upload to Kaggle
-      if: always() && hashFiles('data/posts.json') != ''
+      if: always() && hashFiles('data/raw/posts.json') != ''
       env:
         KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
         KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
@@ -95,10 +102,21 @@ jobs:
       continue-on-error: true
 
     - name: Upload to Zenodo
-      if: always() && hashFiles('data/posts.json') != ''
+      if: always() && hashFiles('data/raw/posts.json') != ''
       env:
         ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
         ZENODO_DEPOSITION_ID: ${{ secrets.ZENODO_DEPOSITION_ID }}
         ZENODO_AUTO_PUBLISH: ${{ secrets.ZENODO_AUTO_PUBLISH }}
       run: uv run python scripts/upload_to_zenodo.py
       continue-on-error: true
+
+    - name: Update README with latest stats
+      run: uv run python scripts/update_readme.py
+
+    - name: Commit updated README
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add README.md
+        git diff --cached --quiet || git commit -m "Update dataset stats [skip ci]"
+        git push

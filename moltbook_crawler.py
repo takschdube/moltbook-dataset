@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 Moltbook Data Crawler - Incremental Version
-Collects posts, comments, submolts, and agent data from Moltbook API.
-Supports incremental updates to avoid re-fetching all data.
+Collects posts, comments, submolts from the Moltbook API.
+Writes raw API responses to data/raw/. Derived datasets are built separately.
 
 Usage:
     uv sync
@@ -16,7 +16,6 @@ import time
 import os
 import argparse
 from datetime import datetime, timedelta
-from collections import defaultdict
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -33,12 +32,12 @@ REQUEST_DELAY = float(os.getenv("REQUEST_DELAY", "0.5"))
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", "3"))
 
 # Directories
-DATA_DIR = Path(os.getenv("DATA_DIR", "data"))
+RAW_DIR = Path(os.getenv("DATA_DIR", "data")) / "raw"
 ARCHIVE_DIR = Path(os.getenv("ARCHIVE_DIR", "archives"))
 LOGS_DIR = Path("logs")
 
 # Create directories
-DATA_DIR.mkdir(exist_ok=True)
+RAW_DIR.mkdir(parents=True, exist_ok=True)
 ARCHIVE_DIR.mkdir(exist_ok=True)
 LOGS_DIR.mkdir(exist_ok=True)
 
@@ -98,7 +97,7 @@ def make_request(endpoint, params=None):
 
 def load_json(filename):
     """Load JSON file if it exists."""
-    filepath = DATA_DIR / filename
+    filepath = RAW_DIR / filename
     if filepath.exists():
         with open(filepath, 'r', encoding='utf-8') as f:
             return json.load(f)
@@ -106,7 +105,7 @@ def load_json(filename):
 
 def save_json(data, filename, archive=False):
     """Save data to JSON file with optional archiving."""
-    filepath = DATA_DIR / filename
+    filepath = RAW_DIR / filename
 
     # Archive old version if requested and file exists
     if archive and filepath.exists():
@@ -284,75 +283,6 @@ def fetch_all_comments(posts, post_ids_to_update=None):
 
     return list(existing_full.values())
 
-def extract_agents(posts_full):
-    """Extract unique agents from posts and comments."""
-    logger.log("Extracting Agents")
-    agents = {}
-
-    def add_agent(author):
-        if author and author.get("id"):
-            agent_id = author["id"]
-            if agent_id not in agents:
-                agents[agent_id] = {
-                    "id": agent_id,
-                    "name": author.get("name"),
-                    "karma": author.get("karma"),
-                    "follower_count": author.get("follower_count"),
-                    "owner": author.get("owner"),
-                    "post_count": 0,
-                    "comment_count": 0
-                }
-            return agent_id
-        return None
-
-    def process_comments(comments, post_author_id):
-        for comment in comments:
-            agent_id = add_agent(comment.get("author"))
-            if agent_id:
-                agents[agent_id]["comment_count"] += 1
-            if comment.get("replies"):
-                process_comments(comment["replies"], post_author_id)
-
-    for post in posts_full:
-        agent_id = add_agent(post.get("author"))
-        if agent_id:
-            agents[agent_id]["post_count"] += 1
-        process_comments(post.get("comments", []), agent_id)
-
-    agent_list = list(agents.values())
-    logger.log(f"Found {len(agent_list)} unique agents")
-    return agent_list
-
-def build_social_graph(posts_full):
-    """Build social graph: who interacted with whom."""
-    logger.log("Building Social Graph")
-
-    interactions = defaultdict(lambda: defaultdict(int))
-
-    def process_comments(comments, post_author_name):
-        for comment in comments:
-            commenter = comment.get("author", {}).get("name")
-            if commenter and post_author_name and commenter != post_author_name:
-                interactions[commenter][post_author_name] += 1
-            if comment.get("replies"):
-                process_comments(comment["replies"], post_author_name)
-
-    for post in posts_full:
-        post_author = post.get("author", {}).get("name")
-        process_comments(post.get("comments", []), post_author)
-
-    graph = []
-    for commenter, targets in interactions.items():
-        for target, count in targets.items():
-            graph.append({
-                "from": commenter,
-                "to": target,
-                "interactions": count
-            })
-
-    logger.log(f"Found {len(graph)} interaction pairs")
-    return graph
-
 # === MAIN ===
 
 def crawl(mode="incremental"):
@@ -384,13 +314,6 @@ def crawl(mode="incremental"):
     posts_full = fetch_all_comments(posts, post_ids_to_update)
     save_json(posts_full, "posts_full.json", archive=True)
 
-    # Extract agents and build graph
-    agents = extract_agents(posts_full)
-    save_json(agents, "agents.json", archive=True)
-
-    graph = build_social_graph(posts_full)
-    save_json(graph, "social_graph.json", archive=True)
-
     # Save metadata
     crawl_info = {
         "timestamp": datetime.utcnow().isoformat(),
@@ -398,8 +321,7 @@ def crawl(mode="incremental"):
         "stats": {
             "submolts": len(submolts),
             "posts": len(posts),
-            "agents": len(agents),
-            "interactions": len(graph),
+            "posts_full": len(posts_full),
             "requests": logger.stats["requests_made"],
             "errors": logger.stats["errors"]
         }
@@ -411,9 +333,8 @@ def crawl(mode="incremental"):
     logger.log("=" * 50)
     logger.log(f"Submolts:     {len(submolts)}")
     logger.log(f"Posts:        {len(posts)}")
-    logger.log(f"Agents:       {len(agents)}")
-    logger.log(f"Interactions: {len(graph)}")
-    logger.log(f"Data saved to: {DATA_DIR}/")
+    logger.log(f"Posts (full): {len(posts_full)}")
+    logger.log(f"Data saved to: {RAW_DIR}/")
     logger.log(f"Finished at:  {datetime.utcnow().isoformat()}")
 
     logger.save_stats()

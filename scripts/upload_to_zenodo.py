@@ -11,7 +11,8 @@ from datetime import datetime
 ZENODO_TOKEN = os.getenv("ZENODO_TOKEN")
 ZENODO_DEPOSITION_ID = os.getenv("ZENODO_DEPOSITION_ID")  # For updates to existing deposit
 ZENODO_API = "https://zenodo.org/api"
-DATA_DIR = Path("data")
+RAW_DIR = Path("data/raw")
+DERIVED_DIR = Path("data/derived")
 
 def create_deposition():
     """Create a new Zenodo deposition (draft)."""
@@ -28,7 +29,7 @@ def create_deposition():
     if response.status_code == 201:
         return response.json()
     else:
-        print(f"✗ Failed to create deposition: {response.status_code}")
+        print(f"Failed to create deposition: {response.status_code}")
         print(response.text)
         return None
 
@@ -49,11 +50,11 @@ def update_metadata(deposition_id, metadata):
     if response.status_code == 200:
         return response.json()
     else:
-        print(f"✗ Failed to update metadata: {response.status_code}")
+        print(f"Failed to update metadata: {response.status_code}")
         print(response.text)
         return None
 
-def upload_file(deposition_id, filepath):
+def upload_file(deposition_id, filepath, name_in_repo):
     """Upload a file to the deposition."""
     params = {"access_token": ZENODO_TOKEN}
 
@@ -63,14 +64,14 @@ def upload_file(deposition_id, filepath):
         response = requests.post(
             bucket_url,
             params=params,
-            data={"name": filepath.name},
+            data={"name": name_in_repo},
             files={"file": f}
         )
 
     if response.status_code == 201:
         return response.json()
     else:
-        print(f"✗ Failed to upload {filepath.name}: {response.status_code}")
+        print(f"Failed to upload {name_in_repo}: {response.status_code}")
         return None
 
 def publish_deposition(deposition_id):
@@ -85,7 +86,7 @@ def publish_deposition(deposition_id):
     if response.status_code == 202:
         return response.json()
     else:
-        print(f"✗ Failed to publish: {response.status_code}")
+        print(f"Failed to publish: {response.status_code}")
         print(response.text)
         return None
 
@@ -105,7 +106,7 @@ def create_new_version(deposition_id):
         new_id = latest_draft_url.split("/")[-1]
         return new_id
     else:
-        print(f"✗ Failed to create new version: {response.status_code}")
+        print(f"Failed to create new version: {response.status_code}")
         print(response.text)
         return None
 
@@ -118,14 +119,8 @@ def main():
     print("Uploading to Zenodo")
     print("=" * 60)
 
-    # Load metadata for description
-    metadata_file = DATA_DIR / "metadata.json"
-    platform_stats = DATA_DIR / "platform_stats.json"
-
-    dataset_metadata = {}
-    if metadata_file.exists():
-        with open(metadata_file) as f:
-            dataset_metadata = json.load(f)
+    # Load platform stats for description
+    platform_stats = RAW_DIR / "platform_stats.json"
 
     stats = {}
     if platform_stats.exists():
@@ -145,7 +140,7 @@ def main():
             return
         deposition_id = deposition["id"]
 
-    print(f"✓ Deposition ID: {deposition_id}")
+    print(f"Deposition ID: {deposition_id}")
 
     # Prepare metadata
     today = datetime.utcnow()
@@ -163,15 +158,22 @@ designed for social media and AI agent research.</p>
 <li><strong>Total Comments</strong>: {stats.get('total_comments', 'N/A')}</li>
 </ul>
 
-<h3>Files Included</h3>
+<h3>Raw Files (API responses)</h3>
 <ul>
-<li><code>submolts.json</code> - All submolts/communities</li>
-<li><code>posts.json</code> - All posts (lightweight, no comments)</li>
-<li><code>posts_full.json</code> - Posts with full comment trees</li>
-<li><code>agents.json</code> - Agent profiles with activity statistics</li>
-<li><code>social_graph.json</code> - Interaction network edges</li>
-<li><code>platform_stats.json</code> - Platform-wide statistics</li>
-<li><code>metadata.json</code> - Collection metadata and provenance</li>
+<li><code>raw/submolts.json</code> - All submolts/communities</li>
+<li><code>raw/posts.json</code> - All posts (lightweight, no comments)</li>
+<li><code>raw/posts_full.json</code> - Posts with full comment trees</li>
+<li><code>raw/platform_stats.json</code> - Platform-wide statistics</li>
+<li><code>raw/metadata.json</code> - Collection metadata and provenance</li>
+</ul>
+
+<h3>Derived Files (computed from raw)</h3>
+<ul>
+<li><code>derived/agents.json</code> - Agent profiles with activity statistics</li>
+<li><code>derived/social_graph.json</code> - Post-level interaction edges</li>
+<li><code>derived/reply_graph.json</code> - Thread-level reply edges</li>
+<li><code>derived/activity_timeline.json</code> - Daily post/comment counts</li>
+<li><code>derived/submolt_stats.json</code> - Per-submolt statistics</li>
 </ul>
 
 <h3>Usage</h3>
@@ -189,7 +191,7 @@ designed for social media and AI agent research.</p>
         "creators": [
             {
                 "name": "Dube, Taksch",
-                "affiliation": "Independent Researcher"  # Update as needed
+                "affiliation": "Independent Researcher"
             }
         ],
         "keywords": [
@@ -216,30 +218,20 @@ designed for social media and AI agent research.</p>
     result = update_metadata(deposition_id, zenodo_metadata)
     if not result:
         return
-    print("✓ Metadata updated")
+    print("Metadata updated")
 
-    # Upload files
-    files_to_upload = [
-        "submolts.json",
-        "posts.json",
-        "posts_full.json",
-        "agents.json",
-        "social_graph.json",
-        "platform_stats.json",
-        "metadata.json"
-    ]
-
+    # Upload files from both directories
     print("\nUploading files...")
-    for filename in files_to_upload:
-        filepath = DATA_DIR / filename
-        if filepath.exists():
-            print(f"  Uploading {filename}...")
-            result = upload_file(deposition_id, filepath)
+    for directory, prefix in [(RAW_DIR, "raw"), (DERIVED_DIR, "derived")]:
+        if not directory.exists():
+            continue
+        for filepath in sorted(directory.glob("*.json")):
+            name_in_repo = f"{prefix}_{filepath.name}"
+            print(f"  Uploading {prefix}/{filepath.name}...")
+            result = upload_file(deposition_id, filepath, name_in_repo)
             if result:
                 size_mb = filepath.stat().st_size / 1024 / 1024
-                print(f"  ✓ Uploaded {filename} ({size_mb:.2f} MB)")
-        else:
-            print(f"  ⚠ Skipping {filename} (not found)")
+                print(f"  Uploaded {name_in_repo} ({size_mb:.2f} MB)")
 
     # For automated uploads, you might want to auto-publish
     # For manual control, comment out the publish step
@@ -252,7 +244,7 @@ designed for social media and AI agent research.</p>
             doi = published["doi"]
             doi_url = f"https://doi.org/{doi}"
             print(f"\n{'=' * 60}")
-            print("✓ DATASET PUBLISHED!")
+            print("DATASET PUBLISHED!")
             print(f"{'=' * 60}")
             print(f"DOI: {doi}")
             print(f"URL: {doi_url}")
@@ -269,7 +261,7 @@ designed for social media and AI agent research.</p>
             print(f"\nDOI saved to {doi_file}")
     else:
         print("\n" + "=" * 60)
-        print("✓ DRAFT CREATED (not published)")
+        print("DRAFT CREATED (not published)")
         print("=" * 60)
         print(f"Review at: https://zenodo.org/deposit/{deposition_id}")
         print("\nTo publish:")

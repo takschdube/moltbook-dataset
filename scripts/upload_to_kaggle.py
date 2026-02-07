@@ -10,10 +10,19 @@ from pathlib import Path
 KAGGLE_USERNAME = os.getenv("KAGGLE_USERNAME")
 KAGGLE_KEY = os.getenv("KAGGLE_KEY")
 DATASET_SLUG = "moltbook-dataset"
-DATA_DIR = Path("data")
+RAW_DIR = Path("data/raw")
+DERIVED_DIR = Path("data/derived")
+STAGING_DIR = Path("data/kaggle_staging")
+
 
 def create_kaggle_metadata():
-    """Create dataset-metadata.json for Kaggle."""
+    """Create dataset-metadata.json for Kaggle.
+
+    Kaggle expects a flat directory with metadata. We copy files from
+    raw/ and derived/ into a staging directory and generate metadata there.
+    """
+    STAGING_DIR.mkdir(parents=True, exist_ok=True)
+
     metadata = {
         "title": "Moltbook Social Interactions Dataset",
         "id": f"{KAGGLE_USERNAME}/{DATASET_SLUG}",
@@ -29,18 +38,26 @@ def create_kaggle_metadata():
         "resources": []
     }
 
-    # Add each JSON file as a resource
-    for json_file in DATA_DIR.glob("*.json"):
-        metadata["resources"].append({
-            "path": json_file.name,
-            "description": f"Moltbook {json_file.stem} data"
-        })
+    # Copy files from both directories into staging
+    import shutil
+    for directory, prefix in [(RAW_DIR, "raw"), (DERIVED_DIR, "derived")]:
+        if not directory.exists():
+            continue
+        for json_file in sorted(directory.glob("*.json")):
+            # Prefix filename so raw/derived are distinguishable
+            staged_name = f"{prefix}_{json_file.name}"
+            shutil.copy2(json_file, STAGING_DIR / staged_name)
+            metadata["resources"].append({
+                "path": staged_name,
+                "description": f"Moltbook {prefix}/{json_file.stem} data"
+            })
 
-    metadata_path = DATA_DIR / "dataset-metadata.json"
+    metadata_path = STAGING_DIR / "dataset-metadata.json"
     with open(metadata_path, "w", encoding="utf-8") as f:
         json.dump(metadata, f, indent=2)
 
     return metadata
+
 
 def main():
     if not KAGGLE_USERNAME or not KAGGLE_KEY:
@@ -61,7 +78,7 @@ def main():
         }, f)
     kaggle_json.chmod(0o600)
 
-    # Create metadata
+    # Create metadata and stage files
     create_kaggle_metadata()
 
     # Create version
@@ -70,11 +87,11 @@ def main():
             ["kaggle", "datasets", "version", "-p", ".", "-m", "Automated update from GitHub Actions"],
             capture_output=True,
             text=True,
-            cwd=DATA_DIR
+            cwd=STAGING_DIR
         )
 
         if result.returncode == 0:
-            print("✓ Dataset uploaded to Kaggle")
+            print("Dataset uploaded to Kaggle")
             print(f"  View at: https://www.kaggle.com/datasets/{KAGGLE_USERNAME}/{DATASET_SLUG}")
         else:
             # If version fails, try creating new dataset
@@ -83,14 +100,14 @@ def main():
                 ["kaggle", "datasets", "create", "-p", "."],
                 capture_output=True,
                 text=True,
-                cwd=DATA_DIR
+                cwd=STAGING_DIR
             )
             if result.returncode == 0:
-                print("✓ New dataset created on Kaggle")
+                print("New dataset created on Kaggle")
             else:
-                print(f"✗ Error: {result.stderr}")
+                print(f"Error: {result.stderr}")
     except Exception as e:
-        print(f"✗ Failed to upload to Kaggle: {e}")
+        print(f"Failed to upload to Kaggle: {e}")
 
 if __name__ == "__main__":
     main()

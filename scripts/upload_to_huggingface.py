@@ -2,14 +2,14 @@
 """Upload dataset to Hugging Face Hub."""
 
 import os
-import json
 from pathlib import Path
 from huggingface_hub import HfApi, create_repo
 
 # Configuration
 HF_TOKEN = os.getenv("HF_TOKEN")
 HF_REPO = os.getenv("HF_REPO", "takschdube/moltbook-dataset")
-DATA_DIR = Path("data")
+RAW_DIR = Path("data/raw")
+DERIVED_DIR = Path("data/derived")
 
 def main():
     if not HF_TOKEN:
@@ -29,36 +29,28 @@ def main():
             exist_ok=True,
             private=False
         )
-        print(f"✓ Repository {HF_REPO} ready")
+        print(f"Repository {HF_REPO} ready")
     except Exception as e:
         print(f"Error creating repo: {e}")
         return
 
-    # Upload all data files
-    files_to_upload = [
-        "submolts.json",
-        "posts.json",
-        "posts_full.json",
-        "agents.json",
-        "social_graph.json",
-        "platform_stats.json",
-        "metadata.json"
-    ]
-
-    for filename in files_to_upload:
-        filepath = DATA_DIR / filename
-        if filepath.exists():
+    # Upload all JSON files from both directories
+    for directory, prefix in [(RAW_DIR, "raw"), (DERIVED_DIR, "derived")]:
+        if not directory.exists():
+            continue
+        for filepath in sorted(directory.glob("*.json")):
+            path_in_repo = f"{prefix}/{filepath.name}"
             try:
                 api.upload_file(
                     path_or_fileobj=str(filepath),
-                    path_in_repo=filename,
+                    path_in_repo=path_in_repo,
                     repo_id=HF_REPO,
                     repo_type="dataset",
                     token=HF_TOKEN
                 )
-                print(f"✓ Uploaded {filename}")
+                print(f"  Uploaded {path_in_repo}")
             except Exception as e:
-                print(f"✗ Failed to upload {filename}: {e}")
+                print(f"  Failed to upload {path_in_repo}: {e}")
 
     # Upload README
     readme_path = Path("README.md")
@@ -71,11 +63,11 @@ def main():
                 repo_type="dataset",
                 token=HF_TOKEN
             )
-            print(f"✓ Uploaded README.md")
+            print("  Uploaded README.md")
         except Exception as e:
-            print(f"✗ Failed to upload README: {e}")
+            print(f"  Failed to upload README: {e}")
 
-    print(f"\n✓ Dataset uploaded to: https://huggingface.co/datasets/{HF_REPO}")
+    print(f"\nDataset uploaded to: https://huggingface.co/datasets/{HF_REPO}")
 
 if __name__ == "__main__":
     main()
