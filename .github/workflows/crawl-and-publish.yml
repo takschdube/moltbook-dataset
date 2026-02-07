@@ -18,6 +18,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: crawl
+  cancel-in-progress: false
+
 jobs:
   crawl-and-publish:
     runs-on: ubuntu-latest
