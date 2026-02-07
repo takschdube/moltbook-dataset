@@ -17,6 +17,8 @@ import os
 import argparse
 from datetime import datetime, timedelta
 from pathlib import Path
+from threading import Thread
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -30,6 +32,7 @@ HEADERS = {"Authorization": f"Bearer {API_KEY}"}
 # Rate limiting
 REQUEST_DELAY = float(os.getenv("REQUEST_DELAY", "0.5"))
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", "3"))
+COMMENT_WORKERS = int(os.getenv("COMMENT_WORKERS", "10"))
 
 # Directories
 RAW_DIR = Path(os.getenv("DATA_DIR", "data")) / "raw"
@@ -209,11 +212,13 @@ def fetch_posts_incremental(since=None):
     return list(existing_posts.values())
 
 def fetch_all_posts():
-    """Fetch ALL posts (full crawl)."""
+    """Fetch ALL posts (full crawl). Saves progress every 500 posts."""
     logger.log("Fetching ALL Posts (full mode)")
-    all_posts = []
+    existing_posts = {p["id"]: p for p in (load_json("posts.json") or [])}
+    logger.log(f"Loaded {len(existing_posts)} existing posts")
     offset = 0
     limit = 50
+    fetched = 0
 
     while True:
         logger.log(f"Fetching posts {offset} to {offset + limit}...")
@@ -227,9 +232,16 @@ def fetch_all_posts():
         if not posts:
             break
 
-        all_posts.extend(posts)
-        logger.stats["new_posts"] += len(posts)
-        logger.log(f"Got {len(posts)} posts (total: {len(all_posts)})")
+        for post in posts:
+            if post["id"] not in existing_posts:
+                existing_posts[post["id"]] = post
+                logger.stats["new_posts"] += 1
+        fetched += len(posts)
+        logger.log(f"Got {len(posts)} posts (total fetched: {fetched}, dataset: {len(existing_posts)})")
+
+        # Checkpoint every 500 posts
+        if fetched % 500 < limit:
+            save_json(list(existing_posts.values()), "posts.json")
 
         if not resp.get("has_more"):
             break
@@ -237,8 +249,8 @@ def fetch_all_posts():
         offset = resp.get("next_offset", offset + limit)
         time.sleep(REQUEST_DELAY)
 
-    logger.log(f"Total posts fetched: {len(all_posts)}")
-    return all_posts
+    logger.log(f"Total posts in dataset: {len(existing_posts)}")
+    return list(existing_posts.values())
 
 def fetch_post_with_comments(post_id):
     """Fetch single post with full comment tree."""
@@ -248,34 +260,48 @@ def fetch_post_with_comments(post_id):
     return None, []
 
 def fetch_all_comments(posts, post_ids_to_update=None):
-    """Fetch comments for posts."""
+    """Fetch comments for posts using parallel requests. Saves every 100 posts."""
     logger.log("Fetching Comments")
 
     # Load existing full posts
     existing_full = {p["id"]: p for p in (load_json("posts_full.json") or [])}
+    logger.log(f"Loaded {len(existing_full)} existing posts with comments")
 
     # Determine which posts need comment updates
     if post_ids_to_update is None:
-        posts_to_fetch = posts
+        # Full mode: skip posts we already have comments for
+        posts_to_fetch = [p for p in posts if p["id"] not in existing_full]
     else:
         posts_to_fetch = [p for p in posts if p["id"] in post_ids_to_update]
 
-    logger.log(f"Updating comments for {len(posts_to_fetch)} posts")
-
     total = len(posts_to_fetch)
-    for i, post in enumerate(posts_to_fetch):
-        post_id = post["id"]
-        if (i + 1) % 10 == 0:
-            logger.log(f"[{i+1}/{total}] Fetching comments for post {post_id[:8]}...")
+    logger.log(f"Fetching comments for {total} posts ({COMMENT_WORKERS} parallel workers)")
 
-        full_post, comments = fetch_post_with_comments(post_id)
-        if full_post:
-            full_post["comments"] = comments
-            existing_full[post_id] = full_post
+    if total == 0:
+        logger.log("No new posts to fetch comments for")
+    else:
+        completed = 0
+        with ThreadPoolExecutor(max_workers=COMMENT_WORKERS) as executor:
+            futures = {
+                executor.submit(fetch_post_with_comments, post["id"]): post
+                for post in posts_to_fetch
+            }
 
-        time.sleep(REQUEST_DELAY)
+            for future in as_completed(futures):
+                post = futures[future]
+                full_post, comments = future.result()
+                if full_post:
+                    full_post["comments"] = comments
+                    existing_full[post["id"]] = full_post
 
-    # Include posts without updates
+                completed += 1
+
+                # Checkpoint every 100 posts
+                if completed % 100 == 0:
+                    save_json(list(existing_full.values()), "posts_full.json")
+                    logger.log(f"[{completed}/{total}] Checkpoint saved ({len(existing_full)} total posts)")
+
+    # Include posts without comments as empty
     for post in posts:
         if post["id"] not in existing_full:
             post["comments"] = []
@@ -292,16 +318,43 @@ def crawl(mode="incremental"):
     logger.log(f"Started at: {datetime.utcnow().isoformat()}")
     logger.log("=" * 50)
 
-    # Fetch submolts (always full)
+    # Fetch submolts (always full, single request)
     submolts, platform_stats = fetch_submolts()
     save_json(submolts, "submolts.json")
     save_json(platform_stats, "platform_stats.json")
 
-    # Fetch posts
     if mode == "full":
+        # Start comment fetching for already-listed posts in the background
+        # while we continue pulling new post listings in the main thread.
+        # Each phase writes to a different file (posts.json vs posts_full.json)
+        # so there are no file conflicts.
+        existing_posts = load_json("posts.json") or []
+        comment_thread = None
+        if existing_posts:
+            logger.log(f"Starting background comment fetch for {len(existing_posts)} already-listed posts")
+            comment_thread = Thread(
+                target=fetch_all_comments,
+                args=(existing_posts, None),
+                daemon=True,
+            )
+            comment_thread.start()
+
+        # Fetch post listings (main thread, checkpoints every 500)
         posts = fetch_all_posts()
         save_json(posts, "posts.json", archive=True)
-        post_ids_to_update = None  # Update all
+
+        # Wait for background comment fetch to finish
+        if comment_thread:
+            logger.log("Waiting for background comment fetch to complete...")
+            comment_thread.join()
+            logger.log("Background comment fetch done")
+
+        # Second pass: fetch comments for any newly discovered posts.
+        # fetch_all_comments loads posts_full.json from disk and skips
+        # posts that were already fetched by the background thread.
+        posts_full = fetch_all_comments(posts, None)
+        save_json(posts_full, "posts_full.json", archive=True)
+
     else:  # incremental
         last_crawl = get_last_crawl_time()
         old_post_ids = {p["id"] for p in (load_json("posts.json") or [])}
@@ -310,9 +363,8 @@ def crawl(mode="incremental"):
         save_json(posts, "posts.json", archive=True)
         post_ids_to_update = new_post_ids if new_post_ids else None
 
-    # Fetch comments
-    posts_full = fetch_all_comments(posts, post_ids_to_update)
-    save_json(posts_full, "posts_full.json", archive=True)
+        posts_full = fetch_all_comments(posts, post_ids_to_update)
+        save_json(posts_full, "posts_full.json", archive=True)
 
     # Save metadata
     crawl_info = {

@@ -21,7 +21,7 @@ permissions:
 jobs:
   crawl-and-publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 350
 
     steps:
     - name: Checkout repository
