@@ -16,7 +16,7 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 | Reply graph edges | -- |
 | Submolts (active) | -- |
 
-*Auto-updated after each crawl.*
+*Last updated: 2026-02-07 17:26 UTC*
 
 <!-- DATASET_STATS_END -->
 
