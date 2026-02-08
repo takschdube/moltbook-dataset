@@ -157,12 +157,15 @@ def fetch_submolts():
     return [], {}
 
 def fetch_posts_incremental(since=None):
-    """Fetch posts since last crawl."""
+    """Fetch posts since last crawl. Returns (posts, new_ids, updated_ids)."""
     logger.log(f"Fetching Posts (incremental mode, since={since})")
     all_posts = []
+    new_ids = set()
+    updated_ids = set()
     existing_posts = {p["id"]: p for p in (load_json("posts.json") or [])}
     offset = 0
     limit = 50
+    fetched = 0
 
     while True:
         logger.log(f"Fetching posts {offset} to {offset + limit}...")
@@ -181,6 +184,7 @@ def fetch_posts_incremental(since=None):
         for post in posts:
             if post["id"] not in existing_posts:
                 new_posts.append(post)
+                new_ids.add(post["id"])
                 logger.stats["new_posts"] += 1
             elif since:
                 # Update existing post if it might have new comments
@@ -188,9 +192,11 @@ def fetch_posts_incremental(since=None):
                 post_time = datetime.fromisoformat(created.split(".")[0])
                 if post_time > since - timedelta(days=7):  # Update recent posts
                     new_posts.append(post)
+                    updated_ids.add(post["id"])
                     logger.stats["updated_posts"] += 1
 
         all_posts.extend(new_posts)
+        fetched += len(posts)
         logger.log(f"Got {len(new_posts)} new/updated posts (total: {len(all_posts)})")
 
         # If no new posts in this batch and we have a since time, we can stop
@@ -208,8 +214,12 @@ def fetch_posts_incremental(since=None):
     for post in all_posts:
         existing_posts[post["id"]] = post
 
+    # Checkpoint after incremental listing
+    if fetched % 500 < limit:
+        save_json(list(existing_posts.values()), "posts.json")
+
     logger.log(f"Total posts in dataset: {len(existing_posts)}")
-    return list(existing_posts.values())
+    return list(existing_posts.values()), new_ids, updated_ids
 
 def fetch_all_posts():
     """Fetch ALL posts (full crawl). Saves progress every 500 posts."""
@@ -357,11 +367,9 @@ def crawl(mode="incremental"):
 
     else:  # incremental
         last_crawl = get_last_crawl_time()
-        old_post_ids = {p["id"] for p in (load_json("posts.json") or [])}
-        posts = fetch_posts_incremental(since=last_crawl)
-        new_post_ids = {p["id"] for p in posts} - old_post_ids
+        posts, new_ids, updated_ids = fetch_posts_incremental(since=last_crawl)
         save_json(posts, "posts.json", archive=True)
-        post_ids_to_update = new_post_ids if new_post_ids else None
+        post_ids_to_update = new_ids | updated_ids if (new_ids or updated_ids) else None
 
         posts_full = fetch_all_comments(posts, post_ids_to_update)
         save_json(posts_full, "posts_full.json", archive=True)
