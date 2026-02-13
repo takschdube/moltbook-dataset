@@ -14,6 +14,8 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
+from tqdm import tqdm
+
 RAW_DIR = Path("data/raw")
 DERIVED_DIR = Path("data/derived")
 
@@ -83,7 +85,7 @@ def build_agents(posts_full):
             if comment.get("replies"):
                 process_comments(comment["replies"])
 
-    for post in posts_full:
+    for post in tqdm(posts_full, desc="  Scanning"):
         agent_id = add_agent(post.get("author"))
         if agent_id:
             agents[agent_id]["post_count"] += 1
@@ -101,14 +103,14 @@ def build_social_graph(posts_full):
 
     def process_comments(comments, post_author_name):
         for comment in comments:
-            commenter = comment.get("author", {}).get("name")
+            commenter = (comment.get("author") or {}).get("name")
             if commenter and post_author_name and commenter != post_author_name:
                 interactions[commenter][post_author_name] += 1
             if comment.get("replies"):
                 process_comments(comment["replies"], post_author_name)
 
-    for post in posts_full:
-        post_author = post.get("author", {}).get("name")
+    for post in tqdm(posts_full, desc="  Scanning"):
+        post_author = (post.get("author") or {}).get("name")
         process_comments(post.get("comments", []), post_author)
 
     graph = []
@@ -130,13 +132,13 @@ def build_reply_graph(posts_full):
 
     def index_comments(comments):
         for comment in comments:
-            author_name = comment.get("author", {}).get("name")
+            author_name = (comment.get("author") or {}).get("name")
             if comment.get("id") and author_name:
                 comment_authors[comment["id"]] = author_name
             if comment.get("replies"):
                 index_comments(comment["replies"])
 
-    for post in posts_full:
+    for post in tqdm(posts_full, desc="  Indexing"):
         index_comments(post.get("comments", []))
 
     # Second pass: count reply edges
@@ -144,7 +146,7 @@ def build_reply_graph(posts_full):
 
     def count_replies(comments):
         for comment in comments:
-            replier = comment.get("author", {}).get("name")
+            replier = (comment.get("author") or {}).get("name")
             parent_id = comment.get("parent_id")
             if replier and parent_id and parent_id in comment_authors:
                 parent_author = comment_authors[parent_id]
@@ -153,7 +155,7 @@ def build_reply_graph(posts_full):
             if comment.get("replies"):
                 count_replies(comment["replies"])
 
-    for post in posts_full:
+    for post in tqdm(posts_full, desc="  Counting"):
         count_replies(post.get("comments", []))
 
     graph = []
@@ -171,7 +173,7 @@ def build_activity_timeline(posts):
     """
     daily = defaultdict(lambda: {"posts": 0, "comments": 0})
 
-    for post in posts:
+    for post in tqdm(posts, desc="  Scanning"):
         date = post.get("created_at", "")[:10]
         if date:
             daily[date]["posts"] += 1
@@ -192,7 +194,7 @@ def build_submolt_stats(posts):
     """
     stats = defaultdict(lambda: {"posts": 0, "comments": 0, "authors": set()})
 
-    for post in posts:
+    for post in tqdm(posts, desc="  Scanning"):
         submolt = post.get("submolt")
         if submolt:
             # submolt can be a dict with name/display_name or a string
@@ -200,7 +202,7 @@ def build_submolt_stats(posts):
             if submolt_name:
                 stats[submolt_name]["posts"] += 1
                 stats[submolt_name]["comments"] += post.get("comment_count", 0)
-                author = post.get("author", {}).get("name")
+                author = (post.get("author") or {}).get("name")
                 if author:
                     stats[submolt_name]["authors"].add(author)
 

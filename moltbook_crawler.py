@@ -15,11 +15,12 @@ import json
 import time
 import os
 import argparse
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from threading import Thread
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
+from tqdm import tqdm
 
 # Load environment variables
 load_dotenv()
@@ -49,7 +50,7 @@ class CrawlLogger:
     def __init__(self):
         self.log_file = LOGS_DIR / f"crawl_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
         self.stats = {
-            "start_time": datetime.utcnow().isoformat(),
+            "start_time": datetime.now(timezone.utc).isoformat(),
             "requests_made": 0,
             "errors": 0,
             "new_posts": 0,
@@ -59,12 +60,12 @@ class CrawlLogger:
     def log(self, message, level="INFO"):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log_line = f"[{timestamp}] {level}: {message}"
-        print(log_line)
+        tqdm.write(log_line)
         with open(self.log_file, 'a') as f:
             f.write(log_line + "\n")
 
     def save_stats(self):
-        self.stats["end_time"] = datetime.utcnow().isoformat()
+        self.stats["end_time"] = datetime.now(timezone.utc).isoformat()
         stats_file = LOGS_DIR / f"stats_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         with open(stats_file, 'w') as f:
             json.dump(self.stats, f, indent=2)
@@ -99,11 +100,15 @@ def make_request(endpoint, params=None):
     return None
 
 def load_json(filename):
-    """Load JSON file if it exists."""
+    """Load JSON file if it exists. Returns None for missing or corrupt files."""
     filepath = RAW_DIR / filename
     if filepath.exists():
-        with open(filepath, 'r', encoding='utf-8') as f:
-            return json.load(f)
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            logger.log(f"WARNING: {filepath} is corrupt, ignoring", "WARN")
+            return None
     return None
 
 def save_json(data, filename, archive=False):
@@ -117,9 +122,11 @@ def save_json(data, filename, archive=False):
         os.rename(filepath, archive_path)
         logger.log(f"Archived old version to {archive_path}")
 
-    # Save new version
-    with open(filepath, 'w', encoding='utf-8') as f:
+    # Save new version (atomic: write to .tmp then replace)
+    tmp_path = str(filepath) + ".tmp"
+    with open(tmp_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
+    os.replace(tmp_path, str(filepath))
 
     size = filepath.stat().st_size / 1024 / 1024  # MB
     logger.log(f"Saved {filepath} ({size:.2f} MB)")
@@ -134,7 +141,7 @@ def get_last_crawl_time():
 def save_metadata(crawl_info):
     """Save crawl metadata."""
     metadata = load_json("metadata.json") or {"crawl_history": []}
-    metadata["last_crawl"] = datetime.utcnow().isoformat()
+    metadata["last_crawl"] = datetime.now(timezone.utc).isoformat()
     metadata["crawl_history"].append(crawl_info)
     save_json(metadata, "metadata.json")
 
@@ -151,7 +158,7 @@ def fetch_submolts():
             "total_posts": resp.get("total_posts"),
             "total_comments": resp.get("total_comments"),
             "submolt_count": resp.get("count"),
-            "crawled_at": datetime.utcnow().isoformat()
+            "crawled_at": datetime.now(timezone.utc).isoformat()
         }
         return submolts, stats
     return [], {}
@@ -190,7 +197,7 @@ def fetch_posts_incremental(since=None):
                 # Update existing post if it might have new comments
                 created = post["created_at"].replace("Z", "").replace("+00:00", "")
                 post_time = datetime.fromisoformat(created.split(".")[0])
-                if post_time > since - timedelta(days=7):  # Update recent posts
+                if post_time > since - timedelta(days=1):  # Update recent posts
                     new_posts.append(post)
                     updated_ids.add(post["id"])
                     logger.stats["updated_posts"] += 1
@@ -222,16 +229,17 @@ def fetch_posts_incremental(since=None):
     return list(existing_posts.values()), new_ids, updated_ids
 
 def fetch_all_posts():
-    """Fetch ALL posts (full crawl). Saves progress every 500 posts."""
-    logger.log("Fetching ALL Posts (full mode)")
+    """Fetch posts (newest first), stop when we reach known data."""
+    logger.log("Fetching Posts (full mode, smart overlap detection)")
     existing_posts = {p["id"]: p for p in (load_json("posts.json") or [])}
     logger.log(f"Loaded {len(existing_posts)} existing posts")
     offset = 0
     limit = 50
     fetched = 0
+    consecutive_known_batches = 0
 
+    pbar = tqdm(desc="[Posts]", unit=" posts", dynamic_ncols=True)
     while True:
-        logger.log(f"Fetching posts {offset} to {offset + limit}...")
         resp = make_request("/posts", {"sort": "new", "limit": limit, "offset": offset})
 
         if not resp or not resp.get("success"):
@@ -242,15 +250,28 @@ def fetch_all_posts():
         if not posts:
             break
 
+        new_in_batch = 0
         for post in posts:
             if post["id"] not in existing_posts:
                 existing_posts[post["id"]] = post
                 logger.stats["new_posts"] += 1
+                new_in_batch += 1
+            else:
+                existing_posts[post["id"]] = post
         fetched += len(posts)
-        logger.log(f"Got {len(posts)} posts (total fetched: {fetched}, dataset: {len(existing_posts)})")
+        pbar.update(len(posts))
+        pbar.set_postfix(new=logger.stats["new_posts"], total=len(existing_posts))
 
-        # Checkpoint every 500 posts
-        if fetched % 500 < limit:
+        if new_in_batch == 0:
+            consecutive_known_batches += 1
+            if consecutive_known_batches >= 3:
+                logger.log("3 consecutive all-known batches, stopping (rest is existing data)")
+                break
+        else:
+            consecutive_known_batches = 0
+
+        # Checkpoint every 1000 posts fetched
+        if fetched % 1000 < limit:
             save_json(list(existing_posts.values()), "posts.json")
 
         if not resp.get("has_more"):
@@ -258,6 +279,7 @@ def fetch_all_posts():
 
         offset = resp.get("next_offset", offset + limit)
         time.sleep(REQUEST_DELAY)
+    pbar.close()
 
     logger.log(f"Total posts in dataset: {len(existing_posts)}")
     return list(existing_posts.values())
@@ -269,9 +291,18 @@ def fetch_post_with_comments(post_id):
         return resp.get("post"), resp.get("comments", [])
     return None, []
 
+def fetch_comments_only(post_id):
+    """Fetch just comments for a post (lighter than re-fetching full post)."""
+    resp = make_request(f"/posts/{post_id}/comments")
+    if resp and resp.get("success"):
+        return resp.get("comments", [])
+    return None
+
 def fetch_all_comments(posts, post_ids_to_update=None):
-    """Fetch comments for posts using parallel requests. Saves every 100 posts."""
+    """Fetch comments for posts using parallel requests. Saves every 1000 posts.
+    Uses lightweight /posts/:id/comments for existing posts, full /posts/:id for new ones."""
     logger.log("Fetching Comments")
+    logger.log("Loading posts_full.json...")
 
     # Load existing full posts
     existing_full = {p["id"]: p for p in (load_json("posts_full.json") or [])}
@@ -281,6 +312,9 @@ def fetch_all_comments(posts, post_ids_to_update=None):
     if post_ids_to_update is None:
         # Full mode: skip posts we already have comments for
         posts_to_fetch = [p for p in posts if p["id"] not in existing_full]
+        skipped = len(posts) - len(posts_to_fetch)
+        if skipped > 0:
+            logger.log(f"Skipping {skipped} posts that already have comments")
     else:
         posts_to_fetch = [p for p in posts if p["id"] in post_ids_to_update]
 
@@ -291,25 +325,36 @@ def fetch_all_comments(posts, post_ids_to_update=None):
         logger.log("No new posts to fetch comments for")
     else:
         completed = 0
+        pbar = tqdm(total=total, desc="[Comments]", unit=" posts", dynamic_ncols=True)
         with ThreadPoolExecutor(max_workers=COMMENT_WORKERS) as executor:
-            futures = {
-                executor.submit(fetch_post_with_comments, post["id"]): post
-                for post in posts_to_fetch
-            }
+            futures = {}
+            for post in posts_to_fetch:
+                is_refresh = post["id"] in existing_full
+                if is_refresh:
+                    fut = executor.submit(fetch_comments_only, post["id"])
+                else:
+                    fut = executor.submit(fetch_post_with_comments, post["id"])
+                futures[fut] = (post, is_refresh)
 
             for future in as_completed(futures):
-                post = futures[future]
-                full_post, comments = future.result()
-                if full_post:
-                    full_post["comments"] = comments
-                    existing_full[post["id"]] = full_post
+                post, is_refresh = futures[future]
+                if is_refresh:
+                    comments = future.result()
+                    if comments is not None:
+                        existing_full[post["id"]]["comments"] = comments
+                else:
+                    full_post, comments = future.result()
+                    if full_post:
+                        full_post["comments"] = comments
+                        existing_full[post["id"]] = full_post
 
                 completed += 1
+                pbar.update(1)
 
-                # Checkpoint every 100 posts
-                if completed % 100 == 0:
+                # Checkpoint every 1000 posts
+                if completed % 1000 == 0:
                     save_json(list(existing_full.values()), "posts_full.json")
-                    logger.log(f"[{completed}/{total}] Checkpoint saved ({len(existing_full)} total posts)")
+        pbar.close()
 
     # Include posts without comments as empty
     for post in posts:
@@ -325,7 +370,7 @@ def crawl(mode="incremental"):
     """Run crawler in specified mode."""
     logger.log("=" * 50)
     logger.log(f"MOLTBOOK DATA CRAWLER - {mode.upper()} MODE")
-    logger.log(f"Started at: {datetime.utcnow().isoformat()}")
+    logger.log(f"Started at: {datetime.now(timezone.utc).isoformat()}")
     logger.log("=" * 50)
 
     # Fetch submolts (always full, single request)
@@ -376,7 +421,7 @@ def crawl(mode="incremental"):
 
     # Save metadata
     crawl_info = {
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "mode": mode,
         "stats": {
             "submolts": len(submolts),
@@ -395,7 +440,7 @@ def crawl(mode="incremental"):
     logger.log(f"Posts:        {len(posts)}")
     logger.log(f"Posts (full): {len(posts_full)}")
     logger.log(f"Data saved to: {RAW_DIR}/")
-    logger.log(f"Finished at:  {datetime.utcnow().isoformat()}")
+    logger.log(f"Finished at:  {datetime.now(timezone.utc).isoformat()}")
 
     logger.save_stats()
 

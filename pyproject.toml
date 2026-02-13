@@ -9,4 +9,6 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "huggingface-hub>=0.20.0",
     "kaggle>=1.5.16",
+    "ijson>=3.2.0",
+    "tqdm>=4.66.0",
 ]

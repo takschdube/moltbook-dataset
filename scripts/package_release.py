@@ -12,38 +12,53 @@ import zipfile
 import os
 import sys
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
+
+import ijson
+from tqdm import tqdm
 
 RAW_DIR = Path("data/raw")
 DERIVED_DIR = Path("data/derived")
 RELEASES_DIR = Path("releases")
 RELEASES_DIR.mkdir(exist_ok=True)
 
-TODAY = datetime.utcnow()
+TODAY = datetime.now(timezone.utc)
 DATE_TAG = TODAY.strftime("%Y-%m-%d")
 MONTH_TAG = TODAY.strftime("%Y-%m")
 
 
-def count_comments(posts_full):
-    """Recursively count all comments across posts."""
+def _count_comments_recursive(comments):
+    """Recursively count comments in a nested tree."""
     total = 0
-
-    def _count(comments):
-        nonlocal total
-        for c in comments:
-            total += 1
-            if c.get("replies"):
-                _count(c["replies"])
-
-    for post in posts_full:
-        _count(post.get("comments", []))
+    for c in comments:
+        total += 1
+        if c.get("replies"):
+            total += _count_comments_recursive(c["replies"])
     return total
 
 
+def _stream_large_json(path):
+    """Stream a large JSON array file, yielding (count, item) for each element.
+
+    Uses ijson to avoid loading the entire file into memory.
+    """
+    count = 0
+    with open(path, "rb") as f:
+        for item in ijson.items(f, "item"):
+            count += 1
+            yield count, item
+    return count
+
+
 def load_data():
-    """Load all data files from raw/ and derived/ and compute stats."""
+    """Load all data files from raw/ and derived/ and compute stats.
+
+    Streams posts.json and posts_full.json with ijson to avoid OOM on large files.
+    """
     files = {}
     stats = {}
+
+    STREAM_FILES = {"posts.json", "posts_full.json"}
 
     # Scan both directories
     for directory, prefix in [(RAW_DIR, "raw"), (DERIVED_DIR, "derived")]:
@@ -51,40 +66,57 @@ def load_data():
             continue
         for path in sorted(directory.glob("*.json")):
             name = f"{prefix}/{path.name}"
-            with open(path, "r", encoding="utf-8") as f:
-                data = json.load(f)
+            size_bytes = path.stat().st_size
             files[name] = {
                 "path": path,
-                "size_bytes": path.stat().st_size,
-                "size_mb": round(path.stat().st_size / 1024 / 1024, 2),
+                "size_bytes": size_bytes,
+                "size_mb": round(size_bytes / 1024 / 1024, 2),
             }
 
-            if isinstance(data, list):
-                files[name]["count"] = len(data)
-            elif isinstance(data, dict):
-                files[name]["count"] = None
+            if path.name in STREAM_FILES and prefix == "raw":
+                # Stream large files
+                print(f"  Streaming {path.name}...")
+                count = 0
+                comment_total = 0
+                for count, item in tqdm(
+                    _stream_large_json(path), desc=f"  {path.name}", unit=" posts"
+                ):
+                    if path.name == "posts_full.json":
+                        comment_total += _count_comments_recursive(
+                            item.get("comments", [])
+                        )
+                files[name]["count"] = count
 
-            # Specific stats
-            if path.name == "submolts.json":
-                stats["submolts"] = len(data) if isinstance(data, list) else 0
-            elif path.name == "posts.json" and prefix == "raw":
-                stats["posts"] = len(data)
-            elif path.name == "posts_full.json":
-                stats["posts_with_comments"] = len(data)
-                stats["comments"] = count_comments(data)
-            elif path.name == "agents.json":
-                stats["agents"] = len(data)
-            elif path.name == "social_graph.json":
-                stats["social_edges"] = len(data)
-            elif path.name == "reply_graph.json":
-                stats["reply_edges"] = len(data)
-            elif path.name == "activity_timeline.json":
-                stats["timeline_days"] = len(data)
-            elif path.name == "submolt_stats.json":
-                stats["submolt_stats"] = len(data)
-            elif path.name == "platform_stats.json":
-                stats["platform_total_posts"] = data.get("total_posts")
-                stats["platform_total_comments"] = data.get("total_comments")
+                if path.name == "posts.json":
+                    stats["posts"] = count
+                elif path.name == "posts_full.json":
+                    stats["posts_with_comments"] = count
+                    stats["comments"] = comment_total
+            else:
+                # Small files: load normally
+                with open(path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+
+                if isinstance(data, list):
+                    files[name]["count"] = len(data)
+                elif isinstance(data, dict):
+                    files[name]["count"] = None
+
+                if path.name == "submolts.json":
+                    stats["submolts"] = len(data) if isinstance(data, list) else 0
+                elif path.name == "agents.json":
+                    stats["agents"] = len(data)
+                elif path.name == "social_graph.json":
+                    stats["social_edges"] = len(data)
+                elif path.name == "reply_graph.json":
+                    stats["reply_edges"] = len(data)
+                elif path.name == "activity_timeline.json":
+                    stats["timeline_days"] = len(data)
+                elif path.name == "submolt_stats.json":
+                    stats["submolt_stats"] = len(data)
+                elif path.name == "platform_stats.json":
+                    stats["platform_total_posts"] = data.get("total_posts")
+                    stats["platform_total_comments"] = data.get("total_comments")
 
     return files, stats
 
@@ -95,7 +127,7 @@ def create_manifest(files, stats):
         "dataset": "Moltbook Social Interactions Dataset",
         "created_by": "Taksch Dube",
         "date": DATE_TAG,
-        "timestamp": TODAY.isoformat() + "Z",
+        "timestamp": TODAY.isoformat(),
         "license": "CC BY 4.0",
         "stats": stats,
         "files": {
@@ -119,7 +151,7 @@ def create_zip(files, manifest, zip_name):
         zf.writestr("manifest.json", json.dumps(manifest, indent=2))
 
         # Add data files preserving raw/derived prefixes
-        for name, info in files.items():
+        for name, info in tqdm(files.items(), desc="  Compressing", unit=" files"):
             zf.write(info["path"], name)
 
     zip_size = zip_path.stat().st_size

@@ -12,7 +12,7 @@ Usage:
 
 import json
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 RAW_DIR = Path("data/raw")
 DERIVED_DIR = Path("data/derived")
@@ -84,7 +84,7 @@ def format_number(n):
 
 def build_stats_table(stats):
     """Build the markdown stats table."""
-    now = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     lines = [
         START_MARKER,
