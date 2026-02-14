@@ -27,7 +27,7 @@ def main():
             token=HF_TOKEN,
             repo_type="dataset",
             exist_ok=True,
-            private=False # False ... Set to True if you want a private dataset
+            private=True # False ... Set to True if you want a private dataset
         )
         print(f"Repository {HF_REPO} ready")
     except Exception as e:
