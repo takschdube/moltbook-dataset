@@ -164,17 +164,12 @@ def fetch_submolts():
         return submolts, stats
     return [], {}
 
-def fetch_posts_incremental(since=None, platform_total_posts=None):
+def fetch_posts_incremental(since=None):
     """Fetch posts since last crawl. Returns (posts, new_ids, updated_ids)."""
     existing_posts = {p["id"]: p for p in (load_json("posts.json") or [])}
 
-    # Estimate how many new posts to expect
-    estimated_new = None
-    if platform_total_posts and len(existing_posts) > 0:
-        estimated_new = max(0, platform_total_posts - len(existing_posts))
-
     since_str = since.strftime("%Y-%m-%d %H:%M UTC") if since else "beginning"
-    logger.log(f"Fetching Posts (incremental, since {since_str}, ~{estimated_new or '?'} new expected)")
+    logger.log(f"Fetching Posts (incremental, since {since_str}, {len(existing_posts)} existing)")
 
     all_posts = []
     new_ids = set()
@@ -183,7 +178,9 @@ def fetch_posts_incremental(since=None, platform_total_posts=None):
     limit = 50
     fetched = 0
 
-    pbar = tqdm(total=estimated_new, desc="[Posts]", unit=" new", dynamic_ncols=True)
+    # No total estimate — platform total_posts includes inaccessible posts,
+    # so the difference vs existing is wildly inaccurate for incremental mode.
+    pbar = tqdm(desc="[Posts]", unit=" posts", dynamic_ncols=True)
 
     while True:
         resp = make_request("/posts", {"sort": "new", "limit": limit, "offset": offset})
@@ -213,8 +210,8 @@ def fetch_posts_incremental(since=None, platform_total_posts=None):
 
         all_posts.extend(new_posts)
         fetched += len(posts)
-        pbar.update(len(new_ids) + len(updated_ids) - pbar.n)
-        pbar.set_postfix(new=len(new_ids), updated=len(updated_ids), scanned=fetched)
+        pbar.update(len(posts))
+        pbar.set_postfix(new=len(new_ids), updated=len(updated_ids))
 
         # If no new posts in this batch and we have a since time, we can stop
         if since and len(new_posts) == 0:
@@ -429,10 +426,7 @@ def crawl(mode="incremental"):
 
     else:  # incremental
         last_crawl = get_last_crawl_time()
-        posts, new_ids, updated_ids = fetch_posts_incremental(
-            since=last_crawl,
-            platform_total_posts=platform_stats.get("total_posts"),
-        )
+        posts, new_ids, updated_ids = fetch_posts_incremental(since=last_crawl)
         save_json(posts, "posts.json", archive=True)
         post_ids_to_update = new_ids | updated_ids if (new_ids or updated_ids) else None
 
