@@ -21,6 +21,7 @@ from threading import Thread
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
 from tqdm import tqdm
+import ijson
 
 # Load environment variables
 load_dotenv()
@@ -163,19 +164,28 @@ def fetch_submolts():
         return submolts, stats
     return [], {}
 
-def fetch_posts_incremental(since=None):
+def fetch_posts_incremental(since=None, platform_total_posts=None):
     """Fetch posts since last crawl. Returns (posts, new_ids, updated_ids)."""
-    logger.log(f"Fetching Posts (incremental mode, since={since})")
+    existing_posts = {p["id"]: p for p in (load_json("posts.json") or [])}
+
+    # Estimate how many new posts to expect
+    estimated_new = None
+    if platform_total_posts and len(existing_posts) > 0:
+        estimated_new = max(0, platform_total_posts - len(existing_posts))
+
+    since_str = since.strftime("%Y-%m-%d %H:%M UTC") if since else "beginning"
+    logger.log(f"Fetching Posts (incremental, since {since_str}, ~{estimated_new or '?'} new expected)")
+
     all_posts = []
     new_ids = set()
     updated_ids = set()
-    existing_posts = {p["id"]: p for p in (load_json("posts.json") or [])}
     offset = 0
     limit = 50
     fetched = 0
 
+    pbar = tqdm(total=estimated_new, desc="[Posts]", unit=" new", dynamic_ncols=True)
+
     while True:
-        logger.log(f"Fetching posts {offset} to {offset + limit}...")
         resp = make_request("/posts", {"sort": "new", "limit": limit, "offset": offset})
 
         if not resp or not resp.get("success"):
@@ -195,8 +205,7 @@ def fetch_posts_incremental(since=None):
                 logger.stats["new_posts"] += 1
             elif since:
                 # Update existing post if it might have new comments
-                created = post["created_at"].replace("Z", "").replace("+00:00", "")
-                post_time = datetime.fromisoformat(created.split(".")[0])
+                post_time = datetime.fromisoformat(post["created_at"])
                 if post_time > since - timedelta(days=1):  # Update recent posts
                     new_posts.append(post)
                     updated_ids.add(post["id"])
@@ -204,7 +213,8 @@ def fetch_posts_incremental(since=None):
 
         all_posts.extend(new_posts)
         fetched += len(posts)
-        logger.log(f"Got {len(new_posts)} new/updated posts (total: {len(all_posts)})")
+        pbar.update(len(new_ids) + len(updated_ids) - pbar.n)
+        pbar.set_postfix(new=len(new_ids), updated=len(updated_ids), scanned=fetched)
 
         # If no new posts in this batch and we have a since time, we can stop
         if since and len(new_posts) == 0:
@@ -217,6 +227,8 @@ def fetch_posts_incremental(since=None):
         offset = resp.get("next_offset", offset + limit)
         time.sleep(REQUEST_DELAY)
 
+    pbar.close()
+
     # Merge with existing posts
     for post in all_posts:
         existing_posts[post["id"]] = post
@@ -225,7 +237,7 @@ def fetch_posts_incremental(since=None):
     if fetched % 500 < limit:
         save_json(list(existing_posts.values()), "posts.json")
 
-    logger.log(f"Total posts in dataset: {len(existing_posts)}")
+    logger.log(f"Incremental: {len(new_ids)} new + {len(updated_ids)} updated, {len(existing_posts)} total")
     return list(existing_posts.values()), new_ids, updated_ids
 
 def fetch_all_posts():
@@ -304,8 +316,13 @@ def fetch_all_comments(posts, post_ids_to_update=None):
     logger.log("Fetching Comments")
     logger.log("Loading posts_full.json...")
 
-    # Load existing full posts
-    existing_full = {p["id"]: p for p in (load_json("posts_full.json") or [])}
+    # Stream existing full posts with ijson to avoid MemoryError on large files
+    existing_full = {}
+    posts_full_path = RAW_DIR / "posts_full.json"
+    if posts_full_path.exists():
+        with open(posts_full_path, "rb") as f:
+            for item in tqdm(ijson.items(f, "item"), desc="[Loading]", unit=" posts"):
+                existing_full[item["id"]] = item
     logger.log(f"Loaded {len(existing_full)} existing posts with comments")
 
     # Determine which posts need comment updates
@@ -412,7 +429,10 @@ def crawl(mode="incremental"):
 
     else:  # incremental
         last_crawl = get_last_crawl_time()
-        posts, new_ids, updated_ids = fetch_posts_incremental(since=last_crawl)
+        posts, new_ids, updated_ids = fetch_posts_incremental(
+            since=last_crawl,
+            platform_total_posts=platform_stats.get("total_posts"),
+        )
         save_json(posts, "posts.json", archive=True)
         post_ids_to_update = new_ids | updated_ids if (new_ids or updated_ids) else None
 
