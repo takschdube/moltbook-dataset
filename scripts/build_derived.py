@@ -14,6 +14,7 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
+import ijson
 from tqdm import tqdm
 
 RAW_DIR = Path("data/raw")
@@ -244,7 +245,13 @@ def main():
         sys.exit(1)
 
     posts = load_json(posts_path)
-    posts_full = load_json(posts_full_path) if posts_full_path.exists() else []
+
+    # Stream posts_full.json with ijson to avoid MemoryError on large files
+    posts_full = []
+    if posts_full_path.exists():
+        with open(posts_full_path, "rb") as f:
+            for item in tqdm(ijson.items(f, "item"), desc="  Loading posts_full", unit=" posts"):
+                posts_full.append(item)
 
     print(f"Loaded {len(posts):,} posts, {len(posts_full):,} posts with comments")
     print()

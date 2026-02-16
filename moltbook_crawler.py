@@ -237,6 +237,49 @@ def fetch_posts_incremental(since=None):
     logger.log(f"Incremental: {len(new_ids)} new + {len(updated_ids)} updated, {len(existing_posts)} total")
     return list(existing_posts.values()), new_ids, updated_ids
 
+def fetch_hot_posts(existing_posts):
+    """Fetch hot and rising posts to catch actively discussed older posts.
+    Returns (hot_ids, new_posts) where hot_ids are IDs needing comment refresh
+    and new_posts are posts not yet in the dataset."""
+    hot_ids = set()
+    new_posts = []
+    max_pages = int(os.getenv("HOT_PAGES", "20"))
+
+    for sort_order in ["hot", "rising"]:
+        offset = 0
+        pages = 0
+        pbar = tqdm(desc=f"[{sort_order.title()}]", unit=" posts", dynamic_ncols=True)
+
+        while pages < max_pages:
+            resp = make_request("/posts", {"sort": sort_order, "limit": 50, "offset": offset})
+
+            if not resp or not resp.get("success"):
+                break
+
+            posts = resp.get("posts", [])
+            if not posts:
+                break
+
+            for post in posts:
+                hot_ids.add(post["id"])
+                if post["id"] not in existing_posts:
+                    new_posts.append(post)
+
+            pbar.update(len(posts))
+            pages += 1
+
+            if not resp.get("has_more"):
+                break
+
+            offset = resp.get("next_offset", offset + 50)
+            time.sleep(REQUEST_DELAY)
+
+        pbar.close()
+
+    already_known = len(hot_ids) - len(new_posts)
+    logger.log(f"Hot/Rising: {len(hot_ids)} active posts ({len(new_posts)} new, {already_known} existing to refresh)")
+    return hot_ids, new_posts
+
 def fetch_all_posts():
     """Fetch posts (newest first), stop when we reach known data."""
     logger.log("Fetching Posts (full mode, smart overlap detection)")
@@ -427,8 +470,18 @@ def crawl(mode="incremental"):
     else:  # incremental
         last_crawl = get_last_crawl_time()
         posts, new_ids, updated_ids = fetch_posts_incremental(since=last_crawl)
+
+        # Scan hot/rising posts to catch active older posts with new comments
+        existing_posts_dict = {p["id"]: p for p in posts}
+        hot_ids, hot_new_posts = fetch_hot_posts(existing_posts_dict)
+        for p in hot_new_posts:
+            if p["id"] not in existing_posts_dict:
+                posts.append(p)
+                existing_posts_dict[p["id"]] = p
+                new_ids.add(p["id"])
+
         save_json(posts, "posts.json", archive=True)
-        post_ids_to_update = new_ids | updated_ids if (new_ids or updated_ids) else None
+        post_ids_to_update = new_ids | updated_ids | hot_ids if (new_ids or updated_ids or hot_ids) else None
 
         posts_full = fetch_all_comments(posts, post_ids_to_update)
         save_json(posts_full, "posts_full.json", archive=True)
