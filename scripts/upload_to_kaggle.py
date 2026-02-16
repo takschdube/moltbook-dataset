@@ -84,7 +84,7 @@ def main():
     # Create version
     try:
         result = subprocess.run(
-            ["kaggle", "datasets", "version", "-p", ".", "-m", "Automated update from GitHub Actions"],
+            ["kaggle", "datasets", "version", "-p", ".", "-m", "Automated update from GitHub Actions", "--dir-mode", "zip"],
             capture_output=True,
             text=True,
             cwd=STAGING_DIR
@@ -95,17 +95,22 @@ def main():
             print(f"  View at: https://www.kaggle.com/datasets/{KAGGLE_USERNAME}/{DATASET_SLUG}")
         else:
             # If version fails, try creating new dataset
+            print(f"Version update failed: {result.stdout.strip()} {result.stderr.strip()}")
             print("Creating new dataset...")
             result = subprocess.run(
-                ["kaggle", "datasets", "create", "-p", "."],
+                ["kaggle", "datasets", "create", "-p", ".", "--dir-mode", "zip"],
                 capture_output=True,
                 text=True,
                 cwd=STAGING_DIR
             )
             if result.returncode == 0:
                 print("New dataset created on Kaggle")
+                print(f"  View at: https://www.kaggle.com/datasets/{KAGGLE_USERNAME}/{DATASET_SLUG}")
             else:
-                print(f"Error: {result.stderr}")
+                print(f"Error (stdout): {result.stdout.strip()}")
+                print(f"Error (stderr): {result.stderr.strip()}")
+        if result.stdout.strip():
+            print(f"  Output: {result.stdout.strip()}")
     except Exception as e:
         print(f"Failed to upload to Kaggle: {e}")
 
