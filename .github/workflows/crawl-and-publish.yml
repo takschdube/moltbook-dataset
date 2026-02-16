@@ -88,7 +88,8 @@ jobs:
         gh release create "$VERSION" \
           "$ZIP" \
           --title "Moltbook Dataset $DATE" \
-          --notes-file releases/RELEASE_NOTES.md
+          --notes-file releases/RELEASE_NOTES.md \
+          --latest
 
     - name: Upload to Hugging Face
       if: always() && hashFiles('data/raw/posts.json') != ''
