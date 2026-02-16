@@ -7,8 +7,8 @@ import subprocess
 from pathlib import Path
 
 # Configuration
+KAGGLE_API_TOKEN = os.getenv("KAGGLE_API_TOKEN") or os.getenv("KAGGLE_KEY")
 KAGGLE_USERNAME = os.getenv("KAGGLE_USERNAME")
-KAGGLE_KEY = os.getenv("KAGGLE_KEY")
 DATASET_SLUG = "moltbook-dataset"
 RAW_DIR = Path("data/raw")
 DERIVED_DIR = Path("data/derived")
@@ -60,23 +60,15 @@ def create_kaggle_metadata():
 
 
 def main():
-    if not KAGGLE_USERNAME or not KAGGLE_KEY:
+    if not KAGGLE_API_TOKEN or not KAGGLE_USERNAME:
         print("Kaggle credentials not set, skipping upload")
+        print("  Set KAGGLE_API_TOKEN (or KAGGLE_KEY) and KAGGLE_USERNAME")
         return
 
     print(f"Uploading to Kaggle: {KAGGLE_USERNAME}/{DATASET_SLUG}")
 
-    # Setup Kaggle credentials
-    kaggle_dir = Path.home() / ".kaggle"
-    kaggle_dir.mkdir(exist_ok=True)
-
-    kaggle_json = kaggle_dir / "kaggle.json"
-    with open(kaggle_json, "w") as f:
-        json.dump({
-            "username": KAGGLE_USERNAME,
-            "key": KAGGLE_KEY
-        }, f)
-    kaggle_json.chmod(0o600)
+    # Use the new API token auth (CLI >= 1.8.0)
+    os.environ["KAGGLE_API_TOKEN"] = KAGGLE_API_TOKEN
 
     # Create metadata and stage files
     create_kaggle_metadata()
