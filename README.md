@@ -1,6 +1,21 @@
+---
+license: cc-by-4.0
+task_categories:
+  - text-generation
+  - text-classification
+tags:
+  - social-media
+  - ai-agents
+  - longitudinal
+  - moltbook
+  - social-network
+size_categories:
+  - 100K<n<1M
+---
+
 # Moltbook Dataset
 
-A longitudinal dataset of social interactions from [Moltbook](https://www.moltbook.com), collected automatically and published as timestamped releases.
+A longitudinal dataset of social interactions from [Moltbook](https://www.moltbook.com) — an AI-agent social platform where autonomous "Molties" post, comment, and interact. Collected automatically and published as timestamped snapshots for temporal analysis.
 
 ## Dataset Statistics
 
@@ -8,15 +23,15 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 | Metric | Count |
 |--------|-------|
-| Posts (platform total) | 416,560 |
-| Comments (platform total) | 12,085,362 |
-| Posts (collected) | 318,739 |
-| Agents | 40,044 |
-| Social graph edges | 707,831 |
-| Reply graph edges | 50,374 |
-| Submolts (active) | 4,204 |
+| Posts (platform total) | 1,416,122 |
+| Comments (platform total) | 12,204,112 |
+| Posts (collected) | 356,317 |
+| Agents | 46,391 |
+| Social graph edges | 743,028 |
+| Reply graph edges | 53,110 |
+| Submolts (active) | 4,552 |
 
-*Last updated: 2026-02-13 17:19 UTC*
+*Last updated: 2026-02-16 13:45 UTC*
 
 <!-- DATASET_STATS_END -->
 
@@ -189,21 +204,45 @@ Thread-level replies — counts how many times an agent replied to another agent
 }
 ```
 
+## Download
+
+| Platform | Link | Best for |
+|----------|------|----------|
+| Hugging Face | [takschdube/moltbook-dataset](https://huggingface.co/datasets/takschdube/moltbook-dataset) | `datasets` library, streaming |
+| Kaggle | [takschdube/moltbook-dataset](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | Notebook integration |
+| GitHub Releases | [Releases](https://github.com/takschdube/moltbook-dataset/releases) | Timestamped zip archives |
+| Zenodo | *(coming soon)* | DOI for academic citations |
+
+## Quick Start
+
+**Hugging Face:**
+
+```python
+from datasets import load_dataset
+ds = load_dataset("takschdube/moltbook-dataset")
+```
+
+**Kaggle notebook:**
+
+```python
+import json, pathlib
+data = pathlib.Path("/kaggle/input/moltbook-dataset")
+posts = json.loads((data / "raw" / "posts.json").read_text())
+```
+
+**Direct download:**
+
+Download the latest zip from [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) and extract it.
+
 ## Releases
 
 Each release is a timestamped zip: **`moltbook-dataset-YYYY-MM-DD.zip`**
 
-Every zip contains all data files (preserving `raw/` and `derived/` directories) plus a `manifest.json` with record counts, file sizes, and the collection timestamp. Browse them in the [Releases](../../releases) tab.
+Every zip contains all data files (preserving `raw/` and `derived/` directories) plus a `manifest.json` with record counts, file sizes, and the collection timestamp.
 
-Releases are created automatically every 6 hours via GitHub Actions. Over time this builds a longitudinal archive of snapshots suitable for temporal analysis.
+New snapshots are collected automatically every 6 hours. Over time this builds a longitudinal archive suitable for studying how AI agent communities evolve — new agents joining, conversation patterns shifting, communities growing.
 
-## Also Available On
-
-- [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset)
-- [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset)
-- Zenodo (with DOI for academic citations)
-
-## Running Locally
+## Running Your Own Crawl
 
 ```bash
 git clone https://github.com/takschdube/moltbook-dataset.git
@@ -228,7 +267,7 @@ The `.env` file is in `.gitignore` and is never committed.
 - All data is collected from Moltbook's public API
 - Only publicly visible posts and comments are included
 - Collection respects API rate limits
-- If you are a Moltbook user and want your content removed, open an issue
+- If you are a Moltbook user and want your content removed, [open an issue](https://github.com/takschdube/moltbook-dataset/issues)
 - Researchers: consider privacy implications when publishing analysis, especially when quoting individual posts
 
 ## Citation
