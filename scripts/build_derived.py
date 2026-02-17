@@ -27,6 +27,13 @@ def load_json(path):
         return json.load(f)
 
 
+def stream_posts_full():
+    """Stream posts from posts_full.json using ijson to avoid loading all into memory."""
+    path = RAW_DIR / "posts_full.json"
+    with open(path, "rb") as f:
+        yield from ijson.items(f, "item")
+
+
 def save_json(data, path):
     """Save data as JSON."""
     with open(path, "w", encoding="utf-8") as f:
@@ -40,7 +47,7 @@ def save_json(data, path):
 # === BUILDERS ===
 
 
-def build_agents(posts_full):
+def build_agents(post_count):
     """Extract unique agents from posts and comments.
 
     Captures all available fields including description and following_count
@@ -86,7 +93,7 @@ def build_agents(posts_full):
             if comment.get("replies"):
                 process_comments(comment["replies"])
 
-    for post in tqdm(posts_full, desc="  Scanning"):
+    for post in tqdm(stream_posts_full(), desc="  Scanning", total=post_count):
         agent_id = add_agent(post.get("author"))
         if agent_id:
             agents[agent_id]["post_count"] += 1
@@ -95,7 +102,7 @@ def build_agents(posts_full):
     return list(agents.values())
 
 
-def build_social_graph(posts_full):
+def build_social_graph(post_count):
     """Build post-level social graph: commenter -> post author.
 
     Counts how many times each agent commented on another agent's posts.
@@ -110,7 +117,7 @@ def build_social_graph(posts_full):
             if comment.get("replies"):
                 process_comments(comment["replies"], post_author_name)
 
-    for post in tqdm(posts_full, desc="  Scanning"):
+    for post in tqdm(stream_posts_full(), desc="  Scanning", total=post_count):
         post_author = (post.get("author") or {}).get("name")
         process_comments(post.get("comments", []), post_author)
 
@@ -122,11 +129,12 @@ def build_social_graph(posts_full):
     return graph
 
 
-def build_reply_graph(posts_full):
+def build_reply_graph(post_count):
     """Build thread-level reply graph: replier -> parent comment author.
 
     Uses parent_id on comments to find the actual parent commenter,
     capturing who replied to whom within threads.
+    Streams posts_full.json twice (index pass + count pass).
     """
     # First pass: build a lookup of comment_id -> author_name
     comment_authors = {}
@@ -139,7 +147,7 @@ def build_reply_graph(posts_full):
             if comment.get("replies"):
                 index_comments(comment["replies"])
 
-    for post in tqdm(posts_full, desc="  Indexing"):
+    for post in tqdm(stream_posts_full(), desc="  Indexing", total=post_count):
         index_comments(post.get("comments", []))
 
     # Second pass: count reply edges
@@ -156,7 +164,7 @@ def build_reply_graph(posts_full):
             if comment.get("replies"):
                 count_replies(comment["replies"])
 
-    for post in tqdm(posts_full, desc="  Counting"):
+    for post in tqdm(stream_posts_full(), desc="  Counting", total=post_count):
         count_replies(post.get("comments", []))
 
     graph = []
@@ -246,46 +254,58 @@ def main():
 
     posts = load_json(posts_path)
 
-    # Stream posts_full.json with ijson to avoid MemoryError on large files
-    posts_full = []
+    # Count posts_full without loading into memory
+    post_count = 0
     if posts_full_path.exists():
         with open(posts_full_path, "rb") as f:
-            for item in tqdm(ijson.items(f, "item"), desc="  Loading posts_full", unit=" posts"):
-                posts_full.append(item)
+            for _ in tqdm(ijson.items(f, "item"), desc="  Counting posts_full", unit=" posts"):
+                post_count += 1
 
-    print(f"Loaded {len(posts):,} posts, {len(posts_full):,} posts with comments")
+    print(f"Loaded {len(posts):,} posts, {post_count:,} posts with comments")
     print()
 
-    # Build all derived datasets
+    # Build derived datasets one at a time, streaming posts_full.json per builder
+    counts = {}
+
     print("Agents:")
-    agents = build_agents(posts_full)
+    agents = build_agents(post_count)
     save_json(agents, DERIVED_DIR / "agents.json")
+    counts["agents"] = len(agents)
+    del agents
 
     print("Social graph (post-level):")
-    social_graph = build_social_graph(posts_full)
+    social_graph = build_social_graph(post_count)
     save_json(social_graph, DERIVED_DIR / "social_graph.json")
+    counts["social_edges"] = len(social_graph)
+    del social_graph
 
     print("Reply graph (thread-level):")
-    reply_graph = build_reply_graph(posts_full)
+    reply_graph = build_reply_graph(post_count)
     save_json(reply_graph, DERIVED_DIR / "reply_graph.json")
+    counts["reply_edges"] = len(reply_graph)
+    del reply_graph
 
     print("Activity timeline:")
     timeline = build_activity_timeline(posts)
     save_json(timeline, DERIVED_DIR / "activity_timeline.json")
+    counts["timeline_days"] = len(timeline)
+    del timeline
 
     print("Submolt stats:")
     submolt_stats = build_submolt_stats(posts)
     save_json(submolt_stats, DERIVED_DIR / "submolt_stats.json")
+    counts["submolts"] = len(submolt_stats)
+    del submolt_stats
 
     print()
     print("=" * 50)
     print("DERIVED BUILD COMPLETE")
     print("=" * 50)
-    print(f"  Agents:          {len(agents):,}")
-    print(f"  Social edges:    {len(social_graph):,}")
-    print(f"  Reply edges:     {len(reply_graph):,}")
-    print(f"  Timeline days:   {len(timeline):,}")
-    print(f"  Submolts:        {len(submolt_stats):,}")
+    print(f"  Agents:          {counts['agents']:,}")
+    print(f"  Social edges:    {counts['social_edges']:,}")
+    print(f"  Reply edges:     {counts['reply_edges']:,}")
+    print(f"  Timeline days:   {counts['timeline_days']:,}")
+    print(f"  Submolts:        {counts['submolts']:,}")
 
 
 if __name__ == "__main__":
