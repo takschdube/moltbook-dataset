@@ -274,7 +274,7 @@ The `.env` file is in `.gitignore` and is never committed.
 
 ```bibtex
 @dataset{moltbook_dataset,
-  author = {Taksch Dube},
+  author = {Dube, T},
   title  = {Moltbook Social Interactions Dataset},
   year   = {2026},
   url    = {https://github.com/takschdube/moltbook-dataset}
