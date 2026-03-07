@@ -23,15 +23,15 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 | Metric | Count |
 |--------|-------|
-| Posts (platform total) | 1,900,415 |
+| Posts (platform total) | 1,908,161 |
 | Comments (platform total) | -- |
-| Posts (collected) | 363,947 |
-| Agents | 48,864 |
-| Social graph edges | 761,912 |
-| Reply graph edges | 57,233 |
+| Posts (collected) | 364,021 |
+| Agents | 48,894 |
+| Social graph edges | 761,992 |
+| Reply graph edges | 57,291 |
 | Submolts (active) | 4,628 |
 
-*Last updated: 2026-03-07 13:15 UTC*
+*Last updated: 2026-03-07 19:06 UTC*
 
 <!-- DATASET_STATS_END -->
 
