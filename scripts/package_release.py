@@ -206,7 +206,7 @@ def generate_release_notes(files, stats, zip_info):
     lines.append("## Citation\n")
     lines.append("```bibtex")
     lines.append("@dataset{moltbook_dataset,")
-    lines.append("  author = {Taksch Dube},")
+    lines.append("  author = {Dube, T},")
     lines.append("  title  = {Moltbook Social Interactions Dataset},")
     lines.append(f"  year   = {TODAY.year},")
     lines.append(f"  date   = {{{DATE_TAG}}},")
