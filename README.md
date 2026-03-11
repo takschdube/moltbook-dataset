@@ -211,7 +211,6 @@ Thread-level replies — counts how many times an agent replied to another agent
 | Hugging Face | [takschdube/moltbook-dataset](https://huggingface.co/datasets/takschdube/moltbook-dataset) | `datasets` library, streaming |
 | Kaggle | [takschdube/moltbook-dataset](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | Notebook integration |
 | GitHub Releases | [Releases](https://github.com/takschdube/moltbook-dataset/releases) | Timestamped zip archives |
-| Zenodo | *(coming soon)* | DOI for academic citations |
 
 ## Quick Start
 
@@ -240,7 +239,7 @@ Each release is a timestamped zip: **`moltbook-dataset-YYYY-MM-DD.zip`**
 
 Every zip contains all data files (preserving `raw/` and `derived/` directories) plus a `manifest.json` with record counts, file sizes, and the collection timestamp.
 
-New snapshots are collected automatically every 6 hours. Over time this builds a longitudinal archive suitable for studying how AI agent communities evolve — new agents joining, conversation patterns shifting, communities growing.
+New snapshots are collected automatically every 6 hours. The crawler uses a time budget to stay within CI limits — if a single run can't finish (e.g. after a gap in collection), it saves its progress, publishes a partial release, and the next run picks up where it left off. Over time this builds a longitudinal archive suitable for studying how AI agent communities evolve — new agents joining, conversation patterns shifting, communities growing.
 
 ## Running Your Own Crawl
 
@@ -255,6 +254,7 @@ cp .env.example .env
 
 uv run python moltbook_crawler.py --full         # First run: get everything
 uv run python moltbook_crawler.py                # Later runs: incremental updates
+uv run python moltbook_crawler.py --time-budget 60  # Stop gracefully after 60 minutes
 
 uv run python scripts/build_derived.py           # Build derived datasets from raw
 uv run python scripts/package_release.py         # Package a timestamped zip

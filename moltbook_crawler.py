@@ -36,6 +36,21 @@ REQUEST_DELAY = float(os.getenv("REQUEST_DELAY", "0.5"))
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", "3"))
 COMMENT_WORKERS = int(os.getenv("COMMENT_WORKERS", "10"))
 
+# Time budget (0 = unlimited)
+TIME_BUDGET_MINUTES = 0
+_start_time = None
+
+def time_remaining():
+    """Return remaining seconds, or float('inf') if no budget set."""
+    if TIME_BUDGET_MINUTES <= 0 or _start_time is None:
+        return float('inf')
+    elapsed = (datetime.now(timezone.utc) - _start_time).total_seconds()
+    return (TIME_BUDGET_MINUTES * 60) - elapsed
+
+def has_time(reserve_minutes=10):
+    """Check if there's enough time left, keeping a reserve for saving/cleanup."""
+    return time_remaining() > reserve_minutes * 60
+
 # Directories
 RAW_DIR = Path(os.getenv("DATA_DIR", "data")) / "raw"
 ARCHIVE_DIR = Path(os.getenv("ARCHIVE_DIR", "archives"))
@@ -183,6 +198,10 @@ def fetch_posts_incremental(since=None):
     pbar = tqdm(desc="[Posts]", unit=" posts", dynamic_ncols=True)
 
     while True:
+        if not has_time(reserve_minutes=15):
+            logger.log("Time budget reached during post listing, stopping")
+            break
+
         resp = make_request("/posts", {"sort": "new", "limit": limit, "offset": offset})
 
         if not resp or not resp.get("success"):
@@ -246,11 +265,19 @@ def fetch_hot_posts(existing_posts):
     max_pages = int(os.getenv("HOT_PAGES", "20"))
 
     for sort_order in ["hot", "rising"]:
+        if not has_time(reserve_minutes=15):
+            logger.log("Time budget reached, skipping remaining hot/rising scan")
+            break
+
         offset = 0
         pages = 0
         pbar = tqdm(desc=f"[{sort_order.title()}]", unit=" posts", dynamic_ncols=True)
 
         while pages < max_pages:
+            if not has_time(reserve_minutes=15):
+                logger.log("Time budget reached during hot/rising scan, stopping")
+                break
+
             resp = make_request("/posts", {"sort": sort_order, "limit": 50, "offset": offset})
 
             if not resp or not resp.get("success"):
@@ -292,6 +319,10 @@ def fetch_all_posts():
 
     pbar = tqdm(desc="[Posts]", unit=" posts", dynamic_ncols=True)
     while True:
+        if not has_time(reserve_minutes=15):
+            logger.log("Time budget reached during post listing, stopping")
+            break
+
         resp = make_request("/posts", {"sort": "new", "limit": limit, "offset": offset})
 
         if not resp or not resp.get("success"):
@@ -382,19 +413,35 @@ def fetch_all_comments(posts, post_ids_to_update=None):
         logger.log("No new posts to fetch comments for")
     else:
         completed = 0
+        timed_out = False
         pbar = tqdm(total=total, desc="[Comments]", unit=" posts", dynamic_ncols=True)
         with ThreadPoolExecutor(max_workers=COMMENT_WORKERS) as executor:
-            futures = {}
-            for post in posts_to_fetch:
-                is_refresh = post["id"] in existing_full
-                if is_refresh:
-                    fut = executor.submit(fetch_comments_only, post["id"])
-                else:
-                    fut = executor.submit(fetch_post_with_comments, post["id"])
-                futures[fut] = (post, is_refresh)
+            # Submit work in batches to allow early exit on time budget
+            batch_size = 100
+            future_to_meta = {}
+            post_iter = iter(posts_to_fetch)
+            submitted = 0
 
-            for future in as_completed(futures):
-                post, is_refresh = futures[future]
+            def submit_batch():
+                nonlocal submitted
+                count = 0
+                for post in post_iter:
+                    is_refresh = post["id"] in existing_full
+                    if is_refresh:
+                        fut = executor.submit(fetch_comments_only, post["id"])
+                    else:
+                        fut = executor.submit(fetch_post_with_comments, post["id"])
+                    future_to_meta[fut] = (post, is_refresh)
+                    submitted += 1
+                    count += 1
+                    if count >= batch_size:
+                        break
+                return count > 0
+
+            submit_batch()
+
+            for future in as_completed(future_to_meta):
+                post, is_refresh = future_to_meta[future]
                 if is_refresh:
                     comments = future.result()
                     if comments is not None:
@@ -411,7 +458,39 @@ def fetch_all_comments(posts, post_ids_to_update=None):
                 # Checkpoint every 1000 posts
                 if completed % 1000 == 0:
                     save_json(list(existing_full.values()), "posts_full.json")
+
+                # Submit more work if we have time
+                if completed >= submitted:
+                    if not has_time(reserve_minutes=10):
+                        logger.log(f"Time budget reached after {completed}/{total} comment fetches")
+                        timed_out = True
+                        break
+                    submit_batch()
+                elif completed % batch_size == 0 and not has_time(reserve_minutes=10):
+                    # Stop submitting new batches, but let in-flight work finish
+                    logger.log(f"Time budget reached after {completed}/{total} comment fetches, draining in-flight requests")
+                    timed_out = True
+                    # Wait for remaining in-flight futures
+                    for remaining_future in as_completed(
+                        [f for f in future_to_meta if not f.done()]
+                    ):
+                        rpost, ris_refresh = future_to_meta[remaining_future]
+                        if ris_refresh:
+                            rcomments = remaining_future.result()
+                            if rcomments is not None:
+                                existing_full[rpost["id"]]["comments"] = rcomments
+                        else:
+                            rfull_post, rcomments = remaining_future.result()
+                            if rfull_post:
+                                rfull_post["comments"] = rcomments
+                                existing_full[rpost["id"]] = rfull_post
+                        completed += 1
+                        pbar.update(1)
+                    break
+
         pbar.close()
+        if timed_out:
+            save_json(list(existing_full.values()), "posts_full.json")
 
     # Include posts without comments as empty
     for post in posts:
@@ -425,9 +504,14 @@ def fetch_all_comments(posts, post_ids_to_update=None):
 
 def crawl(mode="incremental"):
     """Run crawler in specified mode."""
+    global _start_time
+    _start_time = datetime.now(timezone.utc)
+
     logger.log("=" * 50)
     logger.log(f"MOLTBOOK DATA CRAWLER - {mode.upper()} MODE")
-    logger.log(f"Started at: {datetime.now(timezone.utc).isoformat()}")
+    if TIME_BUDGET_MINUTES > 0:
+        logger.log(f"Time budget: {TIME_BUDGET_MINUTES} minutes")
+    logger.log(f"Started at: {_start_time.isoformat()}")
     logger.log("=" * 50)
 
     # Fetch submolts (always full, single request)
@@ -516,8 +600,12 @@ if __name__ == "__main__":
     parser.add_argument("--mode", choices=["full", "incremental"], default="incremental",
                        help="Crawl mode: full (all data) or incremental (only new)")
     parser.add_argument("--full", action="store_true", help="Shorthand for --mode=full")
+    parser.add_argument("--time-budget", type=int, default=0,
+                       help="Time budget in minutes (0 = unlimited). Crawler will stop "
+                            "gracefully before this limit and save progress.")
 
     args = parser.parse_args()
     mode = "full" if args.full else args.mode
+    TIME_BUDGET_MINUTES = args.time_budget
 
     crawl(mode)

@@ -69,15 +69,18 @@ jobs:
         MOLTBOOK_BASE_URL: https://www.moltbook.com/api/v1
       run: |
         MODE="${{ github.event.inputs.mode || 'incremental' }}"
-        uv run python moltbook_crawler.py --mode "$MODE"
+        uv run python moltbook_crawler.py --mode "$MODE" --time-budget 280
 
     - name: Build derived datasets
+      if: always() && hashFiles('data/raw/posts.json') != ''
       run: uv run python scripts/build_derived.py
 
     - name: Package release
+      if: always() && hashFiles('data/raw/posts.json') != ''
       run: uv run python scripts/package_release.py
 
     - name: Create GitHub Release
+      if: always() && hashFiles('releases/moltbook-dataset-*.zip') != ''
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
@@ -106,19 +109,12 @@ jobs:
       run: uv run python scripts/upload_to_kaggle.py
       continue-on-error: true
 
-    - name: Upload to Zenodo
-      if: always() && hashFiles('data/raw/posts.json') != ''
-      env:
-        ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
-        ZENODO_DEPOSITION_ID: ${{ secrets.ZENODO_DEPOSITION_ID }}
-        ZENODO_AUTO_PUBLISH: ${{ secrets.ZENODO_AUTO_PUBLISH }}
-      run: uv run python scripts/upload_to_zenodo.py
-      continue-on-error: true
-
     - name: Update README with latest stats
+      if: always() && hashFiles('data/raw/posts.json') != ''
       run: uv run python scripts/update_readme.py
 
     - name: Commit updated README
+      if: always() && hashFiles('data/raw/posts.json') != ''
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
