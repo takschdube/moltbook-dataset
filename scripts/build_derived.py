@@ -85,8 +85,12 @@ def build_agents(post_count):
                 existing["follower_count"] = author["follower_count"]
         return agent_id
 
+    total_comments = 0
+
     def process_comments(comments):
+        nonlocal total_comments
         for comment in comments:
+            total_comments += 1
             agent_id = add_agent(comment.get("author"))
             if agent_id:
                 agents[agent_id]["comment_count"] += 1
@@ -99,7 +103,7 @@ def build_agents(post_count):
             agents[agent_id]["post_count"] += 1
         process_comments(post.get("comments", []))
 
-    return list(agents.values())
+    return list(agents.values()), total_comments
 
 
 def build_social_graph(post_count):
@@ -268,9 +272,10 @@ def main():
     counts = {}
 
     print("Agents:")
-    agents = build_agents(post_count)
+    agents, total_comments = build_agents(post_count)
     save_json(agents, DERIVED_DIR / "agents.json")
     counts["agents"] = len(agents)
+    counts["comments_collected"] = total_comments
     del agents
 
     print("Social graph (post-level):")
@@ -297,11 +302,25 @@ def main():
     counts["submolts"] = len(submolt_stats)
     del submolt_stats
 
+    # Save summary for update_readme.py to read
+    summary = {
+        "posts": len(posts),
+        "posts_full": post_count,
+        "comments_collected": counts["comments_collected"],
+        "agents": counts["agents"],
+        "social_edges": counts["social_edges"],
+        "reply_edges": counts["reply_edges"],
+        "timeline_days": counts["timeline_days"],
+        "submolts_active": counts["submolts"],
+    }
+    save_json(summary, DERIVED_DIR / "build_summary.json")
+
     print()
     print("=" * 50)
     print("DERIVED BUILD COMPLETE")
     print("=" * 50)
     print(f"  Agents:          {counts['agents']:,}")
+    print(f"  Comments:        {counts['comments_collected']:,}")
     print(f"  Social edges:    {counts['social_edges']:,}")
     print(f"  Reply edges:     {counts['reply_edges']:,}")
     print(f"  Timeline days:   {counts['timeline_days']:,}")

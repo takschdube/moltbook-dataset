@@ -38,34 +38,39 @@ def gather_stats():
     platform = load_json(RAW_DIR / "platform_stats.json")
     if platform:
         stats["total_posts"] = platform.get("total_posts")
-        stats["total_comments"] = platform.get("total_comments")
         stats["submolt_count"] = platform.get("submolt_count")
 
-    # Post count from raw
+    # Post count and API-reported comment total from raw
     posts = load_json(RAW_DIR / "posts.json")
     if posts and isinstance(posts, list):
         stats["posts_collected"] = len(posts)
+        stats["total_comments"] = sum(p.get("comment_count", 0) for p in posts)
 
-    # Derived stats
-    agents = load_json(DERIVED_DIR / "agents.json")
-    if agents and isinstance(agents, list):
-        stats["agents"] = len(agents)
+    # Derived stats from build summary (includes actual comment count)
+    build_summary = load_json(DERIVED_DIR / "build_summary.json")
+    if build_summary and isinstance(build_summary, dict):
+        stats["comments_collected"] = build_summary.get("comments_collected")
+        stats["agents"] = build_summary.get("agents")
+        stats["social_edges"] = build_summary.get("social_edges")
+        stats["reply_edges"] = build_summary.get("reply_edges")
+        stats["submolts_active"] = build_summary.get("submolts_active")
+    else:
+        # Fallback: read individual derived files
+        agents = load_json(DERIVED_DIR / "agents.json")
+        if agents and isinstance(agents, list):
+            stats["agents"] = len(agents)
 
-    social_graph = load_json(DERIVED_DIR / "social_graph.json")
-    if social_graph and isinstance(social_graph, list):
-        stats["social_edges"] = len(social_graph)
+        social_graph = load_json(DERIVED_DIR / "social_graph.json")
+        if social_graph and isinstance(social_graph, list):
+            stats["social_edges"] = len(social_graph)
 
-    reply_graph = load_json(DERIVED_DIR / "reply_graph.json")
-    if reply_graph and isinstance(reply_graph, list):
-        stats["reply_edges"] = len(reply_graph)
+        reply_graph = load_json(DERIVED_DIR / "reply_graph.json")
+        if reply_graph and isinstance(reply_graph, list):
+            stats["reply_edges"] = len(reply_graph)
 
-    timeline = load_json(DERIVED_DIR / "activity_timeline.json")
-    if timeline and isinstance(timeline, list):
-        stats["timeline_days"] = len(timeline)
-
-    submolt_stats = load_json(DERIVED_DIR / "submolt_stats.json")
-    if submolt_stats and isinstance(submolt_stats, list):
-        stats["submolts_active"] = len(submolt_stats)
+        submolt_stats = load_json(DERIVED_DIR / "submolt_stats.json")
+        if submolt_stats and isinstance(submolt_stats, list):
+            stats["submolts_active"] = len(submolt_stats)
 
     # Crawl metadata
     metadata = load_json(RAW_DIR / "metadata.json")
@@ -94,6 +99,7 @@ def build_stats_table(stats):
         f"| Posts (platform total) | {format_number(stats.get('total_posts'))} |",
         f"| Comments (platform total) | {format_number(stats.get('total_comments'))} |",
         f"| Posts (collected) | {format_number(stats.get('posts_collected'))} |",
+        f"| Comments (collected) | {format_number(stats.get('comments_collected'))} |",
         f"| Agents | {format_number(stats.get('agents'))} |",
         f"| Social graph edges | {format_number(stats.get('social_edges'))} |",
         f"| Reply graph edges | {format_number(stats.get('reply_edges'))} |",
