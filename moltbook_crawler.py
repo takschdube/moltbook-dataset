@@ -186,15 +186,13 @@ def fetch_posts_incremental(since=None):
     since_str = since.strftime("%Y-%m-%d %H:%M UTC") if since else "beginning"
     logger.log(f"Fetching Posts (incremental, since {since_str}, {len(existing_posts)} existing)")
 
-    all_posts = []
     new_ids = set()
     updated_ids = set()
     offset = 0
     limit = 50
     fetched = 0
+    consecutive_known_batches = 0
 
-    # No total estimate — platform total_posts includes inaccessible posts,
-    # so the difference vs existing is wildly inaccurate for incremental mode.
     pbar = tqdm(desc="[Posts]", unit=" posts", dynamic_ncols=True)
 
     while True:
@@ -212,30 +210,40 @@ def fetch_posts_incremental(since=None):
         if not posts:
             break
 
-        # Check if we've reached posts we already have
-        new_posts = []
+        new_in_batch = 0
         for post in posts:
             if post["id"] not in existing_posts:
-                new_posts.append(post)
+                existing_posts[post["id"]] = post
                 new_ids.add(post["id"])
                 logger.stats["new_posts"] += 1
-            elif since:
-                # Update existing post if it might have new comments
-                post_time = datetime.fromisoformat(post["created_at"])
-                if post_time > since - timedelta(days=1):  # Update recent posts
-                    new_posts.append(post)
-                    updated_ids.add(post["id"])
-                    logger.stats["updated_posts"] += 1
+                new_in_batch += 1
+            else:
+                # Always update with latest data from API
+                existing_posts[post["id"]] = post
+                # Track posts that may have new comments since last crawl
+                if since:
+                    post_time = datetime.fromisoformat(post["created_at"])
+                    if post_time > since - timedelta(days=1):
+                        updated_ids.add(post["id"])
+                        logger.stats["updated_posts"] += 1
 
-        all_posts.extend(new_posts)
         fetched += len(posts)
         pbar.update(len(posts))
-        pbar.set_postfix(new=len(new_ids), updated=len(updated_ids))
+        pbar.set_postfix(new=len(new_ids), updated=len(updated_ids), total=len(existing_posts))
 
-        # If no new posts in this batch and we have a since time, we can stop
-        if since and len(new_posts) == 0:
-            logger.log("Reached posts from last crawl, stopping")
-            break
+        # Stop after consecutive batches with no genuinely NEW posts
+        # (updated posts don't reset the counter — they're just refreshes)
+        if new_in_batch == 0:
+            consecutive_known_batches += 1
+            if consecutive_known_batches >= 5:
+                logger.log("5 consecutive batches with no new posts, stopping")
+                break
+        else:
+            consecutive_known_batches = 0
+
+        # Checkpoint every 1000 posts fetched
+        if fetched % 1000 < limit:
+            save_json(list(existing_posts.values()), "posts.json")
 
         if not resp.get("has_more"):
             break
@@ -244,14 +252,6 @@ def fetch_posts_incremental(since=None):
         time.sleep(REQUEST_DELAY)
 
     pbar.close()
-
-    # Merge with existing posts
-    for post in all_posts:
-        existing_posts[post["id"]] = post
-
-    # Checkpoint after incremental listing
-    if fetched % 500 < limit:
-        save_json(list(existing_posts.values()), "posts.json")
 
     logger.log(f"Incremental: {len(new_ids)} new + {len(updated_ids)} updated, {len(existing_posts)} total")
     return list(existing_posts.values()), new_ids, updated_ids
