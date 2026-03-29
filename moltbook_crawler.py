@@ -164,20 +164,41 @@ def save_metadata(crawl_info):
 # === CRAWLERS ===
 
 def fetch_submolts():
-    """Fetch all submolts."""
+    """Fetch all submolts with pagination."""
     logger.log("Fetching Submolts")
-    resp = make_request("/submolts")
-    if resp and resp.get("success"):
+    all_submolts = []
+    stats = {}
+    offset = 0
+    limit = 50
+
+    while True:
+        resp = make_request("/submolts", {"limit": limit, "offset": offset})
+        if not resp or not resp.get("success"):
+            break
+
         submolts = resp.get("submolts", [])
-        logger.log(f"Found {len(submolts)} submolts")
-        stats = {
-            "total_posts": resp.get("total_posts"),
-            "total_comments": resp.get("total_comments"),
-            "submolt_count": resp.get("count"),
-            "crawled_at": datetime.now(timezone.utc).isoformat()
-        }
-        return submolts, stats
-    return [], {}
+        if not submolts:
+            break
+
+        all_submolts.extend(submolts)
+
+        # Capture platform stats from first response
+        if offset == 0:
+            stats = {
+                "total_posts": resp.get("total_posts"),
+                "total_comments": resp.get("total_comments"),
+                "crawled_at": datetime.now(timezone.utc).isoformat()
+            }
+
+        if not resp.get("has_more"):
+            break
+
+        offset = resp.get("next_offset", offset + limit)
+        time.sleep(REQUEST_DELAY)
+
+    stats["submolt_count"] = len(all_submolts)
+    logger.log(f"Found {len(all_submolts)} submolts")
+    return all_submolts, stats
 
 def fetch_posts_incremental(since=None):
     """Fetch posts since last crawl. Returns (posts, new_ids, updated_ids)."""
@@ -375,11 +396,31 @@ def fetch_post_with_comments(post_id):
     return None, []
 
 def fetch_comments_only(post_id):
-    """Fetch just comments for a post (lighter than re-fetching full post)."""
-    resp = make_request(f"/posts/{post_id}/comments")
-    if resp and resp.get("success"):
-        return resp.get("comments", [])
-    return None
+    """Fetch all comments for a post with pagination."""
+    all_comments = []
+    offset = 0
+    limit = 50
+
+    while True:
+        resp = make_request(f"/posts/{post_id}/comments", {"limit": limit, "offset": offset})
+        if not resp or not resp.get("success"):
+            if not all_comments:
+                return None
+            break
+
+        comments = resp.get("comments", [])
+        if not comments:
+            break
+
+        all_comments.extend(comments)
+
+        if not resp.get("has_more"):
+            break
+
+        offset = resp.get("next_offset", offset + limit)
+        time.sleep(REQUEST_DELAY)
+
+    return all_comments
 
 def fetch_all_comments(posts, post_ids_to_update=None):
     """Fetch comments for posts using parallel requests. Saves every 1000 posts.
@@ -514,7 +555,7 @@ def crawl(mode="incremental"):
     logger.log(f"Started at: {_start_time.isoformat()}")
     logger.log("=" * 50)
 
-    # Fetch submolts (always full, single request)
+    # Fetch submolts (always full, paginated)
     submolts, platform_stats = fetch_submolts()
     save_json(submolts, "submolts.json")
     save_json(platform_stats, "platform_stats.json")
