@@ -49,8 +49,15 @@ jobs:
         LATEST_TAG=$(gh release list --limit 1 --json tagName -q '.[0].tagName' 2>/dev/null || echo "")
         if [ -n "$LATEST_TAG" ]; then
           echo "Downloading data from release $LATEST_TAG"
-          # Prefer SQLite DB (small download, used directly by crawler)
-          gh release download "$LATEST_TAG" -p "moltbook.db" -D data/raw/ 2>/dev/null || true
+          # Prefer SQLite DB (compressed with zstd to stay under 2GB asset limit)
+          gh release download "$LATEST_TAG" -p "moltbook.db.zst" -D /tmp/ 2>/dev/null || true
+          if [ -f "/tmp/moltbook.db.zst" ]; then
+            zstd -d /tmp/moltbook.db.zst -o data/raw/moltbook.db
+            echo "Restored database from release (decompressed)"
+          else
+            # Try uncompressed DB from older releases
+            gh release download "$LATEST_TAG" -p "moltbook.db" -D data/raw/ 2>/dev/null || true
+          fi
           if [ -f "data/raw/moltbook.db" ]; then
             echo "Restored database from release"
           else
@@ -96,7 +103,8 @@ jobs:
 
         ASSETS="$ZIP"
         if [ -f "data/raw/moltbook.db" ]; then
-          ASSETS="$ASSETS data/raw/moltbook.db"
+          zstd -19 data/raw/moltbook.db -o /tmp/moltbook.db.zst
+          ASSETS="$ASSETS /tmp/moltbook.db.zst"
         fi
 
         gh release create "$VERSION" \
