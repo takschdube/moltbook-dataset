@@ -12,6 +12,7 @@ Usage:
 
 import requests
 import json
+import sqlite3
 import time
 import os
 import argparse
@@ -53,6 +54,7 @@ def has_time(reserve_minutes=10):
 
 # Directories
 RAW_DIR = Path(os.getenv("DATA_DIR", "data")) / "raw"
+DB_PATH = RAW_DIR / "moltbook.db"
 ARCHIVE_DIR = Path(os.getenv("ARCHIVE_DIR", "archives"))
 LOGS_DIR = Path("logs")
 
@@ -161,6 +163,121 @@ def save_metadata(crawl_info):
     metadata["crawl_history"].append(crawl_info)
     save_json(metadata, "metadata.json")
 
+# === DATABASE ===
+
+def init_db():
+    """Initialize SQLite database with required tables."""
+    db = sqlite3.connect(str(DB_PATH))
+    db.execute("PRAGMA journal_mode=WAL")
+    db.execute("PRAGMA synchronous=NORMAL")
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS posts (
+            id TEXT PRIMARY KEY,
+            data TEXT NOT NULL
+        )
+    """)
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS posts_full (
+            id TEXT PRIMARY KEY,
+            data TEXT NOT NULL
+        )
+    """)
+    db.commit()
+    return db
+
+def migrate_json_to_db(db):
+    """One-time migration: import existing JSON files into SQLite."""
+    posts_path = RAW_DIR / "posts.json"
+    posts_full_path = RAW_DIR / "posts_full.json"
+
+    # Import posts.json if DB posts table is empty
+    if posts_path.exists() and db.execute("SELECT COUNT(*) FROM posts").fetchone()[0] == 0:
+        logger.log("Migrating posts.json to database...")
+        with open(posts_path, "r", encoding="utf-8") as f:
+            posts = json.load(f)
+        for post in tqdm(posts, desc="[Importing posts]", unit=" posts"):
+            db.execute(
+                "INSERT OR IGNORE INTO posts (id, data) VALUES (?, ?)",
+                (post["id"], json.dumps(post, ensure_ascii=False)),
+            )
+        db.commit()
+        logger.log(f"Imported {len(posts)} posts")
+        del posts
+
+    # Import posts_full.json streaming with ijson (constant memory)
+    if posts_full_path.exists() and db.execute("SELECT COUNT(*) FROM posts_full").fetchone()[0] == 0:
+        logger.log("Migrating posts_full.json to database (streaming)...")
+        imported = 0
+        with open(posts_full_path, "rb") as f:
+            for item in tqdm(ijson.items(f, "item"), desc="[Importing posts_full]", unit=" posts"):
+                db.execute(
+                    "INSERT OR IGNORE INTO posts_full (id, data) VALUES (?, ?)",
+                    (item["id"], json.dumps(item, ensure_ascii=False)),
+                )
+                imported += 1
+                if imported % 5000 == 0:
+                    db.commit()
+        db.commit()
+        logger.log(f"Imported {imported} full posts")
+
+def export_posts_json(db):
+    """Stream posts table to data/raw/posts.json (constant memory)."""
+    filepath = RAW_DIR / "posts.json"
+    tmp_path = str(filepath) + ".tmp"
+    count = 0
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        f.write("[\n")
+        first = True
+        for (data_str,) in db.execute("SELECT data FROM posts"):
+            if not first:
+                f.write(",\n")
+            f.write(data_str)
+            first = False
+            count += 1
+        f.write("\n]")
+    os.replace(tmp_path, str(filepath))
+    size = filepath.stat().st_size / 1024 / 1024
+    logger.log(f"Exported {filepath} ({size:.2f} MB, {count} posts)")
+    return count
+
+def export_posts_full_json(db):
+    """Stream posts_full table to data/raw/posts_full.json (constant memory)."""
+    filepath = RAW_DIR / "posts_full.json"
+    tmp_path = str(filepath) + ".tmp"
+    count = 0
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        f.write("[\n")
+        first = True
+        for (data_str,) in db.execute("SELECT data FROM posts_full"):
+            if not first:
+                f.write(",\n")
+            f.write(data_str)
+            first = False
+            count += 1
+        f.write("\n]")
+    os.replace(tmp_path, str(filepath))
+    size = filepath.stat().st_size / 1024 / 1024
+    logger.log(f"Exported {filepath} ({size:.2f} MB, {count} posts)")
+    return count
+
+def ensure_all_posts_in_full(db):
+    """Add empty-comments entries in posts_full for any post not yet there."""
+    missing = db.execute("""
+        SELECT p.id, p.data FROM posts p
+        LEFT JOIN posts_full pf ON p.id = pf.id
+        WHERE pf.id IS NULL
+    """).fetchall()
+    for post_id, data_str in missing:
+        post = json.loads(data_str)
+        post["comments"] = []
+        db.execute(
+            "INSERT INTO posts_full (id, data) VALUES (?, ?)",
+            (post_id, json.dumps(post, ensure_ascii=False)),
+        )
+    if missing:
+        db.commit()
+        logger.log(f"Added {len(missing)} posts with empty comments to posts_full")
+
 # === CRAWLERS ===
 
 def fetch_submolts():
@@ -200,12 +317,12 @@ def fetch_submolts():
     logger.log(f"Found {len(all_submolts)} submolts")
     return all_submolts, stats
 
-def fetch_posts_incremental(since=None):
-    """Fetch posts since last crawl. Returns (posts, new_ids, updated_ids)."""
-    existing_posts = {p["id"]: p for p in (load_json("posts.json") or [])}
+def fetch_posts_incremental(db, since=None):
+    """Fetch posts since last crawl. Returns (new_ids, updated_ids)."""
+    existing_ids = {row[0] for row in db.execute("SELECT id FROM posts")}
 
     since_str = since.strftime("%Y-%m-%d %H:%M UTC") if since else "beginning"
-    logger.log(f"Fetching Posts (incremental, since {since_str}, {len(existing_posts)} existing)")
+    logger.log(f"Fetching Posts (incremental, since {since_str}, {len(existing_ids)} existing)")
 
     new_ids = set()
     updated_ids = set()
@@ -233,14 +350,12 @@ def fetch_posts_incremental(since=None):
 
         new_in_batch = 0
         for post in posts:
-            if post["id"] not in existing_posts:
-                existing_posts[post["id"]] = post
+            if post["id"] not in existing_ids:
                 new_ids.add(post["id"])
+                existing_ids.add(post["id"])
                 logger.stats["new_posts"] += 1
                 new_in_batch += 1
             else:
-                # Always update with latest data from API
-                existing_posts[post["id"]] = post
                 # Track posts that may have new comments since last crawl
                 if since:
                     post_time = datetime.fromisoformat(post["created_at"])
@@ -248,12 +363,16 @@ def fetch_posts_incremental(since=None):
                         updated_ids.add(post["id"])
                         logger.stats["updated_posts"] += 1
 
+            db.execute(
+                "INSERT OR REPLACE INTO posts (id, data) VALUES (?, ?)",
+                (post["id"], json.dumps(post, ensure_ascii=False)),
+            )
+
         fetched += len(posts)
         pbar.update(len(posts))
-        pbar.set_postfix(new=len(new_ids), updated=len(updated_ids), total=len(existing_posts))
+        pbar.set_postfix(new=len(new_ids), updated=len(updated_ids), total=len(existing_ids))
 
         # Stop after consecutive batches with no genuinely NEW posts
-        # (updated posts don't reset the counter — they're just refreshes)
         if new_in_batch == 0:
             consecutive_known_batches += 1
             if consecutive_known_batches >= 5:
@@ -264,7 +383,7 @@ def fetch_posts_incremental(since=None):
 
         # Checkpoint every 1000 posts fetched
         if fetched % 1000 < limit:
-            save_json(list(existing_posts.values()), "posts.json")
+            db.commit()
 
         if not resp.get("has_more"):
             break
@@ -273,11 +392,13 @@ def fetch_posts_incremental(since=None):
         time.sleep(REQUEST_DELAY)
 
     pbar.close()
+    db.commit()
 
-    logger.log(f"Incremental: {len(new_ids)} new + {len(updated_ids)} updated, {len(existing_posts)} total")
-    return list(existing_posts.values()), new_ids, updated_ids
+    total = db.execute("SELECT COUNT(*) FROM posts").fetchone()[0]
+    logger.log(f"Incremental: {len(new_ids)} new + {len(updated_ids)} updated, {total} total")
+    return new_ids, updated_ids
 
-def fetch_hot_posts(existing_posts):
+def fetch_hot_posts(existing_post_ids):
     """Fetch hot and rising posts to catch actively discussed older posts.
     Returns (hot_ids, new_posts) where hot_ids are IDs needing comment refresh
     and new_posts are posts not yet in the dataset."""
@@ -310,7 +431,7 @@ def fetch_hot_posts(existing_posts):
 
             for post in posts:
                 hot_ids.add(post["id"])
-                if post["id"] not in existing_posts:
+                if post["id"] not in existing_post_ids:
                     new_posts.append(post)
 
             pbar.update(len(posts))
@@ -328,11 +449,11 @@ def fetch_hot_posts(existing_posts):
     logger.log(f"Hot/Rising: {len(hot_ids)} active posts ({len(new_posts)} new, {already_known} existing to refresh)")
     return hot_ids, new_posts
 
-def fetch_all_posts():
-    """Fetch posts (newest first), stop when we reach known data."""
+def fetch_all_posts(db):
+    """Fetch posts (newest first), stop when we reach known data. Returns total count."""
     logger.log("Fetching Posts (full mode, smart overlap detection)")
-    existing_posts = {p["id"]: p for p in (load_json("posts.json") or [])}
-    logger.log(f"Loaded {len(existing_posts)} existing posts")
+    existing_ids = {row[0] for row in db.execute("SELECT id FROM posts")}
+    logger.log(f"Loaded {len(existing_ids)} existing post IDs")
     offset = 0
     limit = 50
     fetched = 0
@@ -356,15 +477,19 @@ def fetch_all_posts():
 
         new_in_batch = 0
         for post in posts:
-            if post["id"] not in existing_posts:
-                existing_posts[post["id"]] = post
+            if post["id"] not in existing_ids:
+                existing_ids.add(post["id"])
                 logger.stats["new_posts"] += 1
                 new_in_batch += 1
-            else:
-                existing_posts[post["id"]] = post
+
+            db.execute(
+                "INSERT OR REPLACE INTO posts (id, data) VALUES (?, ?)",
+                (post["id"], json.dumps(post, ensure_ascii=False)),
+            )
+
         fetched += len(posts)
         pbar.update(len(posts))
-        pbar.set_postfix(new=logger.stats["new_posts"], total=len(existing_posts))
+        pbar.set_postfix(new=logger.stats["new_posts"], total=len(existing_ids))
 
         if new_in_batch == 0:
             consecutive_known_batches += 1
@@ -376,7 +501,7 @@ def fetch_all_posts():
 
         # Checkpoint every 1000 posts fetched
         if fetched % 1000 < limit:
-            save_json(list(existing_posts.values()), "posts.json")
+            db.commit()
 
         if not resp.get("has_more"):
             break
@@ -384,9 +509,11 @@ def fetch_all_posts():
         offset = resp.get("next_offset", offset + limit)
         time.sleep(REQUEST_DELAY)
     pbar.close()
+    db.commit()
 
-    logger.log(f"Total posts in dataset: {len(existing_posts)}")
-    return list(existing_posts.values())
+    total = db.execute("SELECT COUNT(*) FROM posts").fetchone()[0]
+    logger.log(f"Total posts in dataset: {total}")
+    return total
 
 def fetch_post_with_comments(post_id):
     """Fetch single post with full comment tree."""
@@ -422,124 +549,113 @@ def fetch_comments_only(post_id):
 
     return all_comments
 
-def fetch_all_comments(posts, post_ids_to_update=None):
-    """Fetch comments for posts using parallel requests. Saves every 1000 posts.
-    Uses lightweight /posts/:id/comments for existing posts, full /posts/:id for new ones."""
+def fetch_all_comments(db, post_ids_to_fetch, existing_full_ids):
+    """Fetch comments for posts using parallel requests. Writes directly to SQLite.
+
+    Args:
+        db: SQLite connection
+        post_ids_to_fetch: set/list of post IDs that need comment fetching
+        existing_full_ids: set of post IDs already in posts_full (for refresh vs new detection)
+    """
     logger.log("Fetching Comments")
-    logger.log("Loading posts_full.json...")
 
-    # Stream existing full posts with ijson to avoid MemoryError on large files
-    existing_full = {}
-    posts_full_path = RAW_DIR / "posts_full.json"
-    if posts_full_path.exists():
-        with open(posts_full_path, "rb") as f:
-            for item in tqdm(ijson.items(f, "item"), desc="[Loading]", unit=" posts"):
-                existing_full[item["id"]] = item
-    logger.log(f"Loaded {len(existing_full)} existing posts with comments")
-
-    # Determine which posts need comment updates
-    if post_ids_to_update is None:
-        # Full mode: skip posts we already have comments for
-        posts_to_fetch = [p for p in posts if p["id"] not in existing_full]
-        skipped = len(posts) - len(posts_to_fetch)
-        if skipped > 0:
-            logger.log(f"Skipping {skipped} posts that already have comments")
-    else:
-        posts_to_fetch = [p for p in posts if p["id"] in post_ids_to_update]
-
-    total = len(posts_to_fetch)
+    total = len(post_ids_to_fetch)
     logger.log(f"Fetching comments for {total} posts ({COMMENT_WORKERS} parallel workers)")
 
     if total == 0:
         logger.log("No new posts to fetch comments for")
-    else:
-        completed = 0
-        timed_out = False
-        pbar = tqdm(total=total, desc="[Comments]", unit=" posts", dynamic_ncols=True)
-        with ThreadPoolExecutor(max_workers=COMMENT_WORKERS) as executor:
-            # Submit work in batches to allow early exit on time budget
-            batch_size = 100
-            future_to_meta = {}
-            post_iter = iter(posts_to_fetch)
-            submitted = 0
+        return
 
-            def submit_batch():
-                nonlocal submitted
-                count = 0
-                for post in post_iter:
-                    is_refresh = post["id"] in existing_full
-                    if is_refresh:
-                        fut = executor.submit(fetch_comments_only, post["id"])
-                    else:
-                        fut = executor.submit(fetch_post_with_comments, post["id"])
-                    future_to_meta[fut] = (post, is_refresh)
-                    submitted += 1
-                    count += 1
-                    if count >= batch_size:
-                        break
-                return count > 0
+    completed = 0
+    timed_out = False
+    pbar = tqdm(total=total, desc="[Comments]", unit=" posts", dynamic_ncols=True)
 
-            submit_batch()
+    with ThreadPoolExecutor(max_workers=COMMENT_WORKERS) as executor:
+        batch_size = 100
+        future_to_meta = {}
+        id_iter = iter(post_ids_to_fetch)
+        submitted = 0
 
-            for future in as_completed(future_to_meta):
-                post, is_refresh = future_to_meta[future]
+        def submit_batch():
+            nonlocal submitted
+            count = 0
+            for post_id in id_iter:
+                is_refresh = post_id in existing_full_ids
                 if is_refresh:
-                    comments = future.result()
-                    if comments is not None:
-                        existing_full[post["id"]]["comments"] = comments
+                    fut = executor.submit(fetch_comments_only, post_id)
                 else:
-                    full_post, comments = future.result()
-                    if full_post:
-                        full_post["comments"] = comments
-                        existing_full[post["id"]] = full_post
-
-                completed += 1
-                pbar.update(1)
-
-                # Checkpoint every 1000 posts
-                if completed % 1000 == 0:
-                    save_json(list(existing_full.values()), "posts_full.json")
-
-                # Submit more work if we have time
-                if completed >= submitted:
-                    if not has_time(reserve_minutes=10):
-                        logger.log(f"Time budget reached after {completed}/{total} comment fetches")
-                        timed_out = True
-                        break
-                    submit_batch()
-                elif completed % batch_size == 0 and not has_time(reserve_minutes=10):
-                    # Stop submitting new batches, but let in-flight work finish
-                    logger.log(f"Time budget reached after {completed}/{total} comment fetches, draining in-flight requests")
-                    timed_out = True
-                    # Wait for remaining in-flight futures
-                    for remaining_future in as_completed(
-                        [f for f in future_to_meta if not f.done()]
-                    ):
-                        rpost, ris_refresh = future_to_meta[remaining_future]
-                        if ris_refresh:
-                            rcomments = remaining_future.result()
-                            if rcomments is not None:
-                                existing_full[rpost["id"]]["comments"] = rcomments
-                        else:
-                            rfull_post, rcomments = remaining_future.result()
-                            if rfull_post:
-                                rfull_post["comments"] = rcomments
-                                existing_full[rpost["id"]] = rfull_post
-                        completed += 1
-                        pbar.update(1)
+                    fut = executor.submit(fetch_post_with_comments, post_id)
+                future_to_meta[fut] = (post_id, is_refresh)
+                submitted += 1
+                count += 1
+                if count >= batch_size:
                     break
+            return count > 0
 
-        pbar.close()
-        if timed_out:
-            save_json(list(existing_full.values()), "posts_full.json")
+        submit_batch()
 
-    # Include posts without comments as empty
-    for post in posts:
-        if post["id"] not in existing_full:
-            post["comments"] = []
-            existing_full[post["id"]] = post
+        def handle_result(future):
+            post_id, is_refresh = future_to_meta[future]
+            if is_refresh:
+                comments = future.result()
+                if comments is not None:
+                    row = db.execute(
+                        "SELECT data FROM posts_full WHERE id = ?", (post_id,)
+                    ).fetchone()
+                    if row:
+                        post_data = json.loads(row[0])
+                        post_data["comments"] = comments
+                        db.execute(
+                            "INSERT OR REPLACE INTO posts_full (id, data) VALUES (?, ?)",
+                            (post_id, json.dumps(post_data, ensure_ascii=False)),
+                        )
+            else:
+                full_post, comments = future.result()
+                if full_post:
+                    full_post["comments"] = comments
+                    db.execute(
+                        "INSERT OR REPLACE INTO posts_full (id, data) VALUES (?, ?)",
+                        (post_id, json.dumps(full_post, ensure_ascii=False)),
+                    )
 
-    return list(existing_full.values())
+        for future in as_completed(future_to_meta):
+            handle_result(future)
+            completed += 1
+            pbar.update(1)
+
+            # Checkpoint every 1000 posts
+            if completed % 1000 == 0:
+                db.commit()
+
+            # Submit more work if we have time
+            if completed >= submitted:
+                if not has_time(reserve_minutes=10):
+                    logger.log(f"Time budget reached after {completed}/{total} comment fetches")
+                    timed_out = True
+                    break
+                submit_batch()
+            elif completed % batch_size == 0 and not has_time(reserve_minutes=10):
+                # Stop submitting new batches, but let in-flight work finish
+                logger.log(f"Time budget reached after {completed}/{total} comment fetches, draining in-flight requests")
+                timed_out = True
+                for remaining_future in as_completed(
+                    [f for f in future_to_meta if not f.done()]
+                ):
+                    handle_result(remaining_future)
+                    completed += 1
+                    pbar.update(1)
+                break
+
+    pbar.close()
+    db.commit()
+
+def _fetch_comments_background(post_ids_to_fetch, existing_full_ids):
+    """Run fetch_all_comments in a background thread with its own DB connection."""
+    db = sqlite3.connect(str(DB_PATH))
+    db.execute("PRAGMA journal_mode=WAL")
+    db.execute("PRAGMA synchronous=NORMAL")
+    fetch_all_comments(db, post_ids_to_fetch, existing_full_ids)
+    db.close()
 
 # === MAIN ===
 
@@ -555,61 +671,81 @@ def crawl(mode="incremental"):
     logger.log(f"Started at: {_start_time.isoformat()}")
     logger.log("=" * 50)
 
+    # Initialize database and migrate from JSON if needed
+    db = init_db()
+    migrate_json_to_db(db)
+
     # Fetch submolts (always full, paginated)
     submolts, platform_stats = fetch_submolts()
     save_json(submolts, "submolts.json")
     save_json(platform_stats, "platform_stats.json")
 
     if mode == "full":
-        # Start comment fetching for already-listed posts in the background
-        # while we continue pulling new post listings in the main thread.
-        # Each phase writes to a different file (posts.json vs posts_full.json)
-        # so there are no file conflicts.
-        existing_posts = load_json("posts.json") or []
+        # Background thread: fetch comments for already-listed posts
+        existing_full_ids = {row[0] for row in db.execute("SELECT id FROM posts_full")}
+        existing_post_ids = {row[0] for row in db.execute("SELECT id FROM posts")}
+        bg_ids = existing_post_ids - existing_full_ids
+
         comment_thread = None
-        if existing_posts:
-            logger.log(f"Starting background comment fetch for {len(existing_posts)} already-listed posts")
+        if bg_ids:
+            logger.log(f"Starting background comment fetch for {len(bg_ids)} posts")
             comment_thread = Thread(
-                target=fetch_all_comments,
-                args=(existing_posts, None),
+                target=_fetch_comments_background,
+                args=(bg_ids, existing_full_ids),
                 daemon=True,
             )
             comment_thread.start()
 
-        # Fetch post listings (main thread, checkpoints every 500)
-        posts = fetch_all_posts()
-        save_json(posts, "posts.json", archive=True)
+        # Fetch post listings (main thread)
+        fetch_all_posts(db)
 
-        # Wait for background comment fetch to finish
+        # Wait for background comment fetch
         if comment_thread:
             logger.log("Waiting for background comment fetch to complete...")
             comment_thread.join()
             logger.log("Background comment fetch done")
 
-        # Second pass: fetch comments for any newly discovered posts.
-        # fetch_all_comments loads posts_full.json from disk and skips
-        # posts that were already fetched by the background thread.
-        posts_full = fetch_all_comments(posts, None)
-        save_json(posts_full, "posts_full.json", archive=True)
+        # Second pass: fetch comments for any newly discovered posts
+        existing_full_ids = {row[0] for row in db.execute("SELECT id FROM posts_full")}
+        all_post_ids = {row[0] for row in db.execute("SELECT id FROM posts")}
+        remaining = all_post_ids - existing_full_ids
+        if remaining:
+            fetch_all_comments(db, remaining, existing_full_ids)
 
     else:  # incremental
         last_crawl = get_last_crawl_time()
-        posts, new_ids, updated_ids = fetch_posts_incremental(since=last_crawl)
+        new_ids, updated_ids = fetch_posts_incremental(db, since=last_crawl)
 
         # Scan hot/rising posts to catch active older posts with new comments
-        existing_posts_dict = {p["id"]: p for p in posts}
-        hot_ids, hot_new_posts = fetch_hot_posts(existing_posts_dict)
+        existing_post_ids = {row[0] for row in db.execute("SELECT id FROM posts")}
+        hot_ids, hot_new_posts = fetch_hot_posts(existing_post_ids)
         for p in hot_new_posts:
-            if p["id"] not in existing_posts_dict:
-                posts.append(p)
-                existing_posts_dict[p["id"]] = p
+            if p["id"] not in existing_post_ids:
+                db.execute(
+                    "INSERT OR REPLACE INTO posts (id, data) VALUES (?, ?)",
+                    (p["id"], json.dumps(p, ensure_ascii=False)),
+                )
+                existing_post_ids.add(p["id"])
                 new_ids.add(p["id"])
+        db.commit()
 
-        save_json(posts, "posts.json", archive=True)
-        post_ids_to_update = new_ids | updated_ids | hot_ids if (new_ids or updated_ids or hot_ids) else None
+        post_ids_to_update = new_ids | updated_ids | hot_ids if (new_ids or updated_ids or hot_ids) else set()
 
-        posts_full = fetch_all_comments(posts, post_ids_to_update)
-        save_json(posts_full, "posts_full.json", archive=True)
+        if post_ids_to_update:
+            existing_full_ids = {row[0] for row in db.execute("SELECT id FROM posts_full")}
+            fetch_all_comments(db, post_ids_to_update, existing_full_ids)
+
+    # Fill in empty comments for posts without any
+    ensure_all_posts_in_full(db)
+
+    # Get counts
+    post_count = db.execute("SELECT COUNT(*) FROM posts").fetchone()[0]
+    post_full_count = db.execute("SELECT COUNT(*) FROM posts_full").fetchone()[0]
+
+    # Export consumer-facing JSON files (streaming, constant memory)
+    logger.log("Exporting JSON files...")
+    export_posts_json(db)
+    export_posts_full_json(db)
 
     # Save metadata
     crawl_info = {
@@ -617,20 +753,22 @@ def crawl(mode="incremental"):
         "mode": mode,
         "stats": {
             "submolts": len(submolts),
-            "posts": len(posts),
-            "posts_full": len(posts_full),
+            "posts": post_count,
+            "posts_full": post_full_count,
             "requests": logger.stats["requests_made"],
             "errors": logger.stats["errors"]
         }
     }
     save_metadata(crawl_info)
 
+    db.close()
+
     logger.log("=" * 50)
     logger.log("CRAWL COMPLETE")
     logger.log("=" * 50)
     logger.log(f"Submolts:     {len(submolts)}")
-    logger.log(f"Posts:        {len(posts)}")
-    logger.log(f"Posts (full): {len(posts_full)}")
+    logger.log(f"Posts:        {post_count}")
+    logger.log(f"Posts (full): {post_full_count}")
     logger.log(f"Data saved to: {RAW_DIR}/")
     logger.log(f"Finished at:  {datetime.now(timezone.utc).isoformat()}")
 

@@ -49,15 +49,21 @@ jobs:
         LATEST_TAG=$(gh release list --limit 1 --json tagName -q '.[0].tagName' 2>/dev/null || echo "")
         if [ -n "$LATEST_TAG" ]; then
           echo "Downloading data from release $LATEST_TAG"
-          gh release download "$LATEST_TAG" -p "moltbook-dataset-*.zip" -D /tmp/ || true
-          ZIP=$(ls /tmp/moltbook-dataset-*.zip 2>/dev/null | head -1)
-          if [ -n "$ZIP" ]; then
-            unzip -o "$ZIP" -d /tmp/dataset/
-            # Move raw files into data/raw/
-            if [ -d "/tmp/dataset/raw" ]; then
-              cp /tmp/dataset/raw/*.json data/raw/ 2>/dev/null || true
+          # Prefer SQLite DB (small download, used directly by crawler)
+          gh release download "$LATEST_TAG" -p "moltbook.db" -D data/raw/ 2>/dev/null || true
+          if [ -f "data/raw/moltbook.db" ]; then
+            echo "Restored database from release"
+          else
+            # Fallback: download zip and extract JSON (migration path)
+            gh release download "$LATEST_TAG" -p "moltbook-dataset-*.zip" -D /tmp/ || true
+            ZIP=$(ls /tmp/moltbook-dataset-*.zip 2>/dev/null | head -1)
+            if [ -n "$ZIP" ]; then
+              unzip -o "$ZIP" -d /tmp/dataset/
+              if [ -d "/tmp/dataset/raw" ]; then
+                cp /tmp/dataset/raw/*.json data/raw/ 2>/dev/null || true
+              fi
+              echo "Restored JSON from $ZIP (will migrate to SQLite)"
             fi
-            echo "Restored previous dataset from $ZIP"
           fi
         else
           echo "No previous release found, starting fresh"
@@ -88,8 +94,13 @@ jobs:
         VERSION="v$(date -u +%Y.%m.%d-%H%M)"
         ZIP=$(ls releases/moltbook-dataset-*.zip | head -1)
 
+        ASSETS="$ZIP"
+        if [ -f "data/raw/moltbook.db" ]; then
+          ASSETS="$ASSETS data/raw/moltbook.db"
+        fi
+
         gh release create "$VERSION" \
-          "$ZIP" \
+          $ASSETS \
           --title "Moltbook Dataset $DATE" \
           --notes-file releases/RELEASE_NOTES.md \
           --latest
