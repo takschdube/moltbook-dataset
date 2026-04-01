@@ -103,7 +103,7 @@ jobs:
 
         ASSETS="$ZIP"
         if [ -f "data/raw/moltbook.db" ]; then
-          zstd -19 data/raw/moltbook.db -o /tmp/moltbook.db.zst
+          zstd -19 -f data/raw/moltbook.db -o /tmp/moltbook.db.zst
           ASSETS="$ASSETS /tmp/moltbook.db.zst"
         fi
 
