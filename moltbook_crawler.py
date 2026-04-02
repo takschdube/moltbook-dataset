@@ -523,31 +523,11 @@ def fetch_post_with_comments(post_id):
     return None, []
 
 def fetch_comments_only(post_id):
-    """Fetch all comments for a post with pagination."""
-    all_comments = []
-    offset = 0
-    limit = 50
-
-    while True:
-        resp = make_request(f"/posts/{post_id}/comments", {"limit": limit, "offset": offset})
-        if not resp or not resp.get("success"):
-            if not all_comments:
-                return None
-            break
-
-        comments = resp.get("comments", [])
-        if not comments:
-            break
-
-        all_comments.extend(comments)
-
-        if not resp.get("has_more"):
-            break
-
-        offset = resp.get("next_offset", offset + limit)
-        time.sleep(REQUEST_DELAY)
-
-    return all_comments
+    """Fetch comments for a post (returns full nested tree in one response)."""
+    resp = make_request(f"/posts/{post_id}/comments")
+    if resp and resp.get("success"):
+        return resp.get("comments", [])
+    return None
 
 def fetch_all_comments(db, post_ids_to_fetch, existing_full_ids):
     """Fetch comments for posts using parallel requests. Writes directly to SQLite.
