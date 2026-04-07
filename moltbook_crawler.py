@@ -281,12 +281,18 @@ def ensure_all_posts_in_full(db):
 # === CRAWLERS ===
 
 def fetch_submolts():
-    """Fetch all submolts with pagination."""
+    """Fetch all submolts with pagination.
+
+    The /submolts endpoint returns {success, submolts[], total_posts, total_comments, count}
+    where count is the total number of submolts. It does NOT return has_more/next_offset,
+    so we paginate using count to know when we've fetched everything.
+    """
     logger.log("Fetching Submolts")
     all_submolts = []
     stats = {}
     offset = 0
     limit = 50
+    total_count = None
 
     while True:
         resp = make_request("/submolts", {"limit": limit, "offset": offset})
@@ -299,22 +305,28 @@ def fetch_submolts():
 
         all_submolts.extend(submolts)
 
-        # Capture platform stats from first response
+        # Capture platform stats and total count from first response
         if offset == 0:
+            total_count = resp.get("count")
             stats = {
                 "total_posts": resp.get("total_posts"),
                 "total_comments": resp.get("total_comments"),
                 "crawled_at": datetime.now(timezone.utc).isoformat()
             }
 
-        if not resp.get("has_more"):
+        # Stop when we've fetched all submolts (use count if available, else empty page)
+        if total_count is not None and len(all_submolts) >= total_count:
             break
 
-        offset = resp.get("next_offset", offset + limit)
+        # Fallback: if fewer than limit returned, we've hit the last page
+        if len(submolts) < limit:
+            break
+
+        offset += limit
         time.sleep(REQUEST_DELAY)
 
     stats["submolt_count"] = len(all_submolts)
-    logger.log(f"Found {len(all_submolts)} submolts")
+    logger.log(f"Found {len(all_submolts)} submolts (API reports {total_count} total)")
     return all_submolts, stats
 
 def fetch_posts_incremental(db, since=None):
@@ -406,7 +418,7 @@ def fetch_hot_posts(existing_post_ids):
     new_posts = []
     max_pages = int(os.getenv("HOT_PAGES", "20"))
 
-    for sort_order in ["hot", "rising"]:
+    for sort_order in ["hot", "rising", "top"]:
         if not has_time(reserve_minutes=15):
             logger.log("Time budget reached, skipping remaining hot/rising scan")
             break
@@ -446,8 +458,115 @@ def fetch_hot_posts(existing_post_ids):
         pbar.close()
 
     already_known = len(hot_ids) - len(new_posts)
-    logger.log(f"Hot/Rising: {len(hot_ids)} active posts ({len(new_posts)} new, {already_known} existing to refresh)")
+    logger.log(f"Hot/Rising/Top: {len(hot_ids)} active posts ({len(new_posts)} new, {already_known} existing to refresh)")
     return hot_ids, new_posts
+
+def fetch_submolt_backfill(db, submolts):
+    """Crawl posts per-submolt to fill coverage gaps in niche communities.
+
+    Prioritizes submolts with the fewest posts in the dataset. For each submolt,
+    fetches 'top' (historical) and 'new' (recent) posts. Stops per-submolt after
+    2 consecutive all-known batches. Respects the global time budget.
+
+    Args:
+        db: SQLite connection
+        submolts: list of submolt dicts from fetch_submolts() (must have 'name' key)
+
+    Returns:
+        set of newly discovered post IDs
+    """
+    max_pages = int(os.getenv("SUBMOLT_BACKFILL_PAGES", "5"))
+    submolt_names = [s.get("name") for s in submolts if s.get("name")]
+
+    if not submolt_names:
+        logger.log("No submolt names available for backfill")
+        return set()
+
+    # Count posts per submolt in the DB to prioritize gaps
+    existing_ids = {row[0] for row in db.execute("SELECT id FROM posts")}
+    submolt_post_counts = {}
+    for (data_str,) in db.execute("SELECT data FROM posts"):
+        post = json.loads(data_str)
+        submolt = post.get("submolt")
+        if submolt:
+            name = submolt.get("name") if isinstance(submolt, dict) else submolt
+            if name:
+                submolt_post_counts[name] = submolt_post_counts.get(name, 0) + 1
+
+    # Sort: fewest posts first (gap-filling priority)
+    submolt_names.sort(key=lambda n: submolt_post_counts.get(n, 0))
+
+    logger.log(f"Submolt backfill: {len(submolt_names)} submolts, max {max_pages} pages each")
+
+    new_ids = set()
+    submolts_crawled = 0
+
+    for submolt_name in submolt_names:
+        if not has_time(reserve_minutes=20):
+            logger.log(f"Time budget reached after backfilling {submolts_crawled} submolts")
+            break
+
+        current_count = submolt_post_counts.get(submolt_name, 0)
+        submolts_crawled += 1
+
+        for sort_order in ["top", "new"]:
+            if not has_time(reserve_minutes=20):
+                break
+
+            offset = 0
+            pages = 0
+            consecutive_known = 0
+
+            while pages < max_pages:
+                if not has_time(reserve_minutes=20):
+                    break
+
+                resp = make_request("/posts", {
+                    "submolt": submolt_name,
+                    "sort": sort_order,
+                    "limit": 50,
+                    "offset": offset,
+                })
+
+                if not resp or not resp.get("success"):
+                    break
+
+                posts = resp.get("posts", [])
+                if not posts:
+                    break
+
+                new_in_batch = 0
+                for post in posts:
+                    if post["id"] not in existing_ids:
+                        existing_ids.add(post["id"])
+                        new_ids.add(post["id"])
+                        new_in_batch += 1
+
+                    db.execute(
+                        "INSERT OR REPLACE INTO posts (id, data) VALUES (?, ?)",
+                        (post["id"], json.dumps(post, ensure_ascii=False)),
+                    )
+
+                pages += 1
+
+                if new_in_batch == 0:
+                    consecutive_known += 1
+                    if consecutive_known >= 2:
+                        break
+                else:
+                    consecutive_known = 0
+
+                if not resp.get("has_more"):
+                    break
+
+                offset = resp.get("next_offset", offset + 50)
+                time.sleep(REQUEST_DELAY)
+
+            # Checkpoint after each sort pass
+            db.commit()
+
+    logger.log(f"Submolt backfill: crawled {submolts_crawled} submolts, found {len(new_ids)} new posts")
+    return new_ids
 
 def fetch_all_posts(db):
     """Fetch posts (newest first), stop when we reach known data. Returns total count."""
@@ -679,13 +798,16 @@ def crawl(mode="incremental"):
         # Fetch post listings (main thread)
         fetch_all_posts(db)
 
+        # Per-submolt backfill to cover niche communities
+        backfill_ids = fetch_submolt_backfill(db, submolts)
+
         # Wait for background comment fetch
         if comment_thread:
             logger.log("Waiting for background comment fetch to complete...")
             comment_thread.join()
             logger.log("Background comment fetch done")
 
-        # Second pass: fetch comments for any newly discovered posts
+        # Second pass: fetch comments for any newly discovered posts (including backfill)
         existing_full_ids = {row[0] for row in db.execute("SELECT id FROM posts_full")}
         all_post_ids = {row[0] for row in db.execute("SELECT id FROM posts")}
         remaining = all_post_ids - existing_full_ids
@@ -696,7 +818,7 @@ def crawl(mode="incremental"):
         last_crawl = get_last_crawl_time()
         new_ids, updated_ids = fetch_posts_incremental(db, since=last_crawl)
 
-        # Scan hot/rising posts to catch active older posts with new comments
+        # Scan hot/rising/top posts to catch active older posts with new comments
         existing_post_ids = {row[0] for row in db.execute("SELECT id FROM posts")}
         hot_ids, hot_new_posts = fetch_hot_posts(existing_post_ids)
         for p in hot_new_posts:
@@ -708,6 +830,10 @@ def crawl(mode="incremental"):
                 existing_post_ids.add(p["id"])
                 new_ids.add(p["id"])
         db.commit()
+
+        # Per-submolt backfill to cover niche communities
+        backfill_ids = fetch_submolt_backfill(db, submolts)
+        new_ids |= backfill_ids
 
         post_ids_to_update = new_ids | updated_ids | hot_ids if (new_ids or updated_ids or hot_ids) else set()
 

@@ -103,7 +103,7 @@ def build_stats_table(stats):
         f"| Agents | {format_number(stats.get('agents'))} |",
         f"| Social graph edges | {format_number(stats.get('social_edges'))} |",
         f"| Reply graph edges | {format_number(stats.get('reply_edges'))} |",
-        f"| Submolts (total) | {format_number(stats.get('submolt_count'))} |",
+        f"| Submolts (listed) | {format_number(stats.get('submolt_count'))} |",
         f"| Submolts (active) | {format_number(stats.get('submolts_active'))} |",
         "",
         f"*Last updated: {now}*",
