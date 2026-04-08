@@ -17,9 +17,14 @@ from datetime import datetime, timezone
 RAW_DIR = Path("data/raw")
 DERIVED_DIR = Path("data/derived")
 README_PATH = Path("README.md")
+ZENODO_JSON = Path("ZENODO.json")
 
 START_MARKER = "<!-- DATASET_STATS_START -->"
 END_MARKER = "<!-- DATASET_STATS_END -->"
+CITATION_START = "<!-- CITATION_START -->"
+CITATION_END = "<!-- CITATION_END -->"
+DOWNLOADS_START = "<!-- DOWNLOADS_START -->"
+DOWNLOADS_END = "<!-- DOWNLOADS_END -->"
 
 
 def load_json(path):
@@ -114,6 +119,97 @@ def build_stats_table(stats):
     return "\n".join(lines)
 
 
+def build_citation_section():
+    """Build citation section with Zenodo DOI."""
+    if not ZENODO_JSON.exists():
+        return None
+
+    with open(ZENODO_JSON) as f:
+        zenodo = json.load(f)
+
+    concept_doi = zenodo.get("concept_doi")
+    url = zenodo.get("url")
+    year = datetime.now(timezone.utc).year
+
+    if not concept_doi:
+        return None
+
+    lines = [
+        CITATION_START,
+        "",
+        "If you use this dataset in your research, please cite:",
+        "",
+        f"> Dube, T. ({year}). Moltbook Social Interactions Dataset. Zenodo. {url}",
+        "",
+        "```bibtex",
+        f"@dataset{{moltbook_{year},",
+        "  author    = {Dube, Taksch},",
+        "  title     = {Moltbook Social Interactions Dataset},",
+        f"  year      = {{{year}}},",
+        "  publisher = {Zenodo},",
+        f"  doi       = {{{concept_doi}}},",
+        f"  url       = {{{url}}}",
+        "}",
+        "```",
+        "",
+        CITATION_END,
+    ]
+
+    return "\n".join(lines)
+
+
+def build_downloads_section():
+    """Build downloads table from download_stats.json."""
+    stats_path = DERIVED_DIR / "download_stats.json"
+    if not stats_path.exists():
+        return None
+
+    with open(stats_path) as f:
+        stats = json.load(f)
+
+    platforms = stats.get("platforms", {})
+    total = stats.get("total_downloads", 0)
+
+    if not platforms:
+        return None
+
+    platform_labels = {
+        "zenodo": "Zenodo",
+        "huggingface": "Hugging Face",
+        "github": "GitHub Releases",
+        "kaggle": "Kaggle",
+    }
+
+    lines = [
+        DOWNLOADS_START,
+        "",
+        "| Platform | Downloads |",
+        "|----------|-----------|",
+    ]
+
+    for key in ["zenodo", "huggingface", "github", "kaggle"]:
+        if key in platforms:
+            count = format_number(platforms[key].get("downloads"))
+            url = platforms[key].get("url", "")
+            label = platform_labels.get(key, key)
+            lines.append(f"| [{label}]({url}) | {count} |")
+
+    lines.append(f"| **Total** | **{format_number(total)}** |")
+    lines.append("")
+    lines.append(DOWNLOADS_END)
+
+    return "\n".join(lines)
+
+
+def replace_section(readme, start_marker, end_marker, content):
+    """Replace content between markers. Returns readme unchanged if markers missing."""
+    if start_marker not in readme or end_marker not in readme:
+        return readme
+    start_idx = readme.index(start_marker)
+    end_idx = readme.index(end_marker) + len(end_marker)
+    return readme[:start_idx] + content + readme[end_idx:]
+
+
 def main():
     if not README_PATH.exists():
         print(f"ERROR: {README_PATH} not found")
@@ -128,18 +224,25 @@ def main():
 
     stats = gather_stats()
     table = build_stats_table(stats)
+    readme = replace_section(readme, START_MARKER, END_MARKER, table)
 
-    # Replace everything between markers (inclusive)
-    start_idx = readme.index(START_MARKER)
-    end_idx = readme.index(END_MARKER) + len(END_MARKER)
+    citation = build_citation_section()
+    if citation:
+        readme = replace_section(readme, CITATION_START, CITATION_END, citation)
 
-    new_readme = readme[:start_idx] + table + readme[end_idx:]
+    downloads = build_downloads_section()
+    if downloads:
+        readme = replace_section(readme, DOWNLOADS_START, DOWNLOADS_END, downloads)
 
-    README_PATH.write_text(new_readme, encoding="utf-8")
+    README_PATH.write_text(readme, encoding="utf-8")
 
     print("README.md updated with latest stats")
     for key, value in stats.items():
         print(f"  {key}: {value}")
+    if citation:
+        print("  Citation section updated")
+    if downloads:
+        print("  Downloads section updated")
 
 
 if __name__ == "__main__":

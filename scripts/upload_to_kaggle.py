@@ -15,6 +15,19 @@ DERIVED_DIR = Path("data/derived")
 STAGING_DIR = Path("data/kaggle_staging")
 
 
+def _build_description():
+    """Build description with DOI if available."""
+    base = "A longitudinal dataset of posts, comments, and social interactions from Moltbook, designed for social media and AI agent research."
+    zenodo_path = Path("ZENODO.json")
+    if zenodo_path.exists():
+        with open(zenodo_path) as f:
+            zenodo = json.load(f)
+        doi_url = zenodo.get("url", "")
+        if doi_url:
+            base += f"\n\nCite: Dube, T. (2026). Moltbook Social Interactions Dataset. Zenodo. {doi_url}"
+    return base
+
+
 def create_kaggle_metadata():
     """Create dataset-metadata.json for Kaggle.
 
@@ -34,7 +47,7 @@ def create_kaggle_metadata():
             "ai-agents",
             "conversation-analysis"
         ],
-        "description": "A longitudinal dataset of posts, comments, and social interactions from Moltbook, designed for social media and AI agent research.",
+        "description": _build_description(),
         "resources": []
     }
 
@@ -90,7 +103,7 @@ def main():
             print(f"Version update failed: {result.stdout.strip()} {result.stderr.strip()}")
             print("Creating new dataset...")
             result = subprocess.run(
-                ["kaggle", "datasets", "create", "-p", ".", "--dir-mode", "zip"],
+                ["kaggle", "datasets", "create", "-p", ".", "--dir-mode", "zip", "--public"],
                 capture_output=True,
                 text=True,
                 cwd=STAGING_DIR
