@@ -113,6 +113,17 @@ jobs:
           --notes-file releases/RELEASE_NOTES.md \
           --latest
 
+    - name: Collect download stats
+      if: always() && hashFiles('data/raw/posts.json') != ''
+      env:
+        ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+        KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
+      run: uv run python scripts/download_stats.py
+      continue-on-error: true
+
     - name: Upload to Hugging Face
       if: always() && hashFiles('data/raw/posts.json') != ''
       env:
@@ -128,15 +139,22 @@ jobs:
       run: uv run python scripts/upload_to_kaggle.py
       continue-on-error: true
 
+    - name: Upload to Zenodo
+      if: always() && hashFiles('releases/moltbook-dataset-*.zip') != ''
+      env:
+        ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
+      run: uv run python scripts/upload_to_zenodo.py
+      continue-on-error: true
+
     - name: Update README with latest stats
       if: always() && hashFiles('data/raw/posts.json') != ''
       run: uv run python scripts/update_readme.py
 
-    - name: Commit updated README
+    - name: Commit updated files
       if: always() && hashFiles('data/raw/posts.json') != ''
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        git add README.md
+        git add README.md ZENODO.json
         git diff --cached --quiet || git commit -m "Update dataset stats [skip ci]"
         git push

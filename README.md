@@ -71,6 +71,41 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 <!-- DATASET_STATS_END -->
 
+## Citation
+
+<!-- CITATION_START -->
+
+If you use this dataset in your research, please cite:
+
+> Dube, T. (2026). Moltbook Social Interactions Dataset. Zenodo. https://doi.org/10.5281/zenodo.19470480
+
+```bibtex
+@dataset{moltbook_2026,
+  author    = {Dube, Taksch},
+  title     = {Moltbook Social Interactions Dataset},
+  year      = {2026},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.19470480},
+  url       = {https://doi.org/10.5281/zenodo.19470480}
+}
+```
+
+<!-- CITATION_END -->
+
+## Downloads
+
+<!-- DOWNLOADS_START -->
+
+| Platform | Downloads |
+|----------|-----------|
+| [Zenodo](https://doi.org/10.5281/zenodo.19470480) | -- |
+| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | -- |
+| [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) | -- |
+| [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | -- |
+| **Total** | **--** |
+
+<!-- DOWNLOADS_END -->
+
 ## What's in the Dataset
 
 ### Raw data (`data/raw/`) — direct API responses
@@ -244,11 +279,16 @@ Thread-level replies — counts how many times an agent replied to another agent
 
 | Platform | Link | Best for |
 |----------|------|----------|
+| Zenodo | [10.5281/zenodo.19470480](https://doi.org/10.5281/zenodo.19470480) | Academic citation, DOI |
 | Hugging Face | [takschdube/moltbook-dataset](https://huggingface.co/datasets/takschdube/moltbook-dataset) | `datasets` library, streaming |
 | Kaggle | [takschdube/moltbook-dataset](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | Notebook integration |
 | GitHub Releases | [Releases](https://github.com/takschdube/moltbook-dataset/releases) | Timestamped zip archives |
 
 ## Quick Start
+
+**Zenodo (DOI-citable):**
+
+Download the latest snapshot from [Zenodo](https://doi.org/10.5281/zenodo.19470480). Use this for academic citations.
 
 **Hugging Face:**
 
@@ -312,17 +352,6 @@ The `.env` file is in `.gitignore` and is never committed.
 - Collection respects API rate limits
 - If you are a Moltbook user and want your content removed, [open an issue](https://github.com/takschdube/moltbook-dataset/issues)
 - Researchers: consider privacy implications when publishing analysis, especially when quoting individual posts
-
-## Citation
-
-```bibtex
-@dataset{moltbook_dataset,
-  author = {Dube, T},
-  title  = {Moltbook Social Interactions Dataset},
-  year   = {2026},
-  url    = {https://github.com/takschdube/moltbook-dataset}
-}
-```
 
 ## License
 

@@ -1,114 +1,197 @@
 #!/usr/bin/env python3
-"""Upload dataset to Zenodo for permanent DOI."""
+"""
+Upload dataset to Zenodo — safe, no-draft, single-record versioning.
 
-import os
+Uses ZENODO.json in the repo root to track the deposit. On first run,
+creates a new deposit and publishes immediately. On subsequent runs,
+creates a new VERSION of the same deposit (same concept DOI).
+
+Never leaves drafts behind. Never creates duplicate deposits.
+
+Usage:
+    ZENODO_TOKEN=... uv run python scripts/upload_to_zenodo.py
+"""
+
 import json
-import requests
+import os
+import sys
+from datetime import datetime, timezone
 from pathlib import Path
-from datetime import datetime
 
-# Configuration
+import requests
+
 ZENODO_TOKEN = os.getenv("ZENODO_TOKEN")
-ZENODO_DEPOSITION_ID = os.getenv("ZENODO_DEPOSITION_ID")  # For updates to existing deposit
 ZENODO_API = "https://zenodo.org/api"
+ZENODO_JSON = Path("ZENODO.json")
+RELEASES_DIR = Path("releases")
 RAW_DIR = Path("data/raw")
 DERIVED_DIR = Path("data/derived")
 
-def create_deposition():
-    """Create a new Zenodo deposition (draft)."""
-    headers = {"Content-Type": "application/json"}
-    params = {"access_token": ZENODO_TOKEN}
+HF_REPO = "takschdube/moltbook-dataset"
+KAGGLE_URL = "https://www.kaggle.com/datasets/takschdube/moltbook-dataset"
+GITHUB_REPO = "https://github.com/takschdube/moltbook-dataset"
 
-    response = requests.post(
-        f"{ZENODO_API}/deposit/depositions",
-        params=params,
-        json={},
-        headers=headers
-    )
 
-    if response.status_code == 201:
-        return response.json()
+def api(method, endpoint, **kwargs):
+    """Make authenticated Zenodo API request."""
+    url = f"{ZENODO_API}{endpoint}" if endpoint.startswith("/") else endpoint
+    headers = kwargs.pop("headers", {})
+    headers["Authorization"] = f"Bearer {ZENODO_TOKEN}"
+    resp = getattr(requests, method)(url, headers=headers, **kwargs)
+    return resp
+
+
+def load_zenodo_json():
+    """Load ZENODO.json if it exists."""
+    if ZENODO_JSON.exists():
+        with open(ZENODO_JSON) as f:
+            return json.load(f)
+    return None
+
+
+def save_zenodo_json(data):
+    """Save ZENODO.json atomically."""
+    tmp = str(ZENODO_JSON) + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(data, f, indent=2)
+    os.replace(tmp, str(ZENODO_JSON))
+
+
+def get_or_create_draft():
+    """Get an existing draft or create one. Returns (deposition_id, bucket_url, is_new).
+
+    Logic:
+    1. If ZENODO.json exists -> create new version of that record
+    2. If not -> create brand new deposit
+    """
+    record = load_zenodo_json()
+
+    if record:
+        record_id = record["latest_record_id"]
+        print(f"Creating new version of record {record_id}...")
+
+        resp = api("post", f"/deposit/depositions/{record_id}/actions/newversion")
+        if resp.status_code != 201:
+            print(f"ERROR: Failed to create new version: {resp.status_code}")
+            print(resp.text[:500])
+            sys.exit(1)
+
+        # The new draft URL is in the response
+        draft_url = resp.json()["links"]["latest_draft"]
+        draft_resp = api("get", draft_url)
+        draft = draft_resp.json()
+
+        # Clear existing files from the draft
+        for f in draft.get("files", []):
+            api("delete", f"/deposit/depositions/{draft['id']}/files/{f['id']}")
+
+        return draft["id"], draft["links"]["bucket"], False
     else:
-        print(f"Failed to create deposition: {response.status_code}")
-        print(response.text)
-        return None
+        print("First upload — creating new deposit...")
+        resp = api("post", "/deposit/depositions", json={})
+        if resp.status_code != 201:
+            print(f"ERROR: Failed to create deposit: {resp.status_code}")
+            print(resp.text[:500])
+            sys.exit(1)
 
-def update_metadata(deposition_id, metadata):
-    """Update deposition metadata."""
-    headers = {"Content-Type": "application/json"}
-    params = {"access_token": ZENODO_TOKEN}
+        draft = resp.json()
+        return draft["id"], draft["links"]["bucket"], True
 
-    data = {"metadata": metadata}
 
-    response = requests.put(
-        f"{ZENODO_API}/deposit/depositions/{deposition_id}",
-        params=params,
-        data=json.dumps(data),
-        headers=headers
-    )
+def set_metadata(deposition_id):
+    """Set deposit metadata."""
+    today = datetime.now(timezone.utc)
+    version = today.strftime("%Y.%m.%d")
 
-    if response.status_code == 200:
-        return response.json()
+    metadata = {
+        "title": "Moltbook Social Interactions Dataset",
+        "upload_type": "dataset",
+        "description": (
+            '<p>A longitudinal dataset of social interactions from '
+            '<a href="https://www.moltbook.com">Moltbook</a> — an AI-agent social '
+            'platform where autonomous "Molties" post, comment, and interact.</p>'
+            '<p>Contains posts, comments, agent profiles, social graphs, and activity '
+            'timelines collected automatically every 6 hours. Designed for social '
+            'network analysis, AI agent behavior research, and temporal community analysis.</p>'
+            f'<p>Full documentation: <a href="{GITHUB_REPO}">GitHub</a> | '
+            f'<a href="https://huggingface.co/datasets/{HF_REPO}">Hugging Face</a> | '
+            f'<a href="{KAGGLE_URL}">Kaggle</a></p>'
+        ),
+        "creators": [{"name": "Dube, Taksch", "affiliation": "Dube International"}],
+        "keywords": [
+            "social media", "social network analysis", "moltbook",
+            "AI agents", "conversation analysis", "longitudinal dataset"
+        ],
+        "access_right": "open",
+        "license": "cc-by-4.0",
+        "version": version,
+        "related_identifiers": [
+            {"identifier": GITHUB_REPO, "relation": "isSupplementTo", "scheme": "url"},
+            {"identifier": f"https://huggingface.co/datasets/{HF_REPO}", "relation": "isAlternateIdentifier", "scheme": "url"},
+            {"identifier": KAGGLE_URL, "relation": "isAlternateIdentifier", "scheme": "url"},
+        ],
+    }
+
+    resp = api("put", f"/deposit/depositions/{deposition_id}", json={"metadata": metadata})
+    if resp.status_code != 200:
+        print(f"WARNING: Failed to update metadata: {resp.status_code}")
+        print(resp.text[:500])
     else:
-        print(f"Failed to update metadata: {response.status_code}")
-        print(response.text)
-        return None
+        print("Metadata updated")
 
-def upload_file(deposition_id, filepath, name_in_repo):
-    """Upload a file to the deposition."""
-    params = {"access_token": ZENODO_TOKEN}
 
-    bucket_url = f"{ZENODO_API}/deposit/depositions/{deposition_id}/files"
-
+def upload_file(bucket_url, filepath, name):
+    """Upload a single file to the deposit bucket."""
     with open(filepath, "rb") as f:
-        response = requests.post(
-            bucket_url,
-            params=params,
-            data={"name": name_in_repo},
-            files={"file": f}
+        resp = requests.put(
+            f"{bucket_url}/{name}",
+            data=f,
+            headers={
+                "Authorization": f"Bearer {ZENODO_TOKEN}",
+                "Content-Type": "application/octet-stream",
+            },
         )
-
-    if response.status_code == 201:
-        return response.json()
+    if resp.status_code in (200, 201):
+        size_mb = filepath.stat().st_size / 1024 / 1024
+        print(f"  Uploaded {name} ({size_mb:.1f} MB)")
+        return True
     else:
-        print(f"Failed to upload {name_in_repo}: {response.status_code}")
-        return None
+        print(f"  FAILED {name}: {resp.status_code}")
+        return False
 
-def publish_deposition(deposition_id):
-    """Publish the deposition (makes it public and assigns DOI)."""
-    params = {"access_token": ZENODO_TOKEN}
 
-    response = requests.post(
-        f"{ZENODO_API}/deposit/depositions/{deposition_id}/actions/publish",
-        params=params
-    )
+def upload_files(bucket_url):
+    """Upload the release zip (or individual files if no zip exists)."""
+    # Prefer the release zip — single file, includes everything
+    zips = sorted(RELEASES_DIR.glob("moltbook-dataset-*.zip")) if RELEASES_DIR.exists() else []
+    if zips:
+        latest_zip = zips[-1]
+        print(f"Uploading {latest_zip.name}...")
+        return upload_file(bucket_url, latest_zip, latest_zip.name)
 
-    if response.status_code == 202:
-        return response.json()
-    else:
-        print(f"Failed to publish: {response.status_code}")
-        print(response.text)
-        return None
+    # Fallback: upload individual files
+    print("No release zip found, uploading individual files...")
+    ok = True
+    for directory, prefix in [(RAW_DIR, "raw"), (DERIVED_DIR, "derived")]:
+        if not directory.exists():
+            continue
+        for filepath in sorted(directory.glob("*.json")):
+            name = f"{prefix}_{filepath.name}"
+            if not upload_file(bucket_url, filepath, name):
+                ok = False
+    return ok
 
-def create_new_version(deposition_id):
-    """Create a new version of an existing deposition."""
-    params = {"access_token": ZENODO_TOKEN}
 
-    response = requests.post(
-        f"{ZENODO_API}/deposit/depositions/{deposition_id}/actions/newversion",
-        params=params
-    )
+def publish(deposition_id):
+    """Publish the deposit. Returns the published record."""
+    resp = api("post", f"/deposit/depositions/{deposition_id}/actions/publish")
+    if resp.status_code != 202:
+        print(f"ERROR: Failed to publish: {resp.status_code}")
+        print(resp.text[:500])
+        sys.exit(1)
 
-    if response.status_code == 201:
-        data = response.json()
-        # Extract the new draft deposition ID from the latest_draft link
-        latest_draft_url = data["links"]["latest_draft"]
-        new_id = latest_draft_url.split("/")[-1]
-        return new_id
-    else:
-        print(f"Failed to create new version: {response.status_code}")
-        print(response.text)
-        return None
+    return resp.json()
+
 
 def main():
     if not ZENODO_TOKEN:
@@ -116,159 +199,52 @@ def main():
         return
 
     print("=" * 60)
-    print("Uploading to Zenodo")
+    print("Zenodo Upload")
     print("=" * 60)
 
-    # Load platform stats for description
-    platform_stats = RAW_DIR / "platform_stats.json"
+    # Get or create draft
+    deposition_id, bucket_url, is_new = get_or_create_draft()
+    print(f"Deposition: {deposition_id} ({'new' if is_new else 'new version'})")
 
-    stats = {}
-    if platform_stats.exists():
-        with open(platform_stats) as f:
-            stats = json.load(f)
+    # Set metadata
+    set_metadata(deposition_id)
 
-    # Create or update deposition
-    if ZENODO_DEPOSITION_ID:
-        print(f"Creating new version of deposition {ZENODO_DEPOSITION_ID}...")
-        deposition_id = create_new_version(ZENODO_DEPOSITION_ID)
-        if not deposition_id:
-            return
-    else:
-        print("Creating new deposition...")
-        deposition = create_deposition()
-        if not deposition:
-            return
-        deposition_id = deposition["id"]
+    # Upload files
+    if not upload_files(bucket_url):
+        print("WARNING: Some files failed to upload")
 
-    print(f"Deposition ID: {deposition_id}")
+    # Publish — never leave a draft behind
+    print("Publishing...")
+    record = publish(deposition_id)
 
-    # Prepare metadata
-    today = datetime.utcnow()
-    version = today.strftime("%Y.%m.%d")
+    doi = record["doi"]
+    concept_doi = record["conceptdoi"]
+    concept_recid = record["conceptrecid"]
+    record_id = record["id"]
 
-    description = f"""<h2>Moltbook Social Interactions Dataset</h2>
-<p>A longitudinal dataset of posts, comments, and social interactions from Moltbook,
-designed for social media and AI agent research.</p>
-
-<h3>Dataset Statistics</h3>
-<ul>
-<li><strong>Version</strong>: {version}</li>
-<li><strong>Collection Date</strong>: {today.strftime('%Y-%m-%d')}</li>
-<li><strong>Total Posts</strong>: {stats.get('total_posts', 'N/A')}</li>
-<li><strong>Total Comments</strong>: {stats.get('total_comments', 'N/A')}</li>
-</ul>
-
-<h3>Raw Files (API responses)</h3>
-<ul>
-<li><code>raw/submolts.json</code> - All submolts/communities</li>
-<li><code>raw/posts.json</code> - All posts (lightweight, no comments)</li>
-<li><code>raw/posts_full.json</code> - Posts with full comment trees</li>
-<li><code>raw/platform_stats.json</code> - Platform-wide statistics</li>
-<li><code>raw/metadata.json</code> - Collection metadata and provenance</li>
-</ul>
-
-<h3>Derived Files (computed from raw)</h3>
-<ul>
-<li><code>derived/agents.json</code> - Agent profiles with activity statistics</li>
-<li><code>derived/social_graph.json</code> - Post-level interaction edges</li>
-<li><code>derived/reply_graph.json</code> - Thread-level reply edges</li>
-<li><code>derived/activity_timeline.json</code> - Daily post/comment counts</li>
-<li><code>derived/submolt_stats.json</code> - Per-submolt statistics</li>
-</ul>
-
-<h3>Usage</h3>
-<p>See the GitHub repository for full documentation:
-<a href="https://github.com/takschdube/moltbook-dataset">takschdube/moltbook-dataset</a></p>
-
-<h3>License</h3>
-<p>This dataset is released under CC BY 4.0. Please cite this dataset in your research.</p>
-"""
-
-    zenodo_metadata = {
-        "title": f"Moltbook Social Interactions Dataset (v{version})",
-        "upload_type": "dataset",
-        "description": description,
-        "creators": [
-            {
-                "name": "Dube, Taksch",
-                "affiliation": "Independent Researcher"
-            }
-        ],
-        "keywords": [
-            "social media",
-            "social network analysis",
-            "moltbook",
-            "AI agents",
-            "conversation analysis",
-            "longitudinal dataset"
-        ],
-        "access_right": "open",
-        "license": "cc-by-4.0",
-        "version": version,
-        "related_identifiers": [
-            {
-                "identifier": "https://github.com/takschdube/moltbook-dataset",
-                "relation": "isSupplementTo",
-                "scheme": "url"
-            }
-        ]
+    # Save ZENODO.json
+    zenodo_data = {
+        "doi": doi,
+        "concept_doi": concept_doi,
+        "concept_record_id": concept_recid,
+        "latest_record_id": record_id,
+        "url": f"https://doi.org/{concept_doi}",
+        "latest_url": f"https://doi.org/{doi}",
+        "zenodo_url": f"https://zenodo.org/records/{record_id}",
+        "updated_at": datetime.now(timezone.utc).isoformat(),
     }
+    save_zenodo_json(zenodo_data)
 
-    print("\nUpdating metadata...")
-    result = update_metadata(deposition_id, zenodo_metadata)
-    if not result:
-        return
-    print("Metadata updated")
+    print()
+    print("=" * 60)
+    print("PUBLISHED")
+    print("=" * 60)
+    print(f"  DOI (this version): {doi}")
+    print(f"  DOI (all versions): {concept_doi}")
+    print(f"  URL: https://doi.org/{concept_doi}")
+    print(f"  Record: https://zenodo.org/records/{record_id}")
+    print(f"  ZENODO.json updated")
 
-    # Upload files from both directories
-    print("\nUploading files...")
-    for directory, prefix in [(RAW_DIR, "raw"), (DERIVED_DIR, "derived")]:
-        if not directory.exists():
-            continue
-        for filepath in sorted(directory.glob("*.json")):
-            name_in_repo = f"{prefix}_{filepath.name}"
-            print(f"  Uploading {prefix}/{filepath.name}...")
-            result = upload_file(deposition_id, filepath, name_in_repo)
-            if result:
-                size_mb = filepath.stat().st_size / 1024 / 1024
-                print(f"  Uploaded {name_in_repo} ({size_mb:.2f} MB)")
-
-    # For automated uploads, you might want to auto-publish
-    # For manual control, comment out the publish step
-    AUTO_PUBLISH = os.getenv("ZENODO_AUTO_PUBLISH", "false").lower() == "true"
-
-    if AUTO_PUBLISH:
-        print("\nPublishing deposition...")
-        published = publish_deposition(deposition_id)
-        if published:
-            doi = published["doi"]
-            doi_url = f"https://doi.org/{doi}"
-            print(f"\n{'=' * 60}")
-            print("DATASET PUBLISHED!")
-            print(f"{'=' * 60}")
-            print(f"DOI: {doi}")
-            print(f"URL: {doi_url}")
-            print(f"Zenodo: https://zenodo.org/record/{deposition_id}")
-
-            # Save DOI to a file for reference
-            doi_file = Path("ZENODO_DOI.txt")
-            with open(doi_file, "w") as f:
-                f.write(f"DOI: {doi}\n")
-                f.write(f"URL: {doi_url}\n")
-                f.write(f"Zenodo Record: https://zenodo.org/record/{deposition_id}\n")
-                f.write(f"Version: {version}\n")
-                f.write(f"Published: {today.isoformat()}\n")
-            print(f"\nDOI saved to {doi_file}")
-    else:
-        print("\n" + "=" * 60)
-        print("DRAFT CREATED (not published)")
-        print("=" * 60)
-        print(f"Review at: https://zenodo.org/deposit/{deposition_id}")
-        print("\nTo publish:")
-        print("1. Go to the URL above")
-        print("2. Review the files and metadata")
-        print("3. Click 'Publish' button")
-        print("\nOr set ZENODO_AUTO_PUBLISH=true to auto-publish")
 
 if __name__ == "__main__":
     main()
