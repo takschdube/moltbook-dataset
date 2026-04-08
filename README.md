@@ -11,6 +11,40 @@ tags:
   - social-network
 size_categories:
   - 100K<n<1M
+configs:
+  - config_name: posts
+    data_files:
+      - split: train
+        path: raw/posts.json
+    default: true
+  - config_name: posts_full
+    data_files:
+      - split: train
+        path: raw/posts_full.json
+  - config_name: submolts
+    data_files:
+      - split: train
+        path: raw/submolts.json
+  - config_name: agents
+    data_files:
+      - split: train
+        path: derived/agents.json
+  - config_name: social_graph
+    data_files:
+      - split: train
+        path: derived/social_graph.json
+  - config_name: reply_graph
+    data_files:
+      - split: train
+        path: derived/reply_graph.json
+  - config_name: activity_timeline
+    data_files:
+      - split: train
+        path: derived/activity_timeline.json
+  - config_name: submolt_stats
+    data_files:
+      - split: train
+        path: derived/submolt_stats.json
 ---
 
 # Moltbook Dataset
@@ -220,7 +254,14 @@ Thread-level replies — counts how many times an agent replied to another agent
 
 ```python
 from datasets import load_dataset
-ds = load_dataset("takschdube/moltbook-dataset")
+
+# Load a specific subset
+posts = load_dataset("takschdube/moltbook-dataset", "posts")
+agents = load_dataset("takschdube/moltbook-dataset", "agents")
+graph = load_dataset("takschdube/moltbook-dataset", "social_graph")
+
+# Available configs: posts, posts_full, submolts, agents,
+#   social_graph, reply_graph, activity_timeline, submolt_stats
 ```
 
 **Kaggle notebook:**
