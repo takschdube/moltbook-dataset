@@ -182,6 +182,18 @@ def init_db():
             data TEXT NOT NULL
         )
     """)
+    # Tracks per-submolt backfill progress so successive runs pick up
+    # where the last one left off instead of re-scanning from the top.
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS submolt_progress (
+            name TEXT NOT NULL,
+            sort TEXT NOT NULL,
+            last_offset INTEGER NOT NULL DEFAULT 0,
+            exhausted INTEGER NOT NULL DEFAULT 0,
+            last_crawled_at TEXT,
+            PRIMARY KEY (name, sort)
+        )
+    """)
     db.commit()
     return db
 
@@ -461,12 +473,69 @@ def fetch_hot_posts(existing_post_ids):
     logger.log(f"Hot/Rising/Top: {len(hot_ids)} active posts ({len(new_posts)} new, {already_known} existing to refresh)")
     return hot_ids, new_posts
 
+def _crawl_submolt_pages(submolt_name, sort_order, start_offset, max_pages, known_ids_snapshot):
+    """Worker function: crawls pages of a single (submolt, sort) pair.
+
+    Stateless — takes a read-only snapshot of known IDs. Returns the full list
+    of posts fetched (caller dedupes against the DB), the final offset reached,
+    and whether the submolt was fully paginated.
+
+    Returns: (posts_fetched, last_offset, exhausted)
+    """
+    all_posts = []
+    offset = start_offset
+    pages = 0
+    consecutive_known = 0
+    exhausted = False
+
+    while pages < max_pages:
+        if not has_time(reserve_minutes=20):
+            break
+
+        resp = make_request("/posts", {
+            "submolt": submolt_name,
+            "sort": sort_order,
+            "limit": 50,
+            "offset": offset,
+        })
+
+        if not resp or not resp.get("success"):
+            break
+
+        posts = resp.get("posts", [])
+        if not posts:
+            exhausted = True
+            break
+
+        all_posts.extend(posts)
+
+        new_in_batch = sum(1 for p in posts if p["id"] not in known_ids_snapshot)
+
+        pages += 1
+        offset = resp.get("next_offset", offset + 50)
+
+        if new_in_batch == 0:
+            consecutive_known += 1
+            if consecutive_known >= 2:
+                break
+        else:
+            consecutive_known = 0
+
+        if not resp.get("has_more"):
+            exhausted = True
+            break
+
+        time.sleep(REQUEST_DELAY)
+
+    return all_posts, offset, exhausted
+
+
 def fetch_submolt_backfill(db, submolts):
     """Crawl posts per-submolt to fill coverage gaps in niche communities.
 
-    Prioritizes submolts with the fewest posts in the dataset. For each submolt,
-    fetches 'top' (historical) and 'new' (recent) posts. Stops per-submolt after
-    2 consecutive all-known batches. Respects the global time budget.
+    Uses a progress table so successive runs pick up where the last one left off
+    instead of re-scanning from the top. Parallelizes across submolts with a
+    thread pool. Prioritizes submolts with the fewest posts in the dataset.
 
     Args:
         db: SQLite connection
@@ -475,14 +544,27 @@ def fetch_submolt_backfill(db, submolts):
     Returns:
         set of newly discovered post IDs
     """
-    max_pages = int(os.getenv("SUBMOLT_BACKFILL_PAGES", "5"))
+    max_pages = int(os.getenv("SUBMOLT_BACKFILL_PAGES", "20"))
+    workers = int(os.getenv("SUBMOLT_WORKERS", "4"))
+    # How long before an exhausted submolt becomes eligible for re-scanning
+    refresh_hours = int(os.getenv("SUBMOLT_REFRESH_HOURS", "24"))
+
     submolt_names = [s.get("name") for s in submolts if s.get("name")]
 
     if not submolt_names:
         logger.log("No submolt names available for backfill")
         return set()
 
-    # Count posts per submolt in the DB to prioritize gaps
+    # Load progress from DB
+    progress = {}
+    for row in db.execute("SELECT name, sort, last_offset, exhausted, last_crawled_at FROM submolt_progress"):
+        progress[(row[0], row[1])] = {
+            "last_offset": row[2],
+            "exhausted": bool(row[3]),
+            "last_crawled_at": row[4],
+        }
+
+    # Count posts per submolt for priority ordering
     existing_ids = {row[0] for row in db.execute("SELECT id FROM posts")}
     submolt_post_counts = {}
     for (data_str,) in db.execute("SELECT data FROM posts"):
@@ -493,79 +575,123 @@ def fetch_submolt_backfill(db, submolts):
             if name:
                 submolt_post_counts[name] = submolt_post_counts.get(name, 0) + 1
 
-    # Sort: fewest posts first (gap-filling priority)
-    submolt_names.sort(key=lambda n: submolt_post_counts.get(n, 0))
+    # Build work queue: (name, sort, start_offset)
+    now = datetime.now(timezone.utc)
+    refresh_cutoff = now - timedelta(hours=refresh_hours)
 
-    logger.log(f"Submolt backfill: {len(submolt_names)} submolts, max {max_pages} pages each")
+    work_queue = []
+    for name in submolt_names:
+        for sort_order in ["top", "new"]:
+            state = progress.get((name, sort_order), {})
+            exhausted = state.get("exhausted", False)
+            last_crawled_at = state.get("last_crawled_at")
+            last_offset = state.get("last_offset", 0)
+
+            # Skip recently-exhausted pairs
+            if exhausted and last_crawled_at:
+                try:
+                    last_dt = datetime.fromisoformat(last_crawled_at)
+                    if last_dt > refresh_cutoff:
+                        continue
+                except (ValueError, TypeError):
+                    pass
+                # Re-eligible: reset offset to rescan from top
+                last_offset = 0
+
+            work_queue.append((name, sort_order, last_offset))
+
+    # Priority: submolts with fewest posts first (fill gaps)
+    work_queue.sort(key=lambda w: submolt_post_counts.get(w[0], 0))
+
+    logger.log(
+        f"Submolt backfill: {len(work_queue)} work items, {workers} workers, "
+        f"max {max_pages} pages each"
+    )
+
+    if not work_queue:
+        return set()
 
     new_ids = set()
-    submolts_crawled = 0
+    submitted = 0
+    completed = 0
+    pbar = tqdm(desc="[Submolt backfill]", unit=" items", dynamic_ncols=True)
 
-    for submolt_name in submolt_names:
-        if not has_time(reserve_minutes=20):
-            logger.log(f"Time budget reached after backfilling {submolts_crawled} submolts")
-            break
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        def submit_item(item):
+            name, sort_order, start_offset = item
+            return executor.submit(
+                _crawl_submolt_pages, name, sort_order, start_offset, max_pages, existing_ids
+            )
 
-        current_count = submolt_post_counts.get(submolt_name, 0)
-        submolts_crawled += 1
-
-        for sort_order in ["top", "new"]:
+        # Prime the pool with an initial batch
+        futures = {}
+        queue_iter = iter(work_queue)
+        for _ in range(workers * 2):
+            try:
+                item = next(queue_iter)
+            except StopIteration:
+                break
             if not has_time(reserve_minutes=20):
                 break
+            futures[submit_item(item)] = item
+            submitted += 1
 
-            offset = 0
-            pages = 0
-            consecutive_known = 0
+        while futures:
+            # Wait for the next future to complete
+            done_future = next(as_completed(futures))
+            item = futures.pop(done_future)
+            name, sort_order, _ = item
 
-            while pages < max_pages:
-                if not has_time(reserve_minutes=20):
-                    break
+            try:
+                posts, last_offset, exhausted = done_future.result()
+            except Exception as e:
+                logger.log(f"Worker failed for {name}/{sort_order}: {e}", "WARN")
+                posts, last_offset, exhausted = [], 0, False
 
-                resp = make_request("/posts", {
-                    "submolt": submolt_name,
-                    "sort": sort_order,
-                    "limit": 50,
-                    "offset": offset,
-                })
+            # Dedupe and write to DB (main thread only)
+            for post in posts:
+                if post["id"] not in existing_ids:
+                    existing_ids.add(post["id"])
+                    new_ids.add(post["id"])
+                db.execute(
+                    "INSERT OR REPLACE INTO posts (id, data) VALUES (?, ?)",
+                    (post["id"], json.dumps(post, ensure_ascii=False)),
+                )
 
-                if not resp or not resp.get("success"):
-                    break
+            # Update progress
+            db.execute(
+                """
+                INSERT OR REPLACE INTO submolt_progress
+                (name, sort, last_offset, exhausted, last_crawled_at)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (name, sort_order, last_offset, 1 if exhausted else 0, now.isoformat()),
+            )
 
-                posts = resp.get("posts", [])
-                if not posts:
-                    break
+            completed += 1
+            pbar.update(1)
+            pbar.set_postfix(new=len(new_ids))
 
-                new_in_batch = 0
-                for post in posts:
-                    if post["id"] not in existing_ids:
-                        existing_ids.add(post["id"])
-                        new_ids.add(post["id"])
-                        new_in_batch += 1
+            # Checkpoint periodically
+            if completed % 50 == 0:
+                db.commit()
 
-                    db.execute(
-                        "INSERT OR REPLACE INTO posts (id, data) VALUES (?, ?)",
-                        (post["id"], json.dumps(post, ensure_ascii=False)),
-                    )
+            # Submit next item if time allows
+            if has_time(reserve_minutes=20):
+                try:
+                    next_item = next(queue_iter)
+                    futures[submit_item(next_item)] = next_item
+                    submitted += 1
+                except StopIteration:
+                    pass
 
-                pages += 1
+    pbar.close()
+    db.commit()
 
-                if new_in_batch == 0:
-                    consecutive_known += 1
-                    if consecutive_known >= 2:
-                        break
-                else:
-                    consecutive_known = 0
-
-                if not resp.get("has_more"):
-                    break
-
-                offset = resp.get("next_offset", offset + 50)
-                time.sleep(REQUEST_DELAY)
-
-            # Checkpoint after each sort pass
-            db.commit()
-
-    logger.log(f"Submolt backfill: crawled {submolts_crawled} submolts, found {len(new_ids)} new posts")
+    logger.log(
+        f"Submolt backfill: processed {completed}/{submitted} items, "
+        f"found {len(new_ids)} new posts"
+    )
     return new_ids
 
 def fetch_all_posts(db):
