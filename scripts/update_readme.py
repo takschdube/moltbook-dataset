@@ -21,6 +21,8 @@ ZENODO_JSON = Path("ZENODO.json")
 
 START_MARKER = "<!-- DATASET_STATS_START -->"
 END_MARKER = "<!-- DATASET_STATS_END -->"
+COVERAGE_NOTE_START = "<!-- COVERAGE_NOTE_START -->"
+COVERAGE_NOTE_END = "<!-- COVERAGE_NOTE_END -->"
 CITATION_START = "<!-- CITATION_START -->"
 CITATION_END = "<!-- CITATION_END -->"
 DOWNLOADS_START = "<!-- DOWNLOADS_START -->"
@@ -114,6 +116,55 @@ def build_stats_table(stats):
         f"*Last updated: {now}*",
         "",
         END_MARKER,
+    ]
+
+    return "\n".join(lines)
+
+
+def _abbreviate_number(n):
+    """Format a large number as e.g. '2.58M', '12.1M', '374K'."""
+    if n is None:
+        return "--"
+    if n >= 1_000_000:
+        val = n / 1_000_000
+        return f"{val:.2f}M" if val < 10 else f"{val:.1f}M"
+    if n >= 1_000:
+        val = n / 1_000
+        return f"{val:.0f}K"
+    return str(n)
+
+
+def build_coverage_note(stats):
+    """Build the coverage note with live numbers."""
+    total_posts = stats.get("total_posts")
+    collected_posts = stats.get("posts_collected")
+    total_comments = stats.get("total_comments")
+    submolt_count = stats.get("submolt_count")
+
+    if not total_posts or not collected_posts:
+        return None
+
+    tp = _abbreviate_number(total_posts)
+    tc = _abbreviate_number(total_comments)
+    cp = _abbreviate_number(collected_posts)
+    sc = format_number(submolt_count) if submolt_count else "--"
+
+    lines = [
+        COVERAGE_NOTE_START,
+        "",
+        f"> **Note on platform totals.** The Moltbook API reports platform-wide "
+        f"aggregates ({tp} posts, {tc} comments) that include content not "
+        f"accessible through the public API — the API documentation notes this "
+        f"explicitly. Our crawler performs exhaustive pagination across all "
+        f"{sc} listed submolts using multiple sort orders (new, top, hot, "
+        f"rising) with overlap detection, and converges on ~{cp} posts with "
+        f"diminishing returns per crawl cycle. The gap between the reported "
+        f"platform total and the accessible collection is a property of the "
+        f"API, not a sampling limitation. Researchers should treat the collected "
+        f"subset as representative of publicly accessible content, not of the "
+        f"full platform.",
+        "",
+        COVERAGE_NOTE_END,
     ]
 
     return "\n".join(lines)
@@ -225,6 +276,10 @@ def main():
     stats = gather_stats()
     table = build_stats_table(stats)
     readme = replace_section(readme, START_MARKER, END_MARKER, table)
+
+    coverage_note = build_coverage_note(stats)
+    if coverage_note:
+        readme = replace_section(readme, COVERAGE_NOTE_START, COVERAGE_NOTE_END, coverage_note)
 
     citation = build_citation_section()
     if citation:
