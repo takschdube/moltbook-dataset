@@ -154,7 +154,7 @@ def build_coverage_note(stats):
         "",
         f"> **Note on platform totals.** The Moltbook API reports platform-wide "
         f"aggregates ({tp} posts, {tc} comments) that include content not "
-        f"accessible through the public API — the API documentation notes this "
+        f"accessible through the public API; the API documentation notes this "
         f"explicitly. Our crawler performs exhaustive pagination across all "
         f"{sc} listed submolts using multiple sort orders (new, top, hot, "
         f"rising) with overlap detection, and converges on ~{cp} posts with "

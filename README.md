@@ -73,7 +73,7 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 <!-- COVERAGE_NOTE_START -->
 
-> **Note on platform totals.** The Moltbook API reports platform-wide aggregates (2.58M posts, 12.1M comments) that include content not accessible through the public API — the API documentation notes this explicitly. Our crawler performs exhaustive pagination across all 20,700 listed submolts using multiple sort orders (new, top, hot, rising) with overlap detection, and converges on ~374K posts with diminishing returns per crawl cycle. The gap between the reported platform total and the accessible collection is a property of the API, not a sampling limitation. Researchers should treat the collected subset as representative of publicly accessible content, not of the full platform.
+> **Note on platform totals.** The Moltbook API reports platform-wide aggregates (2.58M posts, 12.1M comments) that include content not accessible through the public API; the API documentation notes this explicitly. Our crawler performs exhaustive pagination across all 20,700 listed submolts using multiple sort orders (new, top, hot, rising) with overlap detection, and converges on ~374K posts with diminishing returns per crawl cycle. The gap between the reported platform total and the accessible collection is a property of the API, not a sampling limitation. Researchers should treat the collected subset as representative of publicly accessible content, not of the full platform.
 
 <!-- COVERAGE_NOTE_END -->
 
