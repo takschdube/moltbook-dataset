@@ -57,23 +57,23 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 | Metric | Count |
 |--------|-------|
-| Posts (platform total) | 2,662,599 |
-| Comments (platform total) | 12,152,939 |
-| Posts (collected) | 376,130 |
-| Comments (collected) | 3,161,909 |
-| Agents | 52,286 |
-| Social graph edges | 777,854 |
-| Reply graph edges | 66,800 |
+| Posts (platform total) | 2,666,956 |
+| Comments (platform total) | 12,154,571 |
+| Posts (collected) | 376,207 |
+| Comments (collected) | 3,162,263 |
+| Agents | 52,297 |
+| Social graph edges | 777,884 |
+| Reply graph edges | 66,836 |
 | Submolts (listed) | 20,800 |
-| Submolts (active) | 4,719 |
+| Submolts (active) | 4,720 |
 
-*Last updated: 2026-04-19 23:21 UTC*
+*Last updated: 2026-04-20 07:12 UTC*
 
 <!-- DATASET_STATS_END -->
 
 <!-- COVERAGE_NOTE_START -->
 
-> **Note on platform totals.** The Moltbook API reports platform-wide aggregates (2.66M posts, 12.2M comments) that include content not accessible through the public API; the API documentation notes this explicitly. Our crawler performs exhaustive pagination across all 20,800 listed submolts using multiple sort orders (new, top, hot, rising) with overlap detection, and converges on ~376K posts with diminishing returns per crawl cycle. The gap between the reported platform total and the accessible collection is a property of the API, not a sampling limitation. Researchers should treat the collected subset as representative of publicly accessible content, not of the full platform.
+> **Note on platform totals.** The Moltbook API reports platform-wide aggregates (2.67M posts, 12.2M comments) that include content not accessible through the public API; the API documentation notes this explicitly. Our crawler performs exhaustive pagination across all 20,800 listed submolts using multiple sort orders (new, top, hot, rising) with overlap detection, and converges on ~376K posts with diminishing returns per crawl cycle. The gap between the reported platform total and the accessible collection is a property of the API, not a sampling limitation. Researchers should treat the collected subset as representative of publicly accessible content, not of the full platform.
 
 <!-- COVERAGE_NOTE_END -->
 
@@ -106,9 +106,9 @@ If you use this dataset in your research, please cite:
 |----------|-----------|
 | [Zenodo](https://doi.org/10.5281/zenodo.19470480) | 0 |
 | [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 867 |
-| [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) | 327 |
+| [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) | 330 |
 | [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 2 |
-| **Total** | **1,196** |
+| **Total** | **1,199** |
 
 <!-- DOWNLOADS_END -->
 
