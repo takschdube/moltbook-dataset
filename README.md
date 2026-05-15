@@ -57,17 +57,17 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 | Metric | Count |
 |--------|-------|
-| Posts (platform total) | 2,976,518 |
-| Comments (platform total) | 12,294,290 |
-| Posts (collected) | 384,103 |
-| Comments (collected) | 3,204,679 |
-| Agents | 53,035 |
-| Social graph edges | 782,787 |
-| Reply graph edges | 72,533 |
+| Posts (platform total) | 2,979,270 |
+| Comments (platform total) | 12,294,963 |
+| Posts (collected) | 384,160 |
+| Comments (collected) | 3,205,056 |
+| Agents | 53,041 |
+| Social graph edges | 782,847 |
+| Reply graph edges | 72,560 |
 | Submolts (listed) | 30,950 |
 | Submolts (active) | 4,756 |
 
-*Last updated: 2026-05-15 13:17 UTC*
+*Last updated: 2026-05-15 18:36 UTC*
 
 <!-- DATASET_STATS_END -->
 
@@ -106,9 +106,9 @@ If you use this dataset in your research, please cite:
 |----------|-----------|
 | [Zenodo](https://doi.org/10.5281/zenodo.19470480) | 100 |
 | [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 1,667 |
-| [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) | 452 |
+| [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) | 453 |
 | [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 7 |
-| **Total** | **2,226** |
+| **Total** | **2,227** |
 
 <!-- DOWNLOADS_END -->
 
