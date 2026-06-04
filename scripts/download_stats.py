@@ -67,17 +67,34 @@ def get_zenodo_downloads():
 
 
 def get_hf_downloads():
-    """Get download count from Hugging Face."""
+    """Get cumulative all-time download count from Hugging Face.
+
+    The default `downloads` field is a rolling 30-day count; `downloadsAllTime`
+    is the cumulative figure and is only returned when explicitly expanded.
+    A token is sent when available: anonymous Hub requests from shared CI IPs
+    are the most common cause of the transient 429s that drop this row.
+    """
+    token = (
+        os.getenv("HF_TOKEN")
+        or os.getenv("HUGGINGFACE_TOKEN")
+        or os.getenv("HUGGINGFACE_HUB_TOKEN")
+    )
+    headers = {"Authorization": f"Bearer {token}"} if token else {}
     resp = requests.get(
         f"https://huggingface.co/api/datasets/{HF_REPO}",
+        params={"expand[]": "downloadsAllTime"},
+        headers=headers,
         timeout=30,
     )
     if resp.status_code != 200:
         return None
 
     data = resp.json()
+    downloads = data.get("downloadsAllTime")
+    if downloads is None:
+        downloads = data.get("downloads", 0)
     return {
-        "downloads": data.get("downloads", 0),
+        "downloads": downloads,
         "url": f"https://huggingface.co/datasets/{HF_REPO}",
     }
 
