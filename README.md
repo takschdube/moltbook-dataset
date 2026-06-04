@@ -102,12 +102,25 @@ If you use this dataset in your research, please cite:
 
 <!-- DOWNLOADS_START -->
 
+All-time downloads across platforms.
+
 | Platform | Downloads |
 |----------|-----------|
 | [Zenodo](https://doi.org/10.5281/zenodo.19470480) | 300 |
+| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 3,370 |
 | [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) | 599 |
 | [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 9 |
-| **Total** | **908** |
+| **Total** | **4,278** |
+
+New downloads by month.
+
+| Month | Zenodo | Hugging Face | GitHub | Kaggle | Total |
+|-------|--------|--------------|--------|--------|-------|
+| 2026-04 | 0 | -- | 378 | 7 | 385 |
+| 2026-05 | 300 | -- | 203 | 2 | 505 |
+| 2026-06 | 0 | -- | 18 | 0 | 18 |
+
+*Monthly figures are differences of month-end cumulative counts. Hugging Face is tracked from its all-time baseline, so its per-month column begins once two checkpoints exist.*
 
 <!-- DOWNLOADS_END -->
 

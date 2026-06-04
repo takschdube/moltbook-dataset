@@ -209,8 +209,76 @@ def build_citation_section():
     return "\n".join(lines)
 
 
+LEDGER_PATH = Path("download_ledger.json")
+
+PLATFORM_LABELS = {
+    "zenodo": "Zenodo",
+    "huggingface": "Hugging Face",
+    "github": "GitHub Releases",
+    "kaggle": "Kaggle",
+}
+PLATFORM_ORDER = ["zenodo", "huggingface", "github", "kaggle"]
+
+
 def build_downloads_section():
-    """Build downloads table from download_stats.json."""
+    """Build the downloads section, preferring the persistent ledger."""
+    if LEDGER_PATH.exists():
+        with open(LEDGER_PATH) as f:
+            return _downloads_from_ledger(json.load(f))
+    return _downloads_from_stats()
+
+
+def _downloads_from_ledger(ledger):
+    """All-time table plus a per-month breakdown, from download_ledger.json."""
+    all_time = ledger.get("all_time", {})
+    if not all_time:
+        return None
+    urls = ledger.get("urls", {})
+    total = ledger.get("total_all_time", sum(all_time.values()))
+
+    lines = [
+        DOWNLOADS_START,
+        "",
+        "All-time downloads across platforms.",
+        "",
+        "| Platform | Downloads |",
+        "|----------|-----------|",
+    ]
+    for key in PLATFORM_ORDER:
+        if key in all_time:
+            label = PLATFORM_LABELS.get(key, key)
+            url = urls.get(key)
+            cell = f"[{label}]({url})" if url else label
+            lines.append(f"| {cell} | {format_number(all_time[key])} |")
+    lines.append(f"| **Total** | **{format_number(total)}** |")
+
+    monthly_new = ledger.get("monthly_new", {})
+    if monthly_new:
+        lines += [
+            "",
+            "New downloads by month.",
+            "",
+            "| Month | Zenodo | Hugging Face | GitHub | Kaggle | Total |",
+            "|-------|--------|--------------|--------|--------|-------|",
+        ]
+        for month in sorted(monthly_new):
+            row = monthly_new[month]
+            cells = [month] + [format_number(row.get(p)) for p in PLATFORM_ORDER]
+            cells.append(format_number(row.get("total")))
+            lines.append("| " + " | ".join(cells) + " |")
+        lines += [
+            "",
+            "*Monthly figures are differences of month-end cumulative counts. "
+            "Hugging Face is tracked from its all-time baseline, so its per-month "
+            "column begins once two checkpoints exist.*",
+        ]
+
+    lines += ["", DOWNLOADS_END]
+    return "\n".join(lines)
+
+
+def _downloads_from_stats():
+    """Fallback when no ledger exists: the volatile download_stats.json snapshot."""
     stats_path = DERIVED_DIR / "download_stats.json"
     if not stats_path.exists():
         return None
@@ -224,13 +292,6 @@ def build_downloads_section():
     if not platforms:
         return None
 
-    platform_labels = {
-        "zenodo": "Zenodo",
-        "huggingface": "Hugging Face",
-        "github": "GitHub Releases",
-        "kaggle": "Kaggle",
-    }
-
     lines = [
         DOWNLOADS_START,
         "",
@@ -238,11 +299,11 @@ def build_downloads_section():
         "|----------|-----------|",
     ]
 
-    for key in ["zenodo", "huggingface", "github", "kaggle"]:
+    for key in PLATFORM_ORDER:
         if key in platforms:
             count = format_number(platforms[key].get("downloads"))
             url = platforms[key].get("url", "")
-            label = platform_labels.get(key, key)
+            label = PLATFORM_LABELS.get(key, key)
             lines.append(f"| [{label}]({url}) | {count} |")
 
     lines.append(f"| **Total** | **{format_number(total)}** |")

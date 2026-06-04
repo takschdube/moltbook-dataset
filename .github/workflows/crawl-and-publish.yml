@@ -124,6 +124,11 @@ jobs:
       run: uv run python scripts/download_stats.py
       continue-on-error: true
 
+    - name: Update download ledger
+      if: always() && hashFiles('data/raw/posts.json') != ''
+      run: uv run python scripts/download_ledger.py
+      continue-on-error: true
+
     - name: Upload to Hugging Face
       if: always() && hashFiles('data/raw/posts.json') != ''
       env:
@@ -155,7 +160,7 @@ jobs:
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        git add README.md ZENODO.json
+        git add README.md ZENODO.json download_ledger.json
         git diff --cached --quiet || git commit -m "Update dataset stats [skip ci]"
         git pull --rebase origin main
         git push
