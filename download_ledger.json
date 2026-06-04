@@ -53,7 +53,7 @@
     "kaggle": "https://www.kaggle.com/datasets/takschdube/moltbook-dataset"
   },
   "total_all_time": 4280,
-  "updated_at": "2026-06-04T19:40:42.988899+00:00",
+  "updated_at": "2026-06-04T20:11:52.040118+00:00",
   "notes": {
     "huggingface": "all-time baseline 3370 seeded from downloadsAllTime; monthly tracking starts at the next reading. History excluded because the README stored the rolling 30-day field."
   }
