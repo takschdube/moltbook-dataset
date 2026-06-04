@@ -124,6 +124,8 @@ New downloads by month.
 
 <!-- DOWNLOADS_END -->
 
+> **Note on counting.** Figures are cumulative all-time per platform, stored in `download_ledger.json` and refreshed every six hours; each value is held at a high-water mark, so a transient API failure does not reset it. A platform's own page may show a different number: Hugging Face's headline `downloads` is a rolling 30-day window, while the table above uses its `downloadsAllTime` total.
+
 ## What's in the Dataset
 
 ### Raw data (`data/raw/`) — direct API responses
