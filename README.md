@@ -67,7 +67,7 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 | Submolts (listed) | 0 |
 | Submolts (active) | 4,781 |
 
-*Last updated: 2026-06-05 03:52 UTC*
+*Last updated: 2026-06-05 09:58 UTC*
 
 <!-- DATASET_STATS_END -->
 
@@ -108,9 +108,9 @@ All-time downloads across platforms.
 |----------|-----------|
 | [Zenodo](https://doi.org/10.5281/zenodo.19470480) | 300 |
 | [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 3,370 |
-| [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) | 602 |
+| [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) | 603 |
 | [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 9 |
-| **Total** | **4,281** |
+| **Total** | **4,282** |
 
 New downloads by month.
 
@@ -118,7 +118,7 @@ New downloads by month.
 |-------|--------|--------------|--------|--------|-------|
 | 2026-04 | 0 | -- | 378 | 7 | 385 |
 | 2026-05 | 300 | -- | 203 | 2 | 505 |
-| 2026-06 | 0 | -- | 21 | 0 | 21 |
+| 2026-06 | 0 | -- | 22 | 0 | 22 |
 
 *Monthly figures are differences of month-end cumulative counts. Hugging Face is tracked from its all-time baseline, so its per-month column begins once two checkpoints exist.*
 
