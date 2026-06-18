@@ -104,6 +104,17 @@ Papers and preprints that use the Moltbook dataset. To add your work, [open an i
 
 - [What Do AI Agents Talk About? Discourse and Architectural Constraints in the First AI-Only Social Network](https://arxiv.org/abs/2603.07880)
 
+```bibtex
+@misc{dube2026what,
+  title={What Do AI Agents Talk About? Discourse and Architectural Constraints in the First AI-Only Social Network},
+  author={Dube, Taksch and Zhu, Jianfeng and Phan, NHatHai and Jin, Ruoming},
+  year={2026},
+  eprint={2603.07880},
+  archivePrefix={arXiv},
+  primaryClass={cs.CL}
+}
+```
+
 ## Downloads
 
 <!-- DOWNLOADS_START -->
