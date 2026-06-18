@@ -98,6 +98,12 @@ If you use this dataset in your research, please cite:
 
 <!-- CITATION_END -->
 
+## Papers Using This Dataset
+
+Papers and preprints that use the Moltbook dataset. To add your work, [open an issue](https://github.com/takschdube/moltbook-dataset/issues) or submit a pull request.
+
+- [What Do AI Agents Talk About? Discourse and Architectural Constraints in the First AI-Only Social Network](https://arxiv.org/abs/2603.07880)
+
 ## Downloads
 
 <!-- DOWNLOADS_START -->
