@@ -98,7 +98,7 @@ If you use this dataset in your research, please cite:
 
 <!-- CITATION_END -->
 
-## Papers Using This Dataset
+## Publications
 
 Papers and preprints that use the Moltbook dataset. To add your work, [open an issue](https://github.com/takschdube/moltbook-dataset/issues) or submit a pull request.
 
