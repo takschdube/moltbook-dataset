@@ -1,7 +1,7 @@
 {
   "all_time": {
-    "zenodo": 2700,
-    "github": 707,
+    "zenodo": 2794,
+    "github": 708,
     "kaggle": 9,
     "huggingface": 4002
   },
@@ -17,8 +17,8 @@
       "kaggle": 9
     },
     "2026-06": {
-      "zenodo": 2700,
-      "github": 707,
+      "zenodo": 2794,
+      "github": 708,
       "kaggle": 9,
       "huggingface": 4002
     }
@@ -39,11 +39,11 @@
       "total": 505
     },
     "2026-06": {
-      "zenodo": 2400,
+      "zenodo": 2494,
       "huggingface": null,
-      "github": 126,
+      "github": 127,
       "kaggle": 0,
-      "total": 2526
+      "total": 2621
     }
   },
   "urls": {
@@ -52,8 +52,8 @@
     "github": "https://github.com/takschdube/moltbook-dataset/releases",
     "kaggle": "https://www.kaggle.com/datasets/takschdube/moltbook-dataset"
   },
-  "total_all_time": 7418,
-  "updated_at": "2026-06-25T13:41:58.279350+00:00",
+  "total_all_time": 7513,
+  "updated_at": "2026-06-25T18:53:48.187470+00:00",
   "notes": {
     "huggingface": "all-time baseline 3370 seeded from downloadsAllTime; monthly tracking starts at the next reading. History excluded because the README stored the rolling 30-day field."
   }
