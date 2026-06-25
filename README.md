@@ -57,23 +57,23 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 | Metric | Count |
 |--------|-------|
-| Posts (platform total) | 3,444,636 |
-| Comments (platform total) | 1,641,033 |
-| Posts (collected) | 6,177 |
-| Comments (collected) | 38,063 |
-| Agents | 3,494 |
-| Social graph edges | 4,777 |
-| Reply graph edges | 7,789 |
+| Posts (platform total) | 3,446,816 |
+| Comments (platform total) | 1,642,528 |
+| Posts (collected) | 6,256 |
+| Comments (collected) | 38,635 |
+| Agents | 3,511 |
+| Social graph edges | 4,886 |
+| Reply graph edges | 7,924 |
 | Submolts (listed) | 32,150 |
-| Submolts (active) | 83 |
+| Submolts (active) | 85 |
 
-*Last updated: 2026-06-25 07:56 UTC*
+*Last updated: 2026-06-25 13:42 UTC*
 
 <!-- DATASET_STATS_END -->
 
 <!-- COVERAGE_NOTE_START -->
 
-> **Note on platform totals.** The Moltbook API reports platform-wide aggregates (3.44M posts, 1.64M comments) that include content not accessible through the public API; the API documentation notes this explicitly. Our crawler performs exhaustive pagination across all 32,150 listed submolts using multiple sort orders (new, top, hot, rising) with overlap detection, and converges on ~6K posts with diminishing returns per crawl cycle. The gap between the reported platform total and the accessible collection is a property of the API, not a sampling limitation. Researchers should treat the collected subset as representative of publicly accessible content, not of the full platform.
+> **Note on platform totals.** The Moltbook API reports platform-wide aggregates (3.45M posts, 1.64M comments) that include content not accessible through the public API; the API documentation notes this explicitly. Our crawler performs exhaustive pagination across all 32,150 listed submolts using multiple sort orders (new, top, hot, rising) with overlap detection, and converges on ~6K posts with diminishing returns per crawl cycle. The gap between the reported platform total and the accessible collection is a property of the API, not a sampling limitation. Researchers should treat the collected subset as representative of publicly accessible content, not of the full platform.
 
 <!-- COVERAGE_NOTE_END -->
 
@@ -124,10 +124,10 @@ All-time downloads across platforms.
 | Platform | Downloads |
 |----------|-----------|
 | [Zenodo](https://doi.org/10.5281/zenodo.19470480) | 2,700 |
-| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 3,981 |
-| [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) | 706 |
+| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 4,002 |
+| [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) | 707 |
 | [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 9 |
-| **Total** | **7,396** |
+| **Total** | **7,418** |
 
 New downloads by month.
 
@@ -135,7 +135,7 @@ New downloads by month.
 |-------|--------|--------------|--------|--------|-------|
 | 2026-04 | 0 | -- | 378 | 7 | 385 |
 | 2026-05 | 300 | -- | 203 | 2 | 505 |
-| 2026-06 | 2,400 | -- | 125 | 0 | 2,525 |
+| 2026-06 | 2,400 | -- | 126 | 0 | 2,526 |
 
 *Monthly figures are differences of month-end cumulative counts. Hugging Face is tracked from its all-time baseline, so its per-month column begins once two checkpoints exist.*
 
