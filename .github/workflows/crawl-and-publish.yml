@@ -40,40 +40,26 @@ jobs:
     - name: Install dependencies
       run: uv sync
 
-    # Restore previous data from the latest release
+    # Restore previous data from the release marked Latest. No tag argument:
+    # gh resolves the Latest flag, which is immune to list ordering (backdated
+    # archive releases sort first by creation date).
     - name: Download previous dataset
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         mkdir -p data/raw
-        LATEST_TAG=$(gh release list --limit 1 --json tagName -q '.[0].tagName' 2>/dev/null || echo "")
-        if [ -n "$LATEST_TAG" ]; then
-          echo "Downloading data from release $LATEST_TAG"
-          # Prefer SQLite DB (compressed with zstd to stay under 2GB asset limit)
-          gh release download "$LATEST_TAG" -p "moltbook.db.zst" -D /tmp/ 2>/dev/null || true
-          if [ -f "/tmp/moltbook.db.zst" ]; then
-            zstd -d /tmp/moltbook.db.zst -o data/raw/moltbook.db
-            echo "Restored database from release (decompressed)"
-          else
-            # Try uncompressed DB from older releases
-            gh release download "$LATEST_TAG" -p "moltbook.db" -D data/raw/ 2>/dev/null || true
-          fi
-          if [ -f "data/raw/moltbook.db" ]; then
-            echo "Restored database from release"
-          else
-            # Fallback: download zip and extract JSON (migration path)
-            gh release download "$LATEST_TAG" -p "moltbook-dataset-*.zip" -D /tmp/ || true
-            ZIP=$(ls /tmp/moltbook-dataset-*.zip 2>/dev/null | head -1)
-            if [ -n "$ZIP" ]; then
-              unzip -o "$ZIP" -d /tmp/dataset/
-              if [ -d "/tmp/dataset/raw" ]; then
-                cp /tmp/dataset/raw/*.json data/raw/ 2>/dev/null || true
-              fi
-              echo "Restored JSON from $ZIP (will migrate to SQLite)"
-            fi
-          fi
+        gh release download -p "moltbook.db.zst" -D /tmp/ 2>/dev/null || true
+        if [ -f "/tmp/moltbook.db.zst" ]; then
+          zstd -d /tmp/moltbook.db.zst -o data/raw/moltbook.db
+          echo "Restored database from latest release"
         else
-          echo "No previous release found, starting fresh"
+          gh release download -p "moltbook.db" -D data/raw/ 2>/dev/null || true
+        fi
+        if [ ! -f "data/raw/moltbook.db" ]; then
+          # A silent fresh start would crawl an empty corpus and publish it
+          # as Latest, cascading data loss. Fail instead.
+          echo "ERROR: could not restore moltbook.db from the latest release"
+          exit 1
         fi
 
     - name: Run crawler
