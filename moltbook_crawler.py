@@ -11,6 +11,7 @@ Usage:
 """
 
 import requests
+import csv
 import json
 import sqlite3
 import time
@@ -194,8 +195,43 @@ def init_db():
             PRIMARY KEY (name, sort)
         )
     """)
+    # Append-only engagement time series. posts/posts_full hold latest state
+    # only (INSERT OR REPLACE), so without this table the trajectory of
+    # mutable fields exists nowhere in the database. One row per post per
+    # crawl cycle, first sighting in a cycle wins.
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS post_metrics_history (
+            post_id TEXT NOT NULL,
+            observed_at TEXT NOT NULL,
+            upvotes INTEGER,
+            downvotes INTEGER,
+            score INTEGER,
+            comment_count INTEGER,
+            hot_score REAL,
+            is_deleted INTEGER,
+            PRIMARY KEY (post_id, observed_at)
+        )
+    """)
     db.commit()
     return db
+
+def store_post(db, post):
+    """Write a post's latest state and append its engagement observation."""
+    db.execute(
+        "INSERT OR REPLACE INTO posts (id, data) VALUES (?, ?)",
+        (post["id"], json.dumps(post, ensure_ascii=False)),
+    )
+    observed = (_start_time or datetime.now(timezone.utc)).isoformat()
+    db.execute(
+        """
+        INSERT OR IGNORE INTO post_metrics_history
+        (post_id, observed_at, upvotes, downvotes, score, comment_count, hot_score, is_deleted)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (post["id"], observed, post.get("upvotes"), post.get("downvotes"),
+         post.get("score"), post.get("comment_count"), post.get("hot_score"),
+         1 if post.get("is_deleted") else 0),
+    )
 
 def migrate_json_to_db(db):
     """One-time migration: import existing JSON files into SQLite."""
@@ -231,6 +267,30 @@ def migrate_json_to_db(db):
                     db.commit()
         db.commit()
         logger.log(f"Imported {imported} full posts")
+
+def export_metrics_csv(db, days=90):
+    """Export the last N days of engagement history to a bounded CSV.
+
+    The full series ships in the moltbook.db release asset; bounding the CSV
+    keeps the zip and mirror uploads from growing without limit.
+    """
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    filepath = RAW_DIR / "post_metrics_recent.csv"
+    columns = ["post_id", "observed_at", "upvotes", "downvotes", "score",
+               "comment_count", "hot_score", "is_deleted"]
+    with open(filepath, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(columns)
+        rows = db.execute(
+            f"SELECT {', '.join(columns)} FROM post_metrics_history "
+            "WHERE observed_at >= ? ORDER BY observed_at, post_id",
+            (cutoff,),
+        )
+        count = 0
+        for row in rows:
+            writer.writerow(row)
+            count += 1
+    logger.log(f"Exported {count} metric observations (last {days} days) to {filepath.name}")
 
 def export_posts_json(db):
     """Stream posts table to data/raw/posts.json (constant memory)."""
@@ -387,10 +447,7 @@ def fetch_posts_incremental(db, since=None):
                         updated_ids.add(post["id"])
                         logger.stats["updated_posts"] += 1
 
-            db.execute(
-                "INSERT OR REPLACE INTO posts (id, data) VALUES (?, ?)",
-                (post["id"], json.dumps(post, ensure_ascii=False)),
-            )
+            store_post(db, post)
 
         fetched += len(posts)
         pbar.update(len(posts))
@@ -653,10 +710,7 @@ def fetch_submolt_backfill(db, submolts):
                 if post["id"] not in existing_ids:
                     existing_ids.add(post["id"])
                     new_ids.add(post["id"])
-                db.execute(
-                    "INSERT OR REPLACE INTO posts (id, data) VALUES (?, ?)",
-                    (post["id"], json.dumps(post, ensure_ascii=False)),
-                )
+                store_post(db, post)
 
             # Update progress
             db.execute(
@@ -727,10 +781,7 @@ def fetch_all_posts(db):
                 logger.stats["new_posts"] += 1
                 new_in_batch += 1
 
-            db.execute(
-                "INSERT OR REPLACE INTO posts (id, data) VALUES (?, ?)",
-                (post["id"], json.dumps(post, ensure_ascii=False)),
-            )
+            store_post(db, post)
 
         fetched += len(posts)
         pbar.update(len(posts))
@@ -949,10 +1000,7 @@ def crawl(mode="incremental"):
         hot_ids, hot_new_posts = fetch_hot_posts(existing_post_ids)
         for p in hot_new_posts:
             if p["id"] not in existing_post_ids:
-                db.execute(
-                    "INSERT OR REPLACE INTO posts (id, data) VALUES (?, ?)",
-                    (p["id"], json.dumps(p, ensure_ascii=False)),
-                )
+                store_post(db, p)
                 existing_post_ids.add(p["id"])
                 new_ids.add(p["id"])
         db.commit()
@@ -978,6 +1026,7 @@ def crawl(mode="incremental"):
     logger.log("Exporting JSON files...")
     export_posts_json(db)
     export_posts_full_json(db)
+    export_metrics_csv(db)
 
     # Save metadata
     crawl_info = {

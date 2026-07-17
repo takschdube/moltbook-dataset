@@ -34,11 +34,11 @@ def main():
         print(f"Error creating repo: {e}")
         return
 
-    # Upload all JSON files from both directories
+    # Upload all JSON and CSV files from both directories
     for directory, prefix in [(RAW_DIR, "raw"), (DERIVED_DIR, "derived")]:
         if not directory.exists():
             continue
-        for filepath in sorted(directory.glob("*.json")):
+        for filepath in sorted(list(directory.glob("*.json")) + list(directory.glob("*.csv"))):
             path_in_repo = f"{prefix}/{filepath.name}"
             try:
                 api.upload_file(
