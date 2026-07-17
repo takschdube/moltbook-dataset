@@ -57,11 +57,25 @@ def save_zenodo_json(data):
     os.replace(tmp, str(ZENODO_JSON))
 
 
+def find_existing_draft(concept_recid):
+    """Find an unpublished draft of our record left behind by a crashed run."""
+    resp = api("get", "/deposit/depositions", params={"status": "draft", "size": 50})
+    if resp.status_code != 200:
+        return None
+    for dep in resp.json():
+        if str(dep.get("conceptrecid")) == str(concept_recid):
+            full = api("get", f"/deposit/depositions/{dep['id']}")
+            if full.status_code == 200:
+                return full.json()
+    return None
+
+
 def get_or_create_draft():
     """Get an existing draft or create one. Returns (deposition_id, bucket_url, is_new).
 
     Logic:
-    1. If ZENODO.json exists -> create new version of that record
+    1. If ZENODO.json exists -> create new version of that record,
+       reusing a leftover draft if a previous run crashed mid-publish
     2. If not -> create brand new deposit
     """
     record = load_zenodo_json()
@@ -70,16 +84,25 @@ def get_or_create_draft():
         record_id = record["latest_record_id"]
         print(f"Creating new version of record {record_id}...")
 
+        draft = None
         resp = api("post", f"/deposit/depositions/{record_id}/actions/newversion")
-        if resp.status_code != 201:
-            print(f"ERROR: Failed to create new version: {resp.status_code}")
-            print(resp.text[:500])
-            sys.exit(1)
+        if resp.status_code == 201:
+            draft_resp = api("get", resp.json()["links"]["latest_draft"])
+            if draft_resp.status_code == 200:
+                draft = draft_resp.json()
 
-        # The new draft URL is in the response
-        draft_url = resp.json()["links"]["latest_draft"]
-        draft_resp = api("get", draft_url)
-        draft = draft_resp.json()
+        if draft is None:
+            # A run that crashes between newversion and publish leaves a draft
+            # behind, and Zenodo rejects newversion with 400 while one exists.
+            # Reuse the leftover draft instead of failing until someone
+            # discards it by hand.
+            print(f"newversion not usable ({resp.status_code}), looking for a leftover draft...")
+            draft = find_existing_draft(record["concept_record_id"])
+            if draft is None:
+                print(f"ERROR: Failed to create new version: {resp.status_code}")
+                print(resp.text[:500])
+                sys.exit(1)
+            print(f"Reusing leftover draft {draft['id']}")
 
         # Clear existing files from the draft
         for f in draft.get("files", []):
