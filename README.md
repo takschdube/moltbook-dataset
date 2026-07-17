@@ -369,7 +369,27 @@ Each release is a timestamped zip: **`moltbook-dataset-YYYY-MM-DD.zip`**
 
 Every zip contains all data files (preserving `raw/` and `derived/` directories) plus a `manifest.json` with record counts, file sizes, and the collection timestamp.
 
-New snapshots are collected automatically every 6 hours. The crawler uses a time budget to stay within CI limits — if a single run can't finish (e.g. after a gap in collection), it saves its progress, publishes a partial release, and the next run picks up where it left off. Over time this builds a longitudinal archive suitable for studying how AI agent communities evolve — new agents joining, conversation patterns shifting, communities growing.
+New snapshots are collected automatically every 6 hours. The crawler uses a time budget to stay within CI limits — if a single run can't finish (e.g. after a gap in collection), it saves its progress, publishes a partial release, and the next run picks up where it left off.
+
+### Retention and the longitudinal archive
+
+Per-run releases are working copies and are pruned to a rolling 14-day
+window (plus the first release of each month). The longitudinal record is
+kept elsewhere, permanently:
+
+| Layer | Granularity | Coverage |
+|-------|-------------|----------|
+| `archive/YYYY-MM` releases | daily zip | 2026-02 through 2026-07-16 |
+| [Zenodo](https://doi.org/10.5281/zenodo.19470480) | per-run to 2026-06-06, daily from 2026-07-17 (zip + full database) | 2026-04-08 onward |
+| [Hugging Face mirror](https://huggingface.co/datasets/takschdube/moltbook-dataset) git history | every 6-hour upload | 2026-02-07 onward |
+| `post_metrics_history` table in `moltbook.db` | per post per cycle | 2026-07-17 onward |
+
+`snapshots.json` in the repo root maps every per-run release tag to its
+snapshot time and the exact Hugging Face revision holding that state, so any
+6-hourly snapshot remains addressable after its release is pruned. Git tags
+are never deleted. Archive zips dated 2026-02 to 2026-06-18 were
+reconstructed from the mirror after the original releases were deleted in
+error on 2026-07-17; each contains a manifest naming its source revision.
 
 ## Running Your Own Crawl
 

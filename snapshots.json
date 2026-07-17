@@ -1,0 +1,3705 @@
+[
+ {
+  "tag": "v2026.02.07-1726",
+  "snapshot_time": "2026-02-07T17:26:00+00:00",
+  "hf_revision": "f457a5b423b412d88990d73d6dc367d4e3c8f0de",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.02.12-2213",
+  "snapshot_time": "2026-02-12T22:13:00+00:00",
+  "hf_revision": "739a794f901e9fd7f260ac80a431b599bcafc321",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.02.13",
+  "snapshot_time": "2026-02-13T00:00:00+00:00",
+  "hf_revision": "a7deebcf396ec84b0b30a6a9f859f1d250cb3a81",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.02.16",
+  "snapshot_time": "2026-02-16T00:00:00+00:00",
+  "hf_revision": "9717e002c464fe35aba30244e1d2eb86b0fca040",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.02.16-1516",
+  "snapshot_time": "2026-02-16T15:16:00+00:00",
+  "hf_revision": "9717e002c464fe35aba30244e1d2eb86b0fca040",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.02.17-0249",
+  "snapshot_time": "2026-02-17T02:49:00+00:00",
+  "hf_revision": "dfa13fc5fade26a1bed7d4a67edb58d48f51ee47",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.02.17-0751",
+  "snapshot_time": "2026-02-17T07:51:00+00:00",
+  "hf_revision": "c6a9f959b95c355e105c4754a030eb6c9fd26674",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.02.17-1347",
+  "snapshot_time": "2026-02-17T13:47:00+00:00",
+  "hf_revision": "6c6c55410d9f763cf2a95c5b0128df9171c9b02f",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.02.17-2044",
+  "snapshot_time": "2026-02-17T20:44:00+00:00",
+  "hf_revision": "040e248635530e44b36baf2c99c6290d5bac53a7",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.02.18-0608",
+  "snapshot_time": "2026-02-18T06:08:00+00:00",
+  "hf_revision": "7ea2adbd3334d3f3ff20af680396e4325f5e8f51",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.01-0247",
+  "snapshot_time": "2026-03-01T02:47:00+00:00",
+  "hf_revision": "ca2fb34ac30b881fd4c67b95386f93e00e7ae78e",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.01-0711",
+  "snapshot_time": "2026-03-01T07:11:00+00:00",
+  "hf_revision": "c78696f33bec3a542b2087d010e1752fbb03fdad",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.03.01-1315",
+  "snapshot_time": "2026-03-01T13:15:00+00:00",
+  "hf_revision": "a00bd358963156c483c57c4f246921061915e3a5",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.01-1855",
+  "snapshot_time": "2026-03-01T18:55:00+00:00",
+  "hf_revision": "c160385232df9b21dd3794307e39dbb920d04536",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.02-0230",
+  "snapshot_time": "2026-03-02T02:30:00+00:00",
+  "hf_revision": "42f9f90b655f8dbe0b06b4c65976b126e6918a12",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.02-0720",
+  "snapshot_time": "2026-03-02T07:20:00+00:00",
+  "hf_revision": "1ef2070e6738a1877153f5558206f93b62546756",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.02-1324",
+  "snapshot_time": "2026-03-02T13:24:00+00:00",
+  "hf_revision": "f2b15335d92124881062bc6d2bb3c4d7994bf4c4",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.02-1912",
+  "snapshot_time": "2026-03-02T19:12:00+00:00",
+  "hf_revision": "967c0eaad97bf897d2d1f8f2fc956ffa3e8a3522",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.03-0234",
+  "snapshot_time": "2026-03-03T02:34:00+00:00",
+  "hf_revision": "4094139d699b603d747074556e9be85667779af2",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.03-0713",
+  "snapshot_time": "2026-03-03T07:13:00+00:00",
+  "hf_revision": "da4ddcbe376b48961866d3b4f68bc2a2df9b286b",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.03-1323",
+  "snapshot_time": "2026-03-03T13:23:00+00:00",
+  "hf_revision": "09cfbf3416825ed24db53fc04d89f027c4baa02a",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.03-1910",
+  "snapshot_time": "2026-03-03T19:10:00+00:00",
+  "hf_revision": "63135b02d31ebe7a12d2e437eaa33ebca05de80d",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.04-0223",
+  "snapshot_time": "2026-03-04T02:23:00+00:00",
+  "hf_revision": "63d4830395099ac1a6500e2fa2df709accfc32ae",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.04-0713",
+  "snapshot_time": "2026-03-04T07:13:00+00:00",
+  "hf_revision": "5528c53448354e3838e6cf59d5dc40fd9a1ed19c",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.04-1322",
+  "snapshot_time": "2026-03-04T13:22:00+00:00",
+  "hf_revision": "5d2fdb8dd470164d8493a038a0ff6297d853eb99",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.05-0229",
+  "snapshot_time": "2026-03-05T02:29:00+00:00",
+  "hf_revision": "d44cc9caccd0cefd0e13fba7a7e9578d10ea7c47",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.05-0715",
+  "snapshot_time": "2026-03-05T07:15:00+00:00",
+  "hf_revision": "6335d16798571c99498856776f966afc8084290f",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.05-1323",
+  "snapshot_time": "2026-03-05T13:23:00+00:00",
+  "hf_revision": "014545738207b76a3662fe6e35c01ed1302d64c0",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.05-1943",
+  "snapshot_time": "2026-03-05T19:43:00+00:00",
+  "hf_revision": "0a77c31eee6d6b80fbceba791c3d5927a5055114",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.06-1915",
+  "snapshot_time": "2026-03-06T19:15:00+00:00",
+  "hf_revision": "24fafe9a7a48029943338db83c60aa85fe505b69",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.07-0221",
+  "snapshot_time": "2026-03-07T02:21:00+00:00",
+  "hf_revision": "cd1bf834d995780c234f8fe26da607d28c6b8836",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.07-0708",
+  "snapshot_time": "2026-03-07T07:08:00+00:00",
+  "hf_revision": "d8eef27f3c70db2bb21739d38355fbe4a5c639ef",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.07-1311",
+  "snapshot_time": "2026-03-07T13:11:00+00:00",
+  "hf_revision": "8616a367fe1fb7d9fb662175f12fc1547b98f0a0",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.07-1858",
+  "snapshot_time": "2026-03-07T18:58:00+00:00",
+  "hf_revision": "d156752e5f7ea919ff25270bb625bb7d27946da5",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.08-0235",
+  "snapshot_time": "2026-03-08T02:35:00+00:00",
+  "hf_revision": "55b21c329fb6fdaa9dbfe165f86a8096b4de464e",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.08-1858",
+  "snapshot_time": "2026-03-08T18:58:00+00:00",
+  "hf_revision": "914a6646d9c5d7eab68fd0c91a3118fa42d1bc01",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.12",
+  "snapshot_time": "2026-03-12T00:00:00+00:00",
+  "hf_revision": "3b97927e3e087d7ad1fe7e9bdd151f710a984ac5",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.12-0637",
+  "snapshot_time": "2026-03-12T06:37:00+00:00",
+  "hf_revision": "681255f008886d8e8cdbc875d149d71c25fb00f0",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.12-1127",
+  "snapshot_time": "2026-03-12T11:27:00+00:00",
+  "hf_revision": "43db1aaf26cc9ed0f871997b24b31675eabe2de0",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.12-1307",
+  "snapshot_time": "2026-03-12T13:07:00+00:00",
+  "hf_revision": "43db1aaf26cc9ed0f871997b24b31675eabe2de0",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.12-1901",
+  "snapshot_time": "2026-03-12T19:01:00+00:00",
+  "hf_revision": "3b97927e3e087d7ad1fe7e9bdd151f710a984ac5",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.13-0211",
+  "snapshot_time": "2026-03-13T02:11:00+00:00",
+  "hf_revision": "fa5359008d84da9cda98cdc101794ca5f7cba13f",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.13-0701",
+  "snapshot_time": "2026-03-13T07:01:00+00:00",
+  "hf_revision": "7e4d47258f5cd4d00ace0c3d65b7060012337a30",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.13-1305",
+  "snapshot_time": "2026-03-13T13:05:00+00:00",
+  "hf_revision": "244e6986f497b0b413d01f26748a06488e69bd64",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.13-1849",
+  "snapshot_time": "2026-03-13T18:49:00+00:00",
+  "hf_revision": "98d42fa09d0160051e170cf337afc2248a78ae81",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.14-0209",
+  "snapshot_time": "2026-03-14T02:09:00+00:00",
+  "hf_revision": "87f756b52110410b680dfa5487a55fa38ffcbbdc",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.14-0653",
+  "snapshot_time": "2026-03-14T06:53:00+00:00",
+  "hf_revision": "e4f1e55ee7ffd5a8b07ec09ff398a1415c6aac54",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.14-1258",
+  "snapshot_time": "2026-03-14T12:58:00+00:00",
+  "hf_revision": "86fe88058c3847eb77a5344272433540c8d82eac",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.14-1846",
+  "snapshot_time": "2026-03-14T18:46:00+00:00",
+  "hf_revision": "ab2b591c0961ca30572ad63f1f32d64b18ad559c",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.15-0234",
+  "snapshot_time": "2026-03-15T02:34:00+00:00",
+  "hf_revision": "996c44698dc56519e951a8630d9c33ae642bace5",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.15-0704",
+  "snapshot_time": "2026-03-15T07:04:00+00:00",
+  "hf_revision": "7b7a4f5f3ef12e417874451da397280ca2a3f809",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.15-1300",
+  "snapshot_time": "2026-03-15T13:00:00+00:00",
+  "hf_revision": "bf91cea9ed3a101b070f61e4562662c55e34f261",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.15-1845",
+  "snapshot_time": "2026-03-15T18:45:00+00:00",
+  "hf_revision": "171e7a2310e91d97da5639c762b24f64b3dc3c76",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.16-0235",
+  "snapshot_time": "2026-03-16T02:35:00+00:00",
+  "hf_revision": "17e8794536b16d37e1de6ae5f28698ca8d4a9d35",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.16-0724",
+  "snapshot_time": "2026-03-16T07:24:00+00:00",
+  "hf_revision": "d18a611c54762169392b51bf345b8a366b656657",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.16-1320",
+  "snapshot_time": "2026-03-16T13:20:00+00:00",
+  "hf_revision": "f4235fc56f97040fa9144e6781a16ad6b74b0ec3",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.16-1908",
+  "snapshot_time": "2026-03-16T19:08:00+00:00",
+  "hf_revision": "d99234bcec5eaea6b539830a75cf8631440e73d4",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.17-0220",
+  "snapshot_time": "2026-03-17T02:20:00+00:00",
+  "hf_revision": "490fc46326b376f51cfbcda7f2ba76272cfc48e6",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.17-0720",
+  "snapshot_time": "2026-03-17T07:20:00+00:00",
+  "hf_revision": "6cc4fcf2cd66294f50f9f270c63a98efb5810e84",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.17-1319",
+  "snapshot_time": "2026-03-17T13:19:00+00:00",
+  "hf_revision": "87cf1b673c4ac0fc3d20ec866308f920e5f78697",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.17-1908",
+  "snapshot_time": "2026-03-17T19:08:00+00:00",
+  "hf_revision": "2e6cefe3a37f2456e5b376f013223e65ef7b9ade",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.18-0218",
+  "snapshot_time": "2026-03-18T02:18:00+00:00",
+  "hf_revision": "75102e75aa651213a43b20b72b0b1dc6b1739790",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.18-0709",
+  "snapshot_time": "2026-03-18T07:09:00+00:00",
+  "hf_revision": "2353295198079ca81dc0524b87c5f0e0626b1cf6",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.18-1319",
+  "snapshot_time": "2026-03-18T13:19:00+00:00",
+  "hf_revision": "24705fcef38056eae02b351be2cc9fdddd445373",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.18-1906",
+  "snapshot_time": "2026-03-18T19:06:00+00:00",
+  "hf_revision": "00ac698269231f0095141f5ba96500850a8f4a53",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.19-0218",
+  "snapshot_time": "2026-03-19T02:18:00+00:00",
+  "hf_revision": "5230aca0f3bce09de3bcc0bc98a1acb05a810b96",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.19-0705",
+  "snapshot_time": "2026-03-19T07:05:00+00:00",
+  "hf_revision": "864375181913c49a09619cb59c8f75060641f309",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.19-1311",
+  "snapshot_time": "2026-03-19T13:11:00+00:00",
+  "hf_revision": "0878ceda3081899791f7c325cbb0134c7ada0699",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.19-1905",
+  "snapshot_time": "2026-03-19T19:05:00+00:00",
+  "hf_revision": "4c0b158691d5ee6a3cc4afd6094aeb2371276e9b",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.20-0213",
+  "snapshot_time": "2026-03-20T02:13:00+00:00",
+  "hf_revision": "86c4c261a6367587ea4348188ff2d338500509d0",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.20-0703",
+  "snapshot_time": "2026-03-20T07:03:00+00:00",
+  "hf_revision": "b03b350d5af33e758d70c064958b34b981a188fc",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.20-1306",
+  "snapshot_time": "2026-03-20T13:06:00+00:00",
+  "hf_revision": "0a41ac0aa76ea25050cb973181e4533c458c88d2",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.20-1857",
+  "snapshot_time": "2026-03-20T18:57:00+00:00",
+  "hf_revision": "e3c5d811fe7cba707b640bf0a4149f164c76ffe1",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.21-0207",
+  "snapshot_time": "2026-03-21T02:07:00+00:00",
+  "hf_revision": "f7aa606004f06854b690561cb8039262990cb839",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.21-0649",
+  "snapshot_time": "2026-03-21T06:49:00+00:00",
+  "hf_revision": "5982fef1921d1d946cb50170a695d70755ecbbef",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.21-1256",
+  "snapshot_time": "2026-03-21T12:56:00+00:00",
+  "hf_revision": "982378b326c9bd0d2fcc2345b89e342a413225f0",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.21-1843",
+  "snapshot_time": "2026-03-21T18:43:00+00:00",
+  "hf_revision": "697f0f78ee6341e95662a206bffcb05124b5d0cc",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.22-0219",
+  "snapshot_time": "2026-03-22T02:19:00+00:00",
+  "hf_revision": "5c5d8b74c9d0c77a2b89f7aefd7fc738aa764ad8",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.22-0659",
+  "snapshot_time": "2026-03-22T06:59:00+00:00",
+  "hf_revision": "17ed78fc680d4d0e1cb07fc0f654a41abfa8262e",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.22-1258",
+  "snapshot_time": "2026-03-22T12:58:00+00:00",
+  "hf_revision": "2937f73a5b83f403f816a5658c9af9e7d2f33480",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.22-1843",
+  "snapshot_time": "2026-03-22T18:43:00+00:00",
+  "hf_revision": "83017b25526b683da755b8bf691aef6f6dc5fc44",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.23-0227",
+  "snapshot_time": "2026-03-23T02:27:00+00:00",
+  "hf_revision": "5745847f0f98c8b3d191bf166e2d21b74b300b90",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.23-0717",
+  "snapshot_time": "2026-03-23T07:17:00+00:00",
+  "hf_revision": "3d31d86e20d072b6f7e6d14602804e73436392d0",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.23-1315",
+  "snapshot_time": "2026-03-23T13:15:00+00:00",
+  "hf_revision": "c98f50ee3758bb346d395de07330d84fbee3aa31",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.23-1901",
+  "snapshot_time": "2026-03-23T19:01:00+00:00",
+  "hf_revision": "12a30fbe850291cafb232e1e37477b25fbe52c0c",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.24-0212",
+  "snapshot_time": "2026-03-24T02:12:00+00:00",
+  "hf_revision": "aeb9a549ae0e8f8fa37c1f7451e0d34f69173cb5",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.24-0711",
+  "snapshot_time": "2026-03-24T07:11:00+00:00",
+  "hf_revision": "3156a561ee92d23673eedeced84887c8815ebf66",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.24-1319",
+  "snapshot_time": "2026-03-24T13:19:00+00:00",
+  "hf_revision": "9ffbe99e5a875aece9729eb0248127e07d97b4de",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.24-1910",
+  "snapshot_time": "2026-03-24T19:10:00+00:00",
+  "hf_revision": "d0977cf1b20b3f44bc386de3c48ff23587e337f1",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.25-0217",
+  "snapshot_time": "2026-03-25T02:17:00+00:00",
+  "hf_revision": "91e28ae8f78b301fe93606102f6db4e9b4873d46",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.25-0709",
+  "snapshot_time": "2026-03-25T07:09:00+00:00",
+  "hf_revision": "084ff7373ce9e6d9e7d406f80196cedb20903630",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.25-1321",
+  "snapshot_time": "2026-03-25T13:21:00+00:00",
+  "hf_revision": "62a4b5835163c2a6cf3a42db25fead5c1a8424f7",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.25-1903",
+  "snapshot_time": "2026-03-25T19:03:00+00:00",
+  "hf_revision": "bfeb5b726a981d0577199bdeb2e60b9ce5aab59a",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.26-0231",
+  "snapshot_time": "2026-03-26T02:31:00+00:00",
+  "hf_revision": "4391331e0c2a86dec2b69347aab7969dfb29031a",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.26-0716",
+  "snapshot_time": "2026-03-26T07:16:00+00:00",
+  "hf_revision": "47e6e367e91e6a5c80b770e4754f29a04c4b4778",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.26-1323",
+  "snapshot_time": "2026-03-26T13:23:00+00:00",
+  "hf_revision": "4ebcd44fe2c96acdcf98b3cf8c71818a3874090e",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.26-1913",
+  "snapshot_time": "2026-03-26T19:13:00+00:00",
+  "hf_revision": "333ccb9de49a3fb9de041f9555999754ff53509d",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.27-0233",
+  "snapshot_time": "2026-03-27T02:33:00+00:00",
+  "hf_revision": "e42a7972748456abf8c4b1746c0f1174fab4353a",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.27-0725",
+  "snapshot_time": "2026-03-27T07:25:00+00:00",
+  "hf_revision": "9da981f36b13ed8f232e4dd0e0ad35f773057c33",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.27-1322",
+  "snapshot_time": "2026-03-27T13:22:00+00:00",
+  "hf_revision": "a954d78a11b8c9e018b684463d59ffd480938933",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.27-1909",
+  "snapshot_time": "2026-03-27T19:09:00+00:00",
+  "hf_revision": "f142688327b1512de69e0b152629a28d86485e4b",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.28-0216",
+  "snapshot_time": "2026-03-28T02:16:00+00:00",
+  "hf_revision": "e97ecea5db1d0cf16162e6732b53f14074474da5",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.28-0712",
+  "snapshot_time": "2026-03-28T07:12:00+00:00",
+  "hf_revision": "9fc105199305395ab9aa324402931e1beaf20975",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.28-1302",
+  "snapshot_time": "2026-03-28T13:02:00+00:00",
+  "hf_revision": "3ef7a5ec7ebf4585ac9a9ad1b9b5b27992e7cd88",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.28-1850",
+  "snapshot_time": "2026-03-28T18:50:00+00:00",
+  "hf_revision": "b86d0e14ac130f3b119f51b16fe6d88b0b0d3f71",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.29-0236",
+  "snapshot_time": "2026-03-29T02:36:00+00:00",
+  "hf_revision": "39479ed6b29a0756c14c413556c4844eb5c14c82",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.29-0710",
+  "snapshot_time": "2026-03-29T07:10:00+00:00",
+  "hf_revision": "bea8cd1027c73efa337a9d217c18e13d7fb89eb2",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.29-1308",
+  "snapshot_time": "2026-03-29T13:08:00+00:00",
+  "hf_revision": "a431e18c9845d6aa64c4919d737150b34e27b888",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.29-1853",
+  "snapshot_time": "2026-03-29T18:53:00+00:00",
+  "hf_revision": "54d400d14a711d59480fd154ef914aa88c684a81",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.30-0339",
+  "snapshot_time": "2026-03-30T03:39:00+00:00",
+  "hf_revision": "30f755b6c569bdafd8a9dc996e63cf2e839a0170",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.03.31-1948",
+  "snapshot_time": "2026-03-31T19:48:00+00:00",
+  "hf_revision": "4d6d892890b57c95edc8b6ebbb67795a547aec06",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.03-0230",
+  "snapshot_time": "2026-04-03T02:30:00+00:00",
+  "hf_revision": "d921f855c3542f5a635fa5b0b0e862f916ec5cec",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.04.03-0714",
+  "snapshot_time": "2026-04-03T07:14:00+00:00",
+  "hf_revision": "cee93f135312718bfb8402066f1ba0830c3caa56",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.03-1309",
+  "snapshot_time": "2026-04-03T13:09:00+00:00",
+  "hf_revision": "7c05319571da798e6b9fe0ed36990ad579f356e7",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.03-1853",
+  "snapshot_time": "2026-04-03T18:53:00+00:00",
+  "hf_revision": "9d5588e8fe32a8b483c3215f852847c10f268cff",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.04-0214",
+  "snapshot_time": "2026-04-04T02:14:00+00:00",
+  "hf_revision": "65afbfae6de1aae17660979044df9595d6267fd7",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.04-0707",
+  "snapshot_time": "2026-04-04T07:07:00+00:00",
+  "hf_revision": "81e89c791d4f5fcbce1f37de191fbaa28142c311",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.04-1301",
+  "snapshot_time": "2026-04-04T13:01:00+00:00",
+  "hf_revision": "3e0ab907ca34385832557a822adeb621b22394ad",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.04-1847",
+  "snapshot_time": "2026-04-04T18:47:00+00:00",
+  "hf_revision": "623d87965a3dfb0476e9df19a140eb2f8c5186e1",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.05-0236",
+  "snapshot_time": "2026-04-05T02:36:00+00:00",
+  "hf_revision": "4ee393e52e24ec637f37f7002356728b9aee5094",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.05-0712",
+  "snapshot_time": "2026-04-05T07:12:00+00:00",
+  "hf_revision": "a9684d861d852a39c04e29c126be92c349747742",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.05-1303",
+  "snapshot_time": "2026-04-05T13:03:00+00:00",
+  "hf_revision": "d4157f77f8b4b241ca3be3925e0ec6846d5c95f0",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.05-1849",
+  "snapshot_time": "2026-04-05T18:49:00+00:00",
+  "hf_revision": "98b2b8c362a3006206766719338598b913d582cd",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.06-0237",
+  "snapshot_time": "2026-04-06T02:37:00+00:00",
+  "hf_revision": "8839cf46cc2f2dab4e8872e6cf3e98740a588aac",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.06-0748",
+  "snapshot_time": "2026-04-06T07:48:00+00:00",
+  "hf_revision": "04254420e5f019d0a58cc595c6fc97b09cb82b94",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.06-1317",
+  "snapshot_time": "2026-04-06T13:17:00+00:00",
+  "hf_revision": "b9ae317246d5e8795cabf41d51c46ab3c34635b2",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.06-1905",
+  "snapshot_time": "2026-04-06T19:05:00+00:00",
+  "hf_revision": "af8f7b6a1a0df0050dce02162fc751a5c33b650f",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.07-0232",
+  "snapshot_time": "2026-04-07T02:32:00+00:00",
+  "hf_revision": "3a4a3d5c4568daac348efec3bda954bd422367d9",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.07-0723",
+  "snapshot_time": "2026-04-07T07:23:00+00:00",
+  "hf_revision": "6b53f9b60cf05cc9a843159f31e10249dbca083d",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.07-1325",
+  "snapshot_time": "2026-04-07T13:25:00+00:00",
+  "hf_revision": "f11b86a876d3b47690f8b84e6d8f416f231fc1f1",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.07-2329",
+  "snapshot_time": "2026-04-07T23:29:00+00:00",
+  "hf_revision": "648e1b03c65de0c8a013aa5a69c91e1d2ec29b71",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.08-0654",
+  "snapshot_time": "2026-04-08T06:54:00+00:00",
+  "hf_revision": "52d39d1c27791e81239d7e8ba836bdf6dbf65bbe",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.08-1145",
+  "snapshot_time": "2026-04-08T11:45:00+00:00",
+  "hf_revision": "e781d0f866bcb6d000733d98010dc599b22157d1",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.08-1746",
+  "snapshot_time": "2026-04-08T17:46:00+00:00",
+  "hf_revision": "2221e3cba49a8dfe2e3239c7b79df2a83ba5fa01",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.08-2341",
+  "snapshot_time": "2026-04-08T23:41:00+00:00",
+  "hf_revision": "ceb34c9f1ce4030f3130727f221685c2f69498ec",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.09-0648",
+  "snapshot_time": "2026-04-09T06:48:00+00:00",
+  "hf_revision": "4820195448dad0d1bb3239d54fa32f613055e304",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.09-1148",
+  "snapshot_time": "2026-04-09T11:48:00+00:00",
+  "hf_revision": "0f878af54046320875296896ac786d413e9423d5",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.09-1752",
+  "snapshot_time": "2026-04-09T17:52:00+00:00",
+  "hf_revision": "1016f3ff7a852db4ffc3f7606818b7ef63f439e4",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.09-2331",
+  "snapshot_time": "2026-04-09T23:31:00+00:00",
+  "hf_revision": "594810a1904b58facb4f5336d73bf94b11e369d3",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.10-0659",
+  "snapshot_time": "2026-04-10T06:59:00+00:00",
+  "hf_revision": "e11ec05f3e7073322d44806507fc0d17f3570e4f",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.10-1153",
+  "snapshot_time": "2026-04-10T11:53:00+00:00",
+  "hf_revision": "8063f3918ffce8b69fb3d37ccae4fc7c89a22246",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.10-1736",
+  "snapshot_time": "2026-04-10T17:36:00+00:00",
+  "hf_revision": "60a0bb708f4076975b7b4ef23a6b1a4395f0f695",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.10-2317",
+  "snapshot_time": "2026-04-10T23:17:00+00:00",
+  "hf_revision": "97ec77b33c4818687459e2012d5d5b163ee71240",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.11-0638",
+  "snapshot_time": "2026-04-11T06:38:00+00:00",
+  "hf_revision": "138d6455e79b620a607353f1dab768f30570b062",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.11-1126",
+  "snapshot_time": "2026-04-11T11:26:00+00:00",
+  "hf_revision": "2fb2d8a380068a8b9dc2905e1428375e666f8bc3",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.11-1723",
+  "snapshot_time": "2026-04-11T17:23:00+00:00",
+  "hf_revision": "fd243695eb2ced874a085ecc8aaf308a2af57979",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.11-2310",
+  "snapshot_time": "2026-04-11T23:10:00+00:00",
+  "hf_revision": "7670d3c71cd631c8d70deece487d76cb35e9ff77",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.12-0701",
+  "snapshot_time": "2026-04-12T07:01:00+00:00",
+  "hf_revision": "b7883331da6d033a5468520c7e1a5c089eef045a",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.12-1139",
+  "snapshot_time": "2026-04-12T11:39:00+00:00",
+  "hf_revision": "5669115335991c87c0a712fa4f2f46dba3dd5682",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.12-1727",
+  "snapshot_time": "2026-04-12T17:27:00+00:00",
+  "hf_revision": "72d9167b3c208a01b1650d007cecbe1af879c686",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.12-2315",
+  "snapshot_time": "2026-04-12T23:15:00+00:00",
+  "hf_revision": "db1affd19bbe297212b1095c38da6d9a2163ec47",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.13-0706",
+  "snapshot_time": "2026-04-13T07:06:00+00:00",
+  "hf_revision": "ce27f838071eeb708900947616ec4e2f76e0d020",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.13-1228",
+  "snapshot_time": "2026-04-13T12:28:00+00:00",
+  "hf_revision": "d3d851ca2bffc8babab6cc37ae417b75cb3d55a3",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.13-1753",
+  "snapshot_time": "2026-04-13T17:53:00+00:00",
+  "hf_revision": "848fefa7e49fa98aca745d9deafcb1a0514141d0",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.13-2340",
+  "snapshot_time": "2026-04-13T23:40:00+00:00",
+  "hf_revision": "0e9b0af08cd887decd9f40d874044aea28d08385",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.14-0700",
+  "snapshot_time": "2026-04-14T07:00:00+00:00",
+  "hf_revision": "da486cd6e1da8a14141ee1b75d4155b21e6324e1",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.14-1210",
+  "snapshot_time": "2026-04-14T12:10:00+00:00",
+  "hf_revision": "326c6dfeb6dd7b63637eba859d87208c2f39f927",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.14-1752",
+  "snapshot_time": "2026-04-14T17:52:00+00:00",
+  "hf_revision": "5f5a5235ac852555705d7dfb1f460ba29bce1546",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.14-2341",
+  "snapshot_time": "2026-04-14T23:41:00+00:00",
+  "hf_revision": "346bbc87fa959bf124c55e4423d1b5149eafbf12",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.15-0657",
+  "snapshot_time": "2026-04-15T06:57:00+00:00",
+  "hf_revision": "24116147b3c4f7526da9f73e53707ffefee16eb5",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.15-1211",
+  "snapshot_time": "2026-04-15T12:11:00+00:00",
+  "hf_revision": "26c3f31fa17039dfb361d9771c59f2d2904c7c09",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.15-1751",
+  "snapshot_time": "2026-04-15T17:51:00+00:00",
+  "hf_revision": "e621756a679f48dea8b05529942935472b52ef2e",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.15-2342",
+  "snapshot_time": "2026-04-15T23:42:00+00:00",
+  "hf_revision": "2e6ea9789dcad8190d6aa556f6220d416e9f866f",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.16-0706",
+  "snapshot_time": "2026-04-16T07:06:00+00:00",
+  "hf_revision": "4822302e80d5b0851e96358f685965c50cd982ed",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.16-1211",
+  "snapshot_time": "2026-04-16T12:11:00+00:00",
+  "hf_revision": "ef6412ee0b282e2afe50dba590f8ac3ba5035d80",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.16-1810",
+  "snapshot_time": "2026-04-16T18:10:00+00:00",
+  "hf_revision": "66f09f226d4bb9558b56cfa7d85162ee41fca77d",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.16-2340",
+  "snapshot_time": "2026-04-16T23:40:00+00:00",
+  "hf_revision": "77718a5787c15cb668336f6d83b8f278576e6072",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.17-0700",
+  "snapshot_time": "2026-04-17T07:00:00+00:00",
+  "hf_revision": "650bc732fafb30c675f0991c5e3eaea0767af2f3",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.17-1212",
+  "snapshot_time": "2026-04-17T12:12:00+00:00",
+  "hf_revision": "faebc6089a995d33a5b519cdbbfc7aa8e63926ae",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.17-1745",
+  "snapshot_time": "2026-04-17T17:45:00+00:00",
+  "hf_revision": "bf0760eacf1f4e73d2594328e9e29847d4f00e06",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.17-2326",
+  "snapshot_time": "2026-04-17T23:26:00+00:00",
+  "hf_revision": "e8eafdea8c8d070bf07df9d7581bc07219e6fec2",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.18-0653",
+  "snapshot_time": "2026-04-18T06:53:00+00:00",
+  "hf_revision": "e4055b7d458ed9ee46c8e7e811bd1eed4256e0ff",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.18-1133",
+  "snapshot_time": "2026-04-18T11:33:00+00:00",
+  "hf_revision": "b2b3b79eea481ffccc725b1406cd85ab461bc544",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.18-1728",
+  "snapshot_time": "2026-04-18T17:28:00+00:00",
+  "hf_revision": "d859e507d59ec487e1ddb479e5bfec34ecca239a",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.18-2318",
+  "snapshot_time": "2026-04-18T23:18:00+00:00",
+  "hf_revision": "d0e9eb06709d10b99238ab5e6e272ca1bb7ed597",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.19-0707",
+  "snapshot_time": "2026-04-19T07:07:00+00:00",
+  "hf_revision": "09f12e82ad9db2d91f95f61479bc97dd1d44e3b1",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.19-1146",
+  "snapshot_time": "2026-04-19T11:46:00+00:00",
+  "hf_revision": "fe00af3ccc36b3757bfbb08eab4f6adbcf1c537d",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.19-1726",
+  "snapshot_time": "2026-04-19T17:26:00+00:00",
+  "hf_revision": "348c83ab151d6eac43315b9a1d27d1280c422215",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.19-2317",
+  "snapshot_time": "2026-04-19T23:17:00+00:00",
+  "hf_revision": "09a7d4ab6f9781a4a9be5aaf72befda83408934a",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.20-0708",
+  "snapshot_time": "2026-04-20T07:08:00+00:00",
+  "hf_revision": "11efba8ba56a32e586f50a7fb11b1202b76b19e0",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.20-1232",
+  "snapshot_time": "2026-04-20T12:32:00+00:00",
+  "hf_revision": "d38daf48fbee323c75645a088e522afc549a47d6",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.20-1808",
+  "snapshot_time": "2026-04-20T18:08:00+00:00",
+  "hf_revision": "54ddf188a8200c0bda33f53acc801b0cd0ea619f",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.20-2331",
+  "snapshot_time": "2026-04-20T23:31:00+00:00",
+  "hf_revision": "fca3bd73e8e93360d2287679b76f3cbd5dba6688",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.21-0701",
+  "snapshot_time": "2026-04-21T07:01:00+00:00",
+  "hf_revision": "37dfbcde2872b96e3a81c9e77d4b6c0dfe1c6e3d",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.21-1216",
+  "snapshot_time": "2026-04-21T12:16:00+00:00",
+  "hf_revision": "47521749fba4b47dcbcb6ddd8ab5ab6ba6fbd38c",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.21-1753",
+  "snapshot_time": "2026-04-21T17:53:00+00:00",
+  "hf_revision": "e1920d55512da05eb6ec79d57b1dabd1de859846",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.21-2337",
+  "snapshot_time": "2026-04-21T23:37:00+00:00",
+  "hf_revision": "fc093fe345bd095b8c412932235ed56f74a1ad46",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.22-0700",
+  "snapshot_time": "2026-04-22T07:00:00+00:00",
+  "hf_revision": "3dfd1c987e251dc64c18ffc8f8175f11e3c7369b",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.22-1213",
+  "snapshot_time": "2026-04-22T12:13:00+00:00",
+  "hf_revision": "6ccce70dd2c376e020402a46f8d59390ff0b0755",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.22-1753",
+  "snapshot_time": "2026-04-22T17:53:00+00:00",
+  "hf_revision": "bc2c1a916150c16fa58050d7299d8876f5985211",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.22-2339",
+  "snapshot_time": "2026-04-22T23:39:00+00:00",
+  "hf_revision": "46766478f91817ae539768249934d766c46deeba",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.23-0704",
+  "snapshot_time": "2026-04-23T07:04:00+00:00",
+  "hf_revision": "66c453914231877ed62620c5f44247fb8cf47da3",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.23-1217",
+  "snapshot_time": "2026-04-23T12:17:00+00:00",
+  "hf_revision": "fb76366e2a4995bb77bb2e10d0a77dfc8a3a346f",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.23-1809",
+  "snapshot_time": "2026-04-23T18:09:00+00:00",
+  "hf_revision": "d25bd3db804a00680d5cac616aa62f157bfaa261",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.23-2334",
+  "snapshot_time": "2026-04-23T23:34:00+00:00",
+  "hf_revision": "ac13b4308b3bcdd98229dfe1ba3706b125c40346",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.24-0703",
+  "snapshot_time": "2026-04-24T07:03:00+00:00",
+  "hf_revision": "53c4c6c21e2c9ca42f9c21b874d2c9431176b81b",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.24-1229",
+  "snapshot_time": "2026-04-24T12:29:00+00:00",
+  "hf_revision": "a78322e4bce9b138ee00195c278057999bacd3c8",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.24-1749",
+  "snapshot_time": "2026-04-24T17:49:00+00:00",
+  "hf_revision": "8df38275532993ce35bc998de8ba61661ed7d6b1",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.24-2319",
+  "snapshot_time": "2026-04-24T23:19:00+00:00",
+  "hf_revision": "022e677e23f394678e29449858f6dad89f134da6",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.25-0655",
+  "snapshot_time": "2026-04-25T06:55:00+00:00",
+  "hf_revision": "3970ea59f6497a3b12de9acfcc616730965c2147",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.25-1142",
+  "snapshot_time": "2026-04-25T11:42:00+00:00",
+  "hf_revision": "420c335b7808bab0b5fe4c5cf93751d7ff5855ba",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.25-1729",
+  "snapshot_time": "2026-04-25T17:29:00+00:00",
+  "hf_revision": "4bcc97f0468ac2199b598c04a951edf87265e651",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.25-2318",
+  "snapshot_time": "2026-04-25T23:18:00+00:00",
+  "hf_revision": "7465ccf23c180c9416b03e876252081ef4c72567",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.26-0710",
+  "snapshot_time": "2026-04-26T07:10:00+00:00",
+  "hf_revision": "7532d3e5d9daa87ece9877e259769aaf8064c92a",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.26-1205",
+  "snapshot_time": "2026-04-26T12:05:00+00:00",
+  "hf_revision": "4cd390378aa44d173ce140a2f48e6d70a697e182",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.26-1733",
+  "snapshot_time": "2026-04-26T17:33:00+00:00",
+  "hf_revision": "9edac49e47b2f4354fb7ed0e42906ab134ab92bd",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.26-2320",
+  "snapshot_time": "2026-04-26T23:20:00+00:00",
+  "hf_revision": "d373bb31c2e7c4f6363a35552062df07b9981fa3",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.27-0712",
+  "snapshot_time": "2026-04-27T07:12:00+00:00",
+  "hf_revision": "bde97cf35d414d2bc810d1a82f4d3ba1ab0c7e38",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.27-1252",
+  "snapshot_time": "2026-04-27T12:52:00+00:00",
+  "hf_revision": "3a059c69e01f5de8c1d24eba09e0f7324c6515f8",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.27-1819",
+  "snapshot_time": "2026-04-27T18:19:00+00:00",
+  "hf_revision": "de33776bc97f0ddbde0951d6c30ab70e2d93ff02",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.27-2348",
+  "snapshot_time": "2026-04-27T23:48:00+00:00",
+  "hf_revision": "ed40c26761aafc1741f67d6b0881b157b6f5665e",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.28-0720",
+  "snapshot_time": "2026-04-28T07:20:00+00:00",
+  "hf_revision": "c86bb0d875db37b12d5624420998a293968b37dd",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.28-1250",
+  "snapshot_time": "2026-04-28T12:50:00+00:00",
+  "hf_revision": "b43240e664785cebe2680ca77a0828810f7f85fd",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.29-0007",
+  "snapshot_time": "2026-04-29T00:07:00+00:00",
+  "hf_revision": "11503b0998e67d048ae2434a785c2ababbd3eeb8",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.29-0718",
+  "snapshot_time": "2026-04-29T07:18:00+00:00",
+  "hf_revision": "f7c7853bff6fa6d09d0f67d6f26faafa018a5bf3",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.29-1244",
+  "snapshot_time": "2026-04-29T12:44:00+00:00",
+  "hf_revision": "98c823645febd5f2753535a7de8901aed1ca42c6",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.29-1822",
+  "snapshot_time": "2026-04-29T18:22:00+00:00",
+  "hf_revision": "690532a5ad3725882e9949ff314164cb7d6b630b",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.29-2352",
+  "snapshot_time": "2026-04-29T23:52:00+00:00",
+  "hf_revision": "6e015ac97b835268debeacc7e6535d59458faafb",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.30-0720",
+  "snapshot_time": "2026-04-30T07:20:00+00:00",
+  "hf_revision": "f45070b613d1269a41a0bc018ae7aef9f2040319",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.30-1247",
+  "snapshot_time": "2026-04-30T12:47:00+00:00",
+  "hf_revision": "199f4ff9c2497f9fef17ebd3bae0103f4f48941d",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.30-1820",
+  "snapshot_time": "2026-04-30T18:20:00+00:00",
+  "hf_revision": "025604515ebf0c4d1e2e3fe6ad575ec79812e015",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.04.30-2347",
+  "snapshot_time": "2026-04-30T23:47:00+00:00",
+  "hf_revision": "c48627096783f30277c023a64ae1f1bdb44c328e",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.01-0751",
+  "snapshot_time": "2026-05-01T07:51:00+00:00",
+  "hf_revision": "7b4b5837df732b58a2a567c10b9b8152a1e96b1d",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.01-1236",
+  "snapshot_time": "2026-05-01T12:36:00+00:00",
+  "hf_revision": "ac35115bf214a8953b33af3153d922f878a77ba6",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.05.01-1744",
+  "snapshot_time": "2026-05-01T17:44:00+00:00",
+  "hf_revision": "c84ace08e690f135c29d44647d44d711241715ae",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.01-2337",
+  "snapshot_time": "2026-05-01T23:37:00+00:00",
+  "hf_revision": "220af899e8c2cde783619add19ddbdf88326bafb",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.02-0707",
+  "snapshot_time": "2026-05-02T07:07:00+00:00",
+  "hf_revision": "a4e69eaa1fb268a88b5a2a34761047f8e632f8a3",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.02-1209",
+  "snapshot_time": "2026-05-02T12:09:00+00:00",
+  "hf_revision": "4b00eedc437a1c9b6177cc23c214f8b3b0e1b900",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.02-1737",
+  "snapshot_time": "2026-05-02T17:37:00+00:00",
+  "hf_revision": "e7da6d8a69de1825a674c112eb37d080b43f64c2",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.02-2324",
+  "snapshot_time": "2026-05-02T23:24:00+00:00",
+  "hf_revision": "5ae225960950a8d7a8a6a81fd812c4ee20517c24",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.03-0721",
+  "snapshot_time": "2026-05-03T07:21:00+00:00",
+  "hf_revision": "e5e571a8e118cb7c9b271121d39a2ae46fdafc05",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.03-1226",
+  "snapshot_time": "2026-05-03T12:26:00+00:00",
+  "hf_revision": "91e43af433aee9858215ee56d4f5db6b8aff5e00",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.03-1735",
+  "snapshot_time": "2026-05-03T17:35:00+00:00",
+  "hf_revision": "17ca3012a74ca706a67156e22b5b714c00840b29",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.03-2325",
+  "snapshot_time": "2026-05-03T23:25:00+00:00",
+  "hf_revision": "9c0af156a1279d94424b3ab3c5b13e8171ddf374",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.04-0718",
+  "snapshot_time": "2026-05-04T07:18:00+00:00",
+  "hf_revision": "5b635b81c9d04cbe49677b7980e719359d21a263",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.04-1254",
+  "snapshot_time": "2026-05-04T12:54:00+00:00",
+  "hf_revision": "a045c73f4c92d14ef49db097af24244efab2efcd",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.04-1826",
+  "snapshot_time": "2026-05-04T18:26:00+00:00",
+  "hf_revision": "c4379483291ab73bc9dbb3f8dfadffc729325c2b",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.05-0005",
+  "snapshot_time": "2026-05-05T00:05:00+00:00",
+  "hf_revision": "7afa4ac87cd3fd40ba7436f8181d480dbf5a3555",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.05-0709",
+  "snapshot_time": "2026-05-05T07:09:00+00:00",
+  "hf_revision": "f64bcf6574fa2e8b4c53908725b46b1270f08e7a",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.05-1234",
+  "snapshot_time": "2026-05-05T12:34:00+00:00",
+  "hf_revision": "78026103c9129fcda98f96e1b2f36a87f35acba4",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.05-1819",
+  "snapshot_time": "2026-05-05T18:19:00+00:00",
+  "hf_revision": "b21046747e0ef4e94988a705f04fa52f32f358b2",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.05-2349",
+  "snapshot_time": "2026-05-05T23:49:00+00:00",
+  "hf_revision": "4a85dafb56b27f7308293d0136323ec3052fb0f0",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.06-0716",
+  "snapshot_time": "2026-05-06T07:16:00+00:00",
+  "hf_revision": "d6fe9ddd30376877cc64eb65d07df33cfcae1e76",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.06-1300",
+  "snapshot_time": "2026-05-06T13:00:00+00:00",
+  "hf_revision": "3569382767e0845331ef0f3e8c9cab60a9c3fc23",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.06-1837",
+  "snapshot_time": "2026-05-06T18:37:00+00:00",
+  "hf_revision": "da2cf815d7be22becce0fe75fee9827144a95ec0",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.07-0010",
+  "snapshot_time": "2026-05-07T00:10:00+00:00",
+  "hf_revision": "50731d8b4449afc3975d6738a7933aba406e3df4",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.07-0716",
+  "snapshot_time": "2026-05-07T07:16:00+00:00",
+  "hf_revision": "3464b84408713a5e26bbbc1cffbdb7925299baad",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.07-1303",
+  "snapshot_time": "2026-05-07T13:03:00+00:00",
+  "hf_revision": "9f93570452e3967f40fe08c4122e5a4123e8e9f5",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.07-1834",
+  "snapshot_time": "2026-05-07T18:34:00+00:00",
+  "hf_revision": "33294ae7db971e9fad16ff98f3ba7b77e1d29e62",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.08-0009",
+  "snapshot_time": "2026-05-08T00:09:00+00:00",
+  "hf_revision": "189db6994692c63215f52cc04f3f9abba8cb9262",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.08-0719",
+  "snapshot_time": "2026-05-08T07:19:00+00:00",
+  "hf_revision": "078ca715a8a4a6c80f5659fb7d23956124ebec71",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.08-1207",
+  "snapshot_time": "2026-05-08T12:07:00+00:00",
+  "hf_revision": "bbbe7bff5fe6c9f7a2258f201c7096b3821b0e39",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.08-1822",
+  "snapshot_time": "2026-05-08T18:22:00+00:00",
+  "hf_revision": "cc60ccb69f3d8f08a0d0280873fe4674ae36a0d7",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.08-2343",
+  "snapshot_time": "2026-05-08T23:43:00+00:00",
+  "hf_revision": "9e2119e3f093189bf21c093fa633579d5c30a198",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.09-0715",
+  "snapshot_time": "2026-05-09T07:15:00+00:00",
+  "hf_revision": "28e24c046cca20b19816549db837d98c506a7efd",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.09-1222",
+  "snapshot_time": "2026-05-09T12:22:00+00:00",
+  "hf_revision": "2769c53ad1382e398430a54fe6ff09088d9d92ea",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.09-1743",
+  "snapshot_time": "2026-05-09T17:43:00+00:00",
+  "hf_revision": "8e29f14e9a2602452e73c1a2c7162839dd656b47",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.09-2326",
+  "snapshot_time": "2026-05-09T23:26:00+00:00",
+  "hf_revision": "e57e1695c3b37bd8bc8ce6a14b032eafaba912e7",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.10-0721",
+  "snapshot_time": "2026-05-10T07:21:00+00:00",
+  "hf_revision": "061a9868cb8373d3d47e0050cf8efb86e15cf0cc",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.10-1234",
+  "snapshot_time": "2026-05-10T12:34:00+00:00",
+  "hf_revision": "d9132b28cb209916a561b76c5353d62b29351b91",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.10-1743",
+  "snapshot_time": "2026-05-10T17:43:00+00:00",
+  "hf_revision": "a1df016bea5b665853c428d953e9782d2e170d04",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.10-2329",
+  "snapshot_time": "2026-05-10T23:29:00+00:00",
+  "hf_revision": "f0f47bea6375666b4ccdbde0c98cb3fb6f116df2",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.11-0758",
+  "snapshot_time": "2026-05-11T07:58:00+00:00",
+  "hf_revision": "a39e1fed855c5a7254459a5496c8662f75fb9e70",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.11-1412",
+  "snapshot_time": "2026-05-11T14:12:00+00:00",
+  "hf_revision": "b552e44a374dfb826c8cb724f20a8d372b54ebb2",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.11-1916",
+  "snapshot_time": "2026-05-11T19:16:00+00:00",
+  "hf_revision": "1f26338d414cfd29e7b1b6dcda1a49b52a91b85c",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.12-0011",
+  "snapshot_time": "2026-05-12T00:11:00+00:00",
+  "hf_revision": "f7a6babb25b706f052d4c9a4d77535fa630e9b70",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.12-0722",
+  "snapshot_time": "2026-05-12T07:22:00+00:00",
+  "hf_revision": "e9ec8961aed62b4a24308e86d6508d40260b817c",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.12-1311",
+  "snapshot_time": "2026-05-12T13:11:00+00:00",
+  "hf_revision": "7630608401f21da9a3289611485f2a2de2ea8a69",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.12-1850",
+  "snapshot_time": "2026-05-12T18:50:00+00:00",
+  "hf_revision": "a308621f1423b9ca922b7b5546fa4ec18f4ea5fc",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.13-0018",
+  "snapshot_time": "2026-05-13T00:18:00+00:00",
+  "hf_revision": "a60466106c0b29c34d07dde3aaef9406444b4fc1",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.13-0752",
+  "snapshot_time": "2026-05-13T07:52:00+00:00",
+  "hf_revision": "543aef5cd6e974576f6525ea0113e74acbe37838",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.13-1310",
+  "snapshot_time": "2026-05-13T13:10:00+00:00",
+  "hf_revision": "469a9f96c2017fb49b1d498c4cd4f3e7a709859e",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.13-1905",
+  "snapshot_time": "2026-05-13T19:05:00+00:00",
+  "hf_revision": "0578b70328a83880e8a181f50b9cdb343a37173a",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.14-0019",
+  "snapshot_time": "2026-05-14T00:19:00+00:00",
+  "hf_revision": "38361263c78b324821e06c4d3d2f9f3bbf4d3315",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.14-0753",
+  "snapshot_time": "2026-05-14T07:53:00+00:00",
+  "hf_revision": "af51494f8f94082a37c8457ca34787313c761f34",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.14-1306",
+  "snapshot_time": "2026-05-14T13:06:00+00:00",
+  "hf_revision": "6481b44882d54f5b7f5087cd46ad8725b001f114",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.14-1846",
+  "snapshot_time": "2026-05-14T18:46:00+00:00",
+  "hf_revision": "7c8930f9ff7accf55f2217639b3f306281e25191",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.15-0011",
+  "snapshot_time": "2026-05-15T00:11:00+00:00",
+  "hf_revision": "2757b1ce5c656a2d478490aca97432c4a4f94b85",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.15-0756",
+  "snapshot_time": "2026-05-15T07:56:00+00:00",
+  "hf_revision": "89ef1f1fbd76c5ebcbad39c7a83ab0eb1ab1f794",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.15-1313",
+  "snapshot_time": "2026-05-15T13:13:00+00:00",
+  "hf_revision": "203fdc83e8279c1a8a8b70b86b7dad61d07c0317",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.15-1832",
+  "snapshot_time": "2026-05-15T18:32:00+00:00",
+  "hf_revision": "e68094703208de8240c99f7f8a68ec12afcb0d19",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.16-0004",
+  "snapshot_time": "2026-05-16T00:04:00+00:00",
+  "hf_revision": "38a7aea89a930d2e36a4abe77955a1b0a837824a",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.16-0719",
+  "snapshot_time": "2026-05-16T07:19:00+00:00",
+  "hf_revision": "c3c4cd7b933b55f9f41632fbe8094053cdb05a4d",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.16-1230",
+  "snapshot_time": "2026-05-16T12:30:00+00:00",
+  "hf_revision": "97c1a70a3ff109fb37492e11f706dab3972ad428",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.16-1745",
+  "snapshot_time": "2026-05-16T17:45:00+00:00",
+  "hf_revision": "fbb4bb9b47ae4b5f0b2bc43173def1a6f3086f65",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.16-2329",
+  "snapshot_time": "2026-05-16T23:29:00+00:00",
+  "hf_revision": "1fccc5868e3960a9bb3c1d8acb345c3ab9e285ac",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.17-0754",
+  "snapshot_time": "2026-05-17T07:54:00+00:00",
+  "hf_revision": "b4daee6b88800add4a66bc27f3804ce79a75f815",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.17-1247",
+  "snapshot_time": "2026-05-17T12:47:00+00:00",
+  "hf_revision": "e6f34440fe91314efab879e232a6ee5d7fb31ffb",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.17-1745",
+  "snapshot_time": "2026-05-17T17:45:00+00:00",
+  "hf_revision": "458920b43c4d5637d4fab2600141e3cafac02473",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.17-2334",
+  "snapshot_time": "2026-05-17T23:34:00+00:00",
+  "hf_revision": "c9ce2dd87831cc161ad40b2cd35bafd19a096195",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.18-0806",
+  "snapshot_time": "2026-05-18T08:06:00+00:00",
+  "hf_revision": "a569c375b4223c782ebddfdc0081543a021e4755",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.18-1437",
+  "snapshot_time": "2026-05-18T14:37:00+00:00",
+  "hf_revision": "21ce22c4ab3b147ac267a195fed51c9683c78bd1",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.18-2006",
+  "snapshot_time": "2026-05-18T20:06:00+00:00",
+  "hf_revision": "eee35b853b611650008a4163d8c6a9104d73e6db",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.18-2026",
+  "snapshot_time": "2026-05-18T20:26:00+00:00",
+  "hf_revision": "eee35b853b611650008a4163d8c6a9104d73e6db",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.19-0804",
+  "snapshot_time": "2026-05-19T08:04:00+00:00",
+  "hf_revision": "9499a34b0f6e8979ed0833f3d2d25468bb147ebe",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.19-1416",
+  "snapshot_time": "2026-05-19T14:16:00+00:00",
+  "hf_revision": "b696d805878fa01055dbfb554a5e3ef8543a452f",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.19-1947",
+  "snapshot_time": "2026-05-19T19:47:00+00:00",
+  "hf_revision": "8cf7fdd6b96d7ed99c14604cfa65a281e7764b6e",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.20-0016",
+  "snapshot_time": "2026-05-20T00:16:00+00:00",
+  "hf_revision": "29d78897c2cb9d5109b0adf8255f7a2f674615eb",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.20-0800",
+  "snapshot_time": "2026-05-20T08:00:00+00:00",
+  "hf_revision": "86731789555f534192d1bc691bb4db3dba491a9b",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.20-1359",
+  "snapshot_time": "2026-05-20T13:59:00+00:00",
+  "hf_revision": "eeaba8c4332ab8cd33a1caeeea3d5e8de327c51b",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.20-1953",
+  "snapshot_time": "2026-05-20T19:53:00+00:00",
+  "hf_revision": "abd5e1766b7de25bf98004e41705dab87375c580",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.21-0040",
+  "snapshot_time": "2026-05-21T00:40:00+00:00",
+  "hf_revision": "49fb5a5cf0c4fcf9bd34c11f3da4e029dae75684",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.21-0808",
+  "snapshot_time": "2026-05-21T08:08:00+00:00",
+  "hf_revision": "d3547ff0cc2263dd8c0045c9d51db4f6f2b77f1e",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.21-1412",
+  "snapshot_time": "2026-05-21T14:12:00+00:00",
+  "hf_revision": "dabc3c004fb9db1723465fcccc677c46ea9566bd",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.21-1959",
+  "snapshot_time": "2026-05-21T19:59:00+00:00",
+  "hf_revision": "d98478d5e955c32d4d18e2e30b10ee40f63eaa85",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.22-0029",
+  "snapshot_time": "2026-05-22T00:29:00+00:00",
+  "hf_revision": "6678faa8422b88d614633a4b43845c669e316dfe",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.22-0807",
+  "snapshot_time": "2026-05-22T08:07:00+00:00",
+  "hf_revision": "13ce339706fd41244786cd10a036f20eee11ea14",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.22-1352",
+  "snapshot_time": "2026-05-22T13:52:00+00:00",
+  "hf_revision": "7ff8de44be749b17d5d170d2a272510f1851e7e4",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.22-1903",
+  "snapshot_time": "2026-05-22T19:03:00+00:00",
+  "hf_revision": "5f8173a1754c4c99ab2d95b4644eab70d29c5bc5",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.23-0009",
+  "snapshot_time": "2026-05-23T00:09:00+00:00",
+  "hf_revision": "fd6e94f731104896bf2abc15b7b35a0ca7ca3da3",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.23-1244",
+  "snapshot_time": "2026-05-23T12:44:00+00:00",
+  "hf_revision": "4e763d91f3c966a732852db529e769f7eedddeb3",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.23-1750",
+  "snapshot_time": "2026-05-23T17:50:00+00:00",
+  "hf_revision": "93b451d165b8a9f03fb5af0a950dc0aa3218d154",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.23-2335",
+  "snapshot_time": "2026-05-23T23:35:00+00:00",
+  "hf_revision": "d560a798d88b514b60f8ac020e416e6bd4f9239b",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.24-0801",
+  "snapshot_time": "2026-05-24T08:01:00+00:00",
+  "hf_revision": "211bc7e92792997158dbb260194203130936574d",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.24-1253",
+  "snapshot_time": "2026-05-24T12:53:00+00:00",
+  "hf_revision": "be545f396f2bc9b876b617d2b5a294ccb9bd8df2",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.24-1752",
+  "snapshot_time": "2026-05-24T17:52:00+00:00",
+  "hf_revision": "aa3fc1f3131c08e2715562ded4e7ead7899c44c1",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.24-2342",
+  "snapshot_time": "2026-05-24T23:42:00+00:00",
+  "hf_revision": "b0cd5ab3f4e053d0da76ab2d3e2147bc1772f980",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.25-0815",
+  "snapshot_time": "2026-05-25T08:15:00+00:00",
+  "hf_revision": "d1227579b5f8da72c3416b1db6af50cecb6ff47a",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.25-1434",
+  "snapshot_time": "2026-05-25T14:34:00+00:00",
+  "hf_revision": "b9d2af17776f19bd43b625eff7e1f232abfadfe4",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.25-1918",
+  "snapshot_time": "2026-05-25T19:18:00+00:00",
+  "hf_revision": "0d9269805862f2620b361476b8069ed0c08ba715",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.26-0004",
+  "snapshot_time": "2026-05-26T00:04:00+00:00",
+  "hf_revision": "622ce36903f993462a290dfe553e550cb1cd1c1d",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.26-0800",
+  "snapshot_time": "2026-05-26T08:00:00+00:00",
+  "hf_revision": "2e8f8ff932646ef7d26c2033392bf7786a4b8a15",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.26-1421",
+  "snapshot_time": "2026-05-26T14:21:00+00:00",
+  "hf_revision": "a9e4a8aa708ae8777610e0b964131aeb85b27ef6",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.26-1953",
+  "snapshot_time": "2026-05-26T19:53:00+00:00",
+  "hf_revision": "96d7f9b37fb067e734ef31cb73154bf837a19603",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.27-0035",
+  "snapshot_time": "2026-05-27T00:35:00+00:00",
+  "hf_revision": "9cb76e2fb2e4bc3f68f1d1398f5fbb22b92872de",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.27-0818",
+  "snapshot_time": "2026-05-27T08:18:00+00:00",
+  "hf_revision": "727d8489f972140fd9581d706ef47dc7002be05c",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.27-1414",
+  "snapshot_time": "2026-05-27T14:14:00+00:00",
+  "hf_revision": "a424fbfbdf07f479f9919af7b0c717f1fec342bf",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.27-2007",
+  "snapshot_time": "2026-05-27T20:07:00+00:00",
+  "hf_revision": "58b7395b5a737c589f08ecaaa337a0b98f12c00e",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.28-0044",
+  "snapshot_time": "2026-05-28T00:44:00+00:00",
+  "hf_revision": "2b6756547f51eee2fb51e67b7b714e02ebae3060",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.28-0800",
+  "snapshot_time": "2026-05-28T08:00:00+00:00",
+  "hf_revision": "713f7d9128f0c4b788fffe1ff078020b105d8747",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.28-1426",
+  "snapshot_time": "2026-05-28T14:26:00+00:00",
+  "hf_revision": "0c24525e243d916211ecd97ae5f4e047f52ca724",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.28-2018",
+  "snapshot_time": "2026-05-28T20:18:00+00:00",
+  "hf_revision": "87d74661b49811bcc27e3663fc126f58f6d71be7",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.29-0049",
+  "snapshot_time": "2026-05-29T00:49:00+00:00",
+  "hf_revision": "70c658ebba90876d5eb85df4de3f5a81cbfdb1a4",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.29-0802",
+  "snapshot_time": "2026-05-29T08:02:00+00:00",
+  "hf_revision": "3041a2f819e8840361b1a45fe8ffb736a0e9c366",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.29-1419",
+  "snapshot_time": "2026-05-29T14:19:00+00:00",
+  "hf_revision": "a9cfdba3ffc8f3a97897b2fadcc56f50042880f3",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.29-1956",
+  "snapshot_time": "2026-05-29T19:56:00+00:00",
+  "hf_revision": "b58e1d2f45b1492ab926548c463d36e95baecbe9",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.30-0049",
+  "snapshot_time": "2026-05-30T00:49:00+00:00",
+  "hf_revision": "0bdfb9f8494a1566ce99188f4e55129c8ce39151",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.30-0750",
+  "snapshot_time": "2026-05-30T07:50:00+00:00",
+  "hf_revision": "d2717dab6da06cd28703cd62e17527f1dadbfa31",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.30-1253",
+  "snapshot_time": "2026-05-30T12:53:00+00:00",
+  "hf_revision": "7bab3aede268d35e3e57eba82cf8af7d3ab1b28c",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.30-1804",
+  "snapshot_time": "2026-05-30T18:04:00+00:00",
+  "hf_revision": "28a77653dbf0ba4d04f7689c2afc6ae09146956c",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.30-2341",
+  "snapshot_time": "2026-05-30T23:41:00+00:00",
+  "hf_revision": "82583737ccfa7fb01ed836321bdd9970384925ec",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.31-0818",
+  "snapshot_time": "2026-05-31T08:18:00+00:00",
+  "hf_revision": "852693f2bd5b9c10acd86198e9397c0b5e22e669",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.31-1311",
+  "snapshot_time": "2026-05-31T13:11:00+00:00",
+  "hf_revision": "857607c979df280ce79b24e26c2664b7a00e1c57",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.31-1810",
+  "snapshot_time": "2026-05-31T18:10:00+00:00",
+  "hf_revision": "edb272b23d444472ef03f77f6bee7f1292792a52",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.05.31-2344",
+  "snapshot_time": "2026-05-31T23:44:00+00:00",
+  "hf_revision": "123a44df7de59d9755b3f5ccdfb3f6e05f4f1b40",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.01-0830",
+  "snapshot_time": "2026-06-01T08:30:00+00:00",
+  "hf_revision": "c8b009dc62426549a0578193a1e18b272451ad8c",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.01-1559",
+  "snapshot_time": "2026-06-01T15:59:00+00:00",
+  "hf_revision": "cea002e0ef7a0636e51376872ef40fac595e9626",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.01-2204",
+  "snapshot_time": "2026-06-01T22:04:00+00:00",
+  "hf_revision": "b1c660f8c0d80e21ec69d5368cdfd08972f23cab",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.02-0233",
+  "snapshot_time": "2026-06-02T02:33:00+00:00",
+  "hf_revision": "81b3ff2563d26cddc25b9b3a62ee2e25451e83db",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.02-0824",
+  "snapshot_time": "2026-06-02T08:24:00+00:00",
+  "hf_revision": "a26a063a9b822b2177df5377f2a6951b1946391c",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.02-1448",
+  "snapshot_time": "2026-06-02T14:48:00+00:00",
+  "hf_revision": "a2dbc05b69e0ba1bc4592221260be84c564bf642",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.02-2051",
+  "snapshot_time": "2026-06-02T20:51:00+00:00",
+  "hf_revision": "29031cf31014242789520aefbd3095b27bfe86ac",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.03-0122",
+  "snapshot_time": "2026-06-03T01:22:00+00:00",
+  "hf_revision": "15c5f9aab6f8931c6f41135710d2b611a4f34677",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.03-0831",
+  "snapshot_time": "2026-06-03T08:31:00+00:00",
+  "hf_revision": "a86ec598444a964b3b09ec7ec38ce91943487826",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.03-1524",
+  "snapshot_time": "2026-06-03T15:24:00+00:00",
+  "hf_revision": "0112a01b4840979bc794f3fe2cc5ba6b7757321d",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.03-1653",
+  "snapshot_time": "2026-06-03T16:53:00+00:00",
+  "hf_revision": "0112a01b4840979bc794f3fe2cc5ba6b7757321d",
+  "hf_revision_is_prior_run": true,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.04-0121",
+  "snapshot_time": "2026-06-04T01:21:00+00:00",
+  "hf_revision": "9c38f8b2892e8eeee46548007052b366119fdef8",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.04-0829",
+  "snapshot_time": "2026-06-04T08:29:00+00:00",
+  "hf_revision": "9c38f8b2892e8eeee46548007052b366119fdef8",
+  "hf_revision_is_prior_run": true,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.04-1420",
+  "snapshot_time": "2026-06-04T14:20:00+00:00",
+  "hf_revision": "d136ca2784bab4fdc368a040b02b64641fc81074",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.04-1939",
+  "snapshot_time": "2026-06-04T19:39:00+00:00",
+  "hf_revision": "cf5e9c51e4ec4799eaaacb12c4410c882a960329",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.04-2010",
+  "snapshot_time": "2026-06-04T20:10:00+00:00",
+  "hf_revision": "cf5e9c51e4ec4799eaaacb12c4410c882a960329",
+  "hf_revision_is_prior_run": true,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.05-0350",
+  "snapshot_time": "2026-06-05T03:50:00+00:00",
+  "hf_revision": "cf5e9c51e4ec4799eaaacb12c4410c882a960329",
+  "hf_revision_is_prior_run": true,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.05-0955",
+  "snapshot_time": "2026-06-05T09:55:00+00:00",
+  "hf_revision": "cf5e9c51e4ec4799eaaacb12c4410c882a960329",
+  "hf_revision_is_prior_run": true,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.05-1916",
+  "snapshot_time": "2026-06-05T19:16:00+00:00",
+  "hf_revision": "f9f63ce60b3101807fcb0aeb0826f3b0995991ae",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.06-0022",
+  "snapshot_time": "2026-06-06T00:22:00+00:00",
+  "hf_revision": "265d2469f249ae79bb69427ff7a5f75137e6e91f",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.06-0759",
+  "snapshot_time": "2026-06-06T07:59:00+00:00",
+  "hf_revision": "77939eabfef8df1d8a2f72281f1cf38cd19a5d64",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.06-1259",
+  "snapshot_time": "2026-06-06T12:59:00+00:00",
+  "hf_revision": "164376c31b12088efdbe30a3cc2e762a46bae385",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.06-1348",
+  "snapshot_time": "2026-06-06T13:48:00+00:00",
+  "hf_revision": "164376c31b12088efdbe30a3cc2e762a46bae385",
+  "hf_revision_is_prior_run": true,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.06-2348",
+  "snapshot_time": "2026-06-06T23:48:00+00:00",
+  "hf_revision": "fe6ea1a531b0a86acedbbb08f980237ebcc8f211",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.07-0821",
+  "snapshot_time": "2026-06-07T08:21:00+00:00",
+  "hf_revision": "27c3edb802c07c369f19dfb629f73e777f07e3b8",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.07-1324",
+  "snapshot_time": "2026-06-07T13:24:00+00:00",
+  "hf_revision": "27c3edb802c07c369f19dfb629f73e777f07e3b8",
+  "hf_revision_is_prior_run": true,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.07-1818",
+  "snapshot_time": "2026-06-07T18:18:00+00:00",
+  "hf_revision": "7493d26e99e6d34e92a58826dc90bb3a54fa150d",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.07-2347",
+  "snapshot_time": "2026-06-07T23:47:00+00:00",
+  "hf_revision": "5fd2b293745621051dd13716d10e31747ed868b1",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.08-0825",
+  "snapshot_time": "2026-06-08T08:25:00+00:00",
+  "hf_revision": "5cd58403fb923999c2b3fd74546224374d3a200e",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.08-1519",
+  "snapshot_time": "2026-06-08T15:19:00+00:00",
+  "hf_revision": "059a34c2a3e1198aad1b19301e0a00c08a4a4870",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.08-2017",
+  "snapshot_time": "2026-06-08T20:17:00+00:00",
+  "hf_revision": "6df75cbd813174c543613bb6afd259f77b55e600",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.09-0046",
+  "snapshot_time": "2026-06-09T00:46:00+00:00",
+  "hf_revision": "8276b6af67f5840b53f379b9ae9175e5c09f4072",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.09-0756",
+  "snapshot_time": "2026-06-09T07:56:00+00:00",
+  "hf_revision": "f3d3852927e36341e44724e9e349d8ba8183ee53",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.09-1408",
+  "snapshot_time": "2026-06-09T14:08:00+00:00",
+  "hf_revision": "c22d81a79ecc26197d007d588c86177923197eb4",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.10-0032",
+  "snapshot_time": "2026-06-10T00:32:00+00:00",
+  "hf_revision": "550138722e3785b32bce79395ead7cdf216af91e",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.10-0807",
+  "snapshot_time": "2026-06-10T08:07:00+00:00",
+  "hf_revision": "baf0fb136acd81a4d11ebd876fbe9d18d98a3644",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.10-1423",
+  "snapshot_time": "2026-06-10T14:23:00+00:00",
+  "hf_revision": "5b7fcb3442d7796abe76ca3bc86b7dbaee21f882",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.10-2000",
+  "snapshot_time": "2026-06-10T20:00:00+00:00",
+  "hf_revision": "ce2afb9f32789ad23c5ec337e46673c3e3f17008",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.11-0055",
+  "snapshot_time": "2026-06-11T00:55:00+00:00",
+  "hf_revision": "54dfeace0fa173d905d027ff2e5fc9fb1fa26dcd",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.11-0824",
+  "snapshot_time": "2026-06-11T08:24:00+00:00",
+  "hf_revision": "eb1ff675da5d2d7e99080e1d822fa4e7ad2b4d4f",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.11-1449",
+  "snapshot_time": "2026-06-11T14:49:00+00:00",
+  "hf_revision": "8b975e65663e5fd0ce37e65a4d35bf079f65bc1c",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.11-2027",
+  "snapshot_time": "2026-06-11T20:27:00+00:00",
+  "hf_revision": "2c7da76ace6b7e4deb5405212ccba5ed48795586",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.12-0055",
+  "snapshot_time": "2026-06-12T00:55:00+00:00",
+  "hf_revision": "e03702a629f5b7dc9e35df244ee4bc6314d22980",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.12-0823",
+  "snapshot_time": "2026-06-12T08:23:00+00:00",
+  "hf_revision": "e1c4e1530a0cbe995c1137f82c855a7675521a81",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.12-1438",
+  "snapshot_time": "2026-06-12T14:38:00+00:00",
+  "hf_revision": "43d1c6dac9c99c7869cbb93d6ae7c4d224e043fd",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.12-1924",
+  "snapshot_time": "2026-06-12T19:24:00+00:00",
+  "hf_revision": "aa07c3d2156df081a773458b49fdcf52f6c24c28",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.13-0036",
+  "snapshot_time": "2026-06-13T00:36:00+00:00",
+  "hf_revision": "d26cb5c34e6de7ce9286232af0957c56bc70d979",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.13-0809",
+  "snapshot_time": "2026-06-13T08:09:00+00:00",
+  "hf_revision": "a3729bc3d381909d1cdcb9201c3229a634009996",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.13-1323",
+  "snapshot_time": "2026-06-13T13:23:00+00:00",
+  "hf_revision": "8721e7f291fc413626813963b60c7e354cad8779",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.13-1825",
+  "snapshot_time": "2026-06-13T18:25:00+00:00",
+  "hf_revision": "1ea620b8355804192df983c77c7577c6e6e78da5",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.13-2355",
+  "snapshot_time": "2026-06-13T23:55:00+00:00",
+  "hf_revision": "1ea620b8355804192df983c77c7577c6e6e78da5",
+  "hf_revision_is_prior_run": true,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.14-0830",
+  "snapshot_time": "2026-06-14T08:30:00+00:00",
+  "hf_revision": "e41abe375e4293e4a26e59ed3ba1047555dd4703",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.14-1359",
+  "snapshot_time": "2026-06-14T13:59:00+00:00",
+  "hf_revision": "971a8f66e14d0173d00b12765a45fc366bbdfe86",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.14-1828",
+  "snapshot_time": "2026-06-14T18:28:00+00:00",
+  "hf_revision": "0930e408bc162ee49357d0a438b66ffd4ba6ab62",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.14-2352",
+  "snapshot_time": "2026-06-14T23:52:00+00:00",
+  "hf_revision": "ce85dd3caf8245996d654b70b16fb33e796f9975",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.15-0842",
+  "snapshot_time": "2026-06-15T08:42:00+00:00",
+  "hf_revision": "9e9f914651abe61d1ff240e00e9b48e45596b2b8",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.15-1639",
+  "snapshot_time": "2026-06-15T16:39:00+00:00",
+  "hf_revision": "a09edc754ed794db0b7f8e21de0e45a00e6511ea",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.16-0120",
+  "snapshot_time": "2026-06-16T01:20:00+00:00",
+  "hf_revision": "3ccc7256d2c15251d53132e0fb711af1fd057227",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.16-0833",
+  "snapshot_time": "2026-06-16T08:33:00+00:00",
+  "hf_revision": "ac8cd3a0aa8c72223be98427d8f85d808992ba1d",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.16-1535",
+  "snapshot_time": "2026-06-16T15:35:00+00:00",
+  "hf_revision": "a022ec414e823512eac94f1fba910e57f7052c4d",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.16-2117",
+  "snapshot_time": "2026-06-16T21:17:00+00:00",
+  "hf_revision": "06990b33529422fbf1be128e03a47f27c84eee0a",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.17-0147",
+  "snapshot_time": "2026-06-17T01:47:00+00:00",
+  "hf_revision": "7e23cb9bf323aa4892e3199116a80e553e0e6c39",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.17-0412",
+  "snapshot_time": "2026-06-17T04:12:00+00:00",
+  "hf_revision": "7e23cb9bf323aa4892e3199116a80e553e0e6c39",
+  "hf_revision_is_prior_run": true,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.17-1522",
+  "snapshot_time": "2026-06-17T15:22:00+00:00",
+  "hf_revision": "096bda8ead4a4f5f70bc65c70e8ec2c37e82ebbf",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.17-1955",
+  "snapshot_time": "2026-06-17T19:55:00+00:00",
+  "hf_revision": "984935947949d0362d5534d00995adcf4d9aace3",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.18-0039",
+  "snapshot_time": "2026-06-18T00:39:00+00:00",
+  "hf_revision": "0b6b0e9790fd76cc575ec2e5d86c577501852c48",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.18-0823",
+  "snapshot_time": "2026-06-18T08:23:00+00:00",
+  "hf_revision": "6c2079b58b76e099499a0cd39030174f1309d31c",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.18-1444",
+  "snapshot_time": "2026-06-18T14:44:00+00:00",
+  "hf_revision": "067e4ad40f02677d593a201afa428885b0facc85",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.18-1953",
+  "snapshot_time": "2026-06-18T19:53:00+00:00",
+  "hf_revision": "067e4ad40f02677d593a201afa428885b0facc85",
+  "hf_revision_is_prior_run": true,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.19-0051",
+  "snapshot_time": "2026-06-19T00:51:00+00:00",
+  "hf_revision": "709ec86061e9053b2371e716967fe37c8c3e610e",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.19-0843",
+  "snapshot_time": "2026-06-19T08:43:00+00:00",
+  "hf_revision": "1e67c1058d54e1aa4e0f315eee83cf5304b5fc9f",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.19-1451",
+  "snapshot_time": "2026-06-19T14:51:00+00:00",
+  "hf_revision": "9c48ea26e76e6f2b8c010066abfd95577f6f01f1",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.20-0133",
+  "snapshot_time": "2026-06-20T01:33:00+00:00",
+  "hf_revision": "24fc6d4005558230362ae68f2544bd913690f25e",
+  "hf_revision_is_prior_run": false,
+  "github_release": false
+ },
+ {
+  "tag": "v2026.06.20-0800",
+  "snapshot_time": "2026-06-20T08:00:00+00:00",
+  "hf_revision": "c679097824928d7f767921e52c9f9bb8bb2273a5",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.20-1316",
+  "snapshot_time": "2026-06-20T13:16:00+00:00",
+  "hf_revision": "7bdc607e8f4a12c936f0c47bdeb908e463655bd3",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.20-1823",
+  "snapshot_time": "2026-06-20T18:23:00+00:00",
+  "hf_revision": "e49726a3858096279962b762e47566fec84f5357",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.20-2346",
+  "snapshot_time": "2026-06-20T23:46:00+00:00",
+  "hf_revision": "45de1cf5e993975233e78630153d9bfea7159bb5",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.21-0835",
+  "snapshot_time": "2026-06-21T08:35:00+00:00",
+  "hf_revision": "2bb6b616b3684981bbe71dfd4c2590aa55af409d",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.21-1411",
+  "snapshot_time": "2026-06-21T14:11:00+00:00",
+  "hf_revision": "b780ece011a9d45fd3db3981ef8cad8211fe804b",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.21-1832",
+  "snapshot_time": "2026-06-21T18:32:00+00:00",
+  "hf_revision": "11cd180ac257deeae6a792c7f172f6fe3a49ffbf",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.22-0001",
+  "snapshot_time": "2026-06-22T00:01:00+00:00",
+  "hf_revision": "446807486b9c403e869d66767181cb465d658535",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.22-0835",
+  "snapshot_time": "2026-06-22T08:35:00+00:00",
+  "hf_revision": "651c9c6bdb67effcd431b10b35238aa9b570b8f3",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.22-1614",
+  "snapshot_time": "2026-06-22T16:14:00+00:00",
+  "hf_revision": "783d6bad0e4ee22cd202a5b08f2e35c07281a45b",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.22-2116",
+  "snapshot_time": "2026-06-22T21:16:00+00:00",
+  "hf_revision": "eda4e8cad6641dc91bbb5a5e143629cb5251151e",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.23-0137",
+  "snapshot_time": "2026-06-23T01:37:00+00:00",
+  "hf_revision": "aa433ce749fb400580557f9763067d21c6f15e5a",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.23-0755",
+  "snapshot_time": "2026-06-23T07:55:00+00:00",
+  "hf_revision": "7683e2962bc1fdfaad6496504055e54f2756eb8b",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.23-1358",
+  "snapshot_time": "2026-06-23T13:58:00+00:00",
+  "hf_revision": "3c75fe5614771b1860b906a47bfbad78650dc91e",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.23-1908",
+  "snapshot_time": "2026-06-23T19:08:00+00:00",
+  "hf_revision": "d01a7a08ee286f33a285e6e0c52e40d379df5ac8",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.24-0025",
+  "snapshot_time": "2026-06-24T00:25:00+00:00",
+  "hf_revision": "118876fd7d2d82efb77924caa8be4ae0ee3d1b0d",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.24-0756",
+  "snapshot_time": "2026-06-24T07:56:00+00:00",
+  "hf_revision": "017b46351f47f4654b4d33ef899e0b3e15ed9905",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.24-1351",
+  "snapshot_time": "2026-06-24T13:51:00+00:00",
+  "hf_revision": "96caf7a7042ed556b8bf368103c846550f15ce51",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.24-1850",
+  "snapshot_time": "2026-06-24T18:50:00+00:00",
+  "hf_revision": "a6d06a363af5e836ee8062bbb634d3efaa080a53",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.25-0005",
+  "snapshot_time": "2026-06-25T00:05:00+00:00",
+  "hf_revision": "2bb3f6c31ed393f73abb7f383dd8aa784ea89b22",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.25-0754",
+  "snapshot_time": "2026-06-25T07:54:00+00:00",
+  "hf_revision": "32294f6a614e228e15dd1b635662ac4b4eae2b9c",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.25-1341",
+  "snapshot_time": "2026-06-25T13:41:00+00:00",
+  "hf_revision": "597cc2a01b05d2a7d29da36c76390cd68722ffe6",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.25-1853",
+  "snapshot_time": "2026-06-25T18:53:00+00:00",
+  "hf_revision": "663a218583f1fa2fc1b44dd36353d94edf4bcf93",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.26-0020",
+  "snapshot_time": "2026-06-26T00:20:00+00:00",
+  "hf_revision": "cbbc81ed4e1dd7c1155d6ee729855ada37c93a18",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.26-0801",
+  "snapshot_time": "2026-06-26T08:01:00+00:00",
+  "hf_revision": "0f915fdfae2c212049666585b76e33e72239a609",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.26-1347",
+  "snapshot_time": "2026-06-26T13:47:00+00:00",
+  "hf_revision": "59a950577158933b367a499bc859ec5dc33e009d",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.26-1844",
+  "snapshot_time": "2026-06-26T18:44:00+00:00",
+  "hf_revision": "98dcecabbca93bb3527aa75f8110a6b3e0faf9fc",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.27-0008",
+  "snapshot_time": "2026-06-27T00:08:00+00:00",
+  "hf_revision": "935f8dab1c9a942963382b90c0a68daa1fa32134",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.27-0748",
+  "snapshot_time": "2026-06-27T07:48:00+00:00",
+  "hf_revision": "39f97939cbbc3484abc240d598c1926fc3d9c00f",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.27-1255",
+  "snapshot_time": "2026-06-27T12:55:00+00:00",
+  "hf_revision": "32d10f582bac3eaac7b2a5bd94219fa675797df9",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.27-1802",
+  "snapshot_time": "2026-06-27T18:02:00+00:00",
+  "hf_revision": "5c475f4b3876142143dcb230596d5107b7708ce4",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.27-2341",
+  "snapshot_time": "2026-06-27T23:41:00+00:00",
+  "hf_revision": "5477e0908c1f1b0d8be2513746688851a75da5ec",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.28-0810",
+  "snapshot_time": "2026-06-28T08:10:00+00:00",
+  "hf_revision": "2c430a08723defdb1dcced68b575d48beb58b6c3",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.28-1311",
+  "snapshot_time": "2026-06-28T13:11:00+00:00",
+  "hf_revision": "29ebe9d162dad418e58b2b32cedf20a94aa69769",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.28-1805",
+  "snapshot_time": "2026-06-28T18:05:00+00:00",
+  "hf_revision": "fe4a9a737e8d40b4984ed6d3820cc35af745fd21",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.28-2340",
+  "snapshot_time": "2026-06-28T23:40:00+00:00",
+  "hf_revision": "012edcd33bb999c056e9fe2a1c5e97270913cb07",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.29-0815",
+  "snapshot_time": "2026-06-29T08:15:00+00:00",
+  "hf_revision": "d38ed06af71a14cc09fb9c103c57e692e04b5b2b",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.29-1519",
+  "snapshot_time": "2026-06-29T15:19:00+00:00",
+  "hf_revision": "11b4497383f24dacf18a724279a3eee2a0ceb316",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.29-2006",
+  "snapshot_time": "2026-06-29T20:06:00+00:00",
+  "hf_revision": "1c1c797bf9e7ac924913c897e29f2ac508eb1085",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.30-0027",
+  "snapshot_time": "2026-06-30T00:27:00+00:00",
+  "hf_revision": "daa0eab09a8f3341435104a14984ae3e5b4edeb6",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.30-0758",
+  "snapshot_time": "2026-06-30T07:58:00+00:00",
+  "hf_revision": "26da1bf61465330cbd84ba25fd6b84ad9031215d",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.30-1357",
+  "snapshot_time": "2026-06-30T13:57:00+00:00",
+  "hf_revision": "f6e67d762437062913cfdb3e8e185acf91b479c1",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.06.30-1838",
+  "snapshot_time": "2026-06-30T18:38:00+00:00",
+  "hf_revision": "82c4b2114a134e669e41475e8d81dde6199553c4",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.01-0018",
+  "snapshot_time": "2026-07-01T00:18:00+00:00",
+  "hf_revision": "209adbe228f9f2796ed360047522e6d9815a9e31",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.01-0814",
+  "snapshot_time": "2026-07-01T08:14:00+00:00",
+  "hf_revision": "d439993cfead56e9b8a6bd3c4dfc394fe3b6927a",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.01-1407",
+  "snapshot_time": "2026-07-01T14:07:00+00:00",
+  "hf_revision": "483d69703a35e23bc72f66184aecbebd0a5ce3b3",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.01-1855",
+  "snapshot_time": "2026-07-01T18:55:00+00:00",
+  "hf_revision": "4b797f726e0768ce6a0729f30569e17b72dd5b38",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.02-0016",
+  "snapshot_time": "2026-07-02T00:16:00+00:00",
+  "hf_revision": "1460b718af76de2db35bb0fd048d1a0d855aa838",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.02-0755",
+  "snapshot_time": "2026-07-02T07:55:00+00:00",
+  "hf_revision": "a60b2c80660041bb62397e193735f20af8dd35f8",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.02-1315",
+  "snapshot_time": "2026-07-02T13:15:00+00:00",
+  "hf_revision": "debd5cd122cfb5b221d7a234cd8519b207a80a0c",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.02-1820",
+  "snapshot_time": "2026-07-02T18:20:00+00:00",
+  "hf_revision": "08f4da9cf9f4de31c45fe72bd69f559667b33426",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.02-2344",
+  "snapshot_time": "2026-07-02T23:44:00+00:00",
+  "hf_revision": "19b70a417223c8e2b74423f13cf9bfb24ff49c88",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.03-0718",
+  "snapshot_time": "2026-07-03T07:18:00+00:00",
+  "hf_revision": "80be9f23442be994d2fae7ec7643ae394d879e3d",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.03-1337",
+  "snapshot_time": "2026-07-03T13:37:00+00:00",
+  "hf_revision": "b23d6d33cdf5b82dcf9e8cffcebee3086b57425b",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.03-1823",
+  "snapshot_time": "2026-07-03T18:23:00+00:00",
+  "hf_revision": "bc28c07a1ea7630c63d69792e0b5b868a94e1d38",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.03-2342",
+  "snapshot_time": "2026-07-03T23:42:00+00:00",
+  "hf_revision": "3291832b4014a7cfab02086aca9ec65cdb040833",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.04-0714",
+  "snapshot_time": "2026-07-04T07:14:00+00:00",
+  "hf_revision": "c065755bb76dcc7ae5eedb298476cc986ae48c06",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.04-1257",
+  "snapshot_time": "2026-07-04T12:57:00+00:00",
+  "hf_revision": "719d7681c187a41cba850413d818a56d0e55790f",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.04-1746",
+  "snapshot_time": "2026-07-04T17:46:00+00:00",
+  "hf_revision": "36127afbd28bbd6a1a852346a6ccaed98d9ac1f9",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.04-2333",
+  "snapshot_time": "2026-07-04T23:33:00+00:00",
+  "hf_revision": "5093adbc90450e516c4726f59699d5debdccf296",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.05-0743",
+  "snapshot_time": "2026-07-05T07:43:00+00:00",
+  "hf_revision": "4e3f47996f13349d9d0ea3f3615aa3f58de1810d",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.05-1313",
+  "snapshot_time": "2026-07-05T13:13:00+00:00",
+  "hf_revision": "9b3f283cec3ac1d7cc8e94f49aedcfb184b3dde7",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.05-1759",
+  "snapshot_time": "2026-07-05T17:59:00+00:00",
+  "hf_revision": "37e198862c3d70060c9d714ca4875544433ed07d",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.05-2337",
+  "snapshot_time": "2026-07-05T23:37:00+00:00",
+  "hf_revision": "10aec0fc857699e44b13127ffc6c989aa249860e",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.06-0753",
+  "snapshot_time": "2026-07-06T07:53:00+00:00",
+  "hf_revision": "da78f6b6555b2332b59d2754a60030e2b1096cdc",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.06-1442",
+  "snapshot_time": "2026-07-06T14:42:00+00:00",
+  "hf_revision": "75a8f2140c1381d1fd1c15134b6bd5ce15a532e1",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.06-1953",
+  "snapshot_time": "2026-07-06T19:53:00+00:00",
+  "hf_revision": "0ac5cb054a4f49196535723044cb27c7c8d567f9",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.07-0017",
+  "snapshot_time": "2026-07-07T00:17:00+00:00",
+  "hf_revision": "42f4ac6c768859b66b8ac9f627d38aff1f96dc0d",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.07-0742",
+  "snapshot_time": "2026-07-07T07:42:00+00:00",
+  "hf_revision": "27272d60c5dc1286680eb44ed2675ea39e358f8f",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.07-1400",
+  "snapshot_time": "2026-07-07T14:00:00+00:00",
+  "hf_revision": "a651da7c9b622994847053a85fdd3f6d1187e574",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.07-1853",
+  "snapshot_time": "2026-07-07T18:53:00+00:00",
+  "hf_revision": "40e257c5a56b57a7e09fa02a2581b8b578efe926",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.08-0014",
+  "snapshot_time": "2026-07-08T00:14:00+00:00",
+  "hf_revision": "f20f4e1f71a274b9b2bdbbafd0d1e4fc342e50ed",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.08-0700",
+  "snapshot_time": "2026-07-08T07:00:00+00:00",
+  "hf_revision": "519085b8f7841b41fa8bd66a2dca69b045856188",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.08-1247",
+  "snapshot_time": "2026-07-08T12:47:00+00:00",
+  "hf_revision": "27670a65d6bd6265110fb24fd3479bd04ebcd07e",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.08-1826",
+  "snapshot_time": "2026-07-08T18:26:00+00:00",
+  "hf_revision": "19e352a9060826237a9db4f3989381bf0e49398f",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.08-2346",
+  "snapshot_time": "2026-07-08T23:46:00+00:00",
+  "hf_revision": "69934fae18920cc0d2621f6743c3d4a463db7050",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.09-0719",
+  "snapshot_time": "2026-07-09T07:19:00+00:00",
+  "hf_revision": "76b5451f287505bec91cdae0e455f0bbfed3cbc4",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.09-1359",
+  "snapshot_time": "2026-07-09T13:59:00+00:00",
+  "hf_revision": "313d3f103bf861302739c8bb47d4ae77b8349786",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.09-1919",
+  "snapshot_time": "2026-07-09T19:19:00+00:00",
+  "hf_revision": "731ce5053c4607c9d43a164350ff52568447ed4c",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.10-0007",
+  "snapshot_time": "2026-07-10T00:07:00+00:00",
+  "hf_revision": "0b0680704aaaaf12f4ec5dca409400f64620096d",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.10-0740",
+  "snapshot_time": "2026-07-10T07:40:00+00:00",
+  "hf_revision": "288d64ecd5fc718999e0d1ad31f5b61e94f48244",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.10-1354",
+  "snapshot_time": "2026-07-10T13:54:00+00:00",
+  "hf_revision": "900fcff7e55718a3bbdff9989281b5245856a9c8",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.10-1846",
+  "snapshot_time": "2026-07-10T18:46:00+00:00",
+  "hf_revision": "7284fb92f92c98e6ab40b1f2317f12e6a5b9abcb",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.10-2348",
+  "snapshot_time": "2026-07-10T23:48:00+00:00",
+  "hf_revision": "386905748129442612e7001a14c5cfbec590bf41",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.11-0656",
+  "snapshot_time": "2026-07-11T06:56:00+00:00",
+  "hf_revision": "538a37da94877d813773a272e608010341a19469",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.11-1215",
+  "snapshot_time": "2026-07-11T12:15:00+00:00",
+  "hf_revision": "53f84eca9d239ada7762ca4c45fefc18c97ecf2a",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.11-1738",
+  "snapshot_time": "2026-07-11T17:38:00+00:00",
+  "hf_revision": "ca287409ae3a36979d4f0cbfdfd8b669ec353d1f",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.11-2323",
+  "snapshot_time": "2026-07-11T23:23:00+00:00",
+  "hf_revision": "0a15003583bfa52af5372905d678af4c3f0e2d3d",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.12-0704",
+  "snapshot_time": "2026-07-12T07:04:00+00:00",
+  "hf_revision": "b52c6949915d7460da966eb562d3f0defcb43a38",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.12-1237",
+  "snapshot_time": "2026-07-12T12:37:00+00:00",
+  "hf_revision": "44495d6ef51e253ea4151760e04656c9a6603792",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.12-1740",
+  "snapshot_time": "2026-07-12T17:40:00+00:00",
+  "hf_revision": "bd4dd0a375cd88ab6016de4a1c9c6f5b6197eb63",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.12-2325",
+  "snapshot_time": "2026-07-12T23:25:00+00:00",
+  "hf_revision": "fc13e85754b5f720ed6027fa164fb3280e315ff1",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.13-0706",
+  "snapshot_time": "2026-07-13T07:06:00+00:00",
+  "hf_revision": "e341b1a50d46a9606452bbaadc3031945dde50a8",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.13-1346",
+  "snapshot_time": "2026-07-13T13:46:00+00:00",
+  "hf_revision": "1d7a515c29555ee48feab137ffc32f96ce9da4f0",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.13-1854",
+  "snapshot_time": "2026-07-13T18:54:00+00:00",
+  "hf_revision": "6d3b1fb322012a52b0585358e77e28a4a4653b1a",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.13-2342",
+  "snapshot_time": "2026-07-13T23:42:00+00:00",
+  "hf_revision": "858c202fdafd3802a01a31a396844eb6dd2bc72e",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.14-0648",
+  "snapshot_time": "2026-07-14T06:48:00+00:00",
+  "hf_revision": "e70362cd81c67dd4ea4a739755c96698f454cfc5",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.14-1224",
+  "snapshot_time": "2026-07-14T12:24:00+00:00",
+  "hf_revision": "cfbfa01a3d2f458f853e9af96eccc5106a7df0ca",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.14-1802",
+  "snapshot_time": "2026-07-14T18:02:00+00:00",
+  "hf_revision": "35e856dab7ee616c3d957e583d07446d38f46478",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.14-2339",
+  "snapshot_time": "2026-07-14T23:39:00+00:00",
+  "hf_revision": "1fc8b886fdb1eaead35a12c6dd39fed62e8c4d1c",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.15-0646",
+  "snapshot_time": "2026-07-15T06:46:00+00:00",
+  "hf_revision": "509cb857b63bcc2416a0ca3b3d792a18fe92ca72",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.15-1230",
+  "snapshot_time": "2026-07-15T12:30:00+00:00",
+  "hf_revision": "865c59fcde53555146259daa42ffb0125c44fbbe",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.15-1802",
+  "snapshot_time": "2026-07-15T18:02:00+00:00",
+  "hf_revision": "82cb31a706ae165ea784517774c187a8a2cb025f",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.15-2331",
+  "snapshot_time": "2026-07-15T23:31:00+00:00",
+  "hf_revision": "779ace2f0ee49eb78e853fcdaa93b2bebd1737a9",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.16-0655",
+  "snapshot_time": "2026-07-16T06:55:00+00:00",
+  "hf_revision": "a1a82d1344fe495faca67ae963918495b4f79991",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.16-1232",
+  "snapshot_time": "2026-07-16T12:32:00+00:00",
+  "hf_revision": "d6f8b674225691cc1f6d068237912678d611bed3",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.16-1810",
+  "snapshot_time": "2026-07-16T18:10:00+00:00",
+  "hf_revision": "08359966de32615c4bcc640e7758a59f9bb6fdae",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.16-2330",
+  "snapshot_time": "2026-07-16T23:30:00+00:00",
+  "hf_revision": "7c6a4bee6053274c34014577e379aac3bfe2c569",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.17-0657",
+  "snapshot_time": "2026-07-17T06:57:00+00:00",
+  "hf_revision": "dc8911def5eb61a03bfe35c174e93b0bc7318464",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.17-1229",
+  "snapshot_time": "2026-07-17T12:29:00+00:00",
+  "hf_revision": "c4826d673d57fb6cf5fd8368d54d93bb2cca940e",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ },
+ {
+  "tag": "v2026.07.17-1748",
+  "snapshot_time": "2026-07-17T17:48:00+00:00",
+  "hf_revision": "b75a254f2701270baa3e228645ad9fb510fe5b45",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
+ }
+]
