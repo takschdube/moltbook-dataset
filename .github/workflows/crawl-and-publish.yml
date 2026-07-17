@@ -99,6 +99,16 @@ jobs:
           --notes-file releases/RELEASE_NOTES.md \
           --latest
 
+    # Per-run releases are working copies with 14-day retention; history is
+    # preserved by archive/* releases, daily Zenodo versions, the HF mirror,
+    # and post_metrics_history in the shipped database. See README Releases.
+    - name: Prune per-run releases past retention
+      if: always() && hashFiles('releases/moltbook-dataset-*.zip') != ''
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: bash scripts/prune_releases.sh ${{ github.repository }}
+      continue-on-error: true
+
     - name: Collect download stats
       if: always() && hashFiles('data/raw/posts.json') != ''
       env:
