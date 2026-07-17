@@ -14,8 +14,9 @@ Usage:
 
 import json
 import os
+import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import requests
@@ -184,13 +185,27 @@ def upload_file(bucket_url, filepath, name):
 
 
 def upload_files(bucket_url):
-    """Upload the release zip (or individual files if no zip exists)."""
-    # Prefer the release zip — single file, includes everything
+    """Upload the release zip plus the cumulative database.
+
+    The zip holds the latest-state JSON exports; the database additionally
+    carries the full post_metrics_history time series, so archiving both
+    keeps the longitudinal record complete on Zenodo.
+    """
     zips = sorted(RELEASES_DIR.glob("moltbook-dataset-*.zip")) if RELEASES_DIR.exists() else []
     if zips:
         latest_zip = zips[-1]
         print(f"Uploading {latest_zip.name}...")
-        return upload_file(bucket_url, latest_zip, latest_zip.name)
+        ok = upload_file(bucket_url, latest_zip, latest_zip.name)
+
+        db_zst = Path("/tmp/moltbook.db.zst")  # produced by the release step
+        db_raw = RAW_DIR / "moltbook.db"
+        if not db_zst.exists() and db_raw.exists():
+            subprocess.run(
+                ["zstd", "-3", "-f", str(db_raw), "-o", str(db_zst)], check=False
+            )
+        if db_zst.exists():
+            ok = upload_file(bucket_url, db_zst, "moltbook.db.zst") and ok
+        return ok
 
     # Fallback: upload individual files
     print("No release zip found, uploading individual files...")
@@ -220,6 +235,17 @@ def main():
     if not ZENODO_TOKEN:
         print("ZENODO_TOKEN not set, skipping Zenodo upload")
         return
+
+    # Daily cadence: the crawl runs every 6 hours, but 4-5 DOI versions a day
+    # is outside what Zenodo versioning is for and nobody cites an hour.
+    # 20h threshold so normal cron drift never skips a day.
+    record = load_zenodo_json()
+    if record and record.get("updated_at"):
+        last = datetime.fromisoformat(record["updated_at"])
+        age = datetime.now(timezone.utc) - last
+        if age < timedelta(hours=20):
+            print(f"Last publish {record['updated_at']} ({age} ago); daily cadence, skipping")
+            return
 
     print("=" * 60)
     print("Zenodo Upload")

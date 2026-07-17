@@ -64,7 +64,7 @@ def load_data():
     for directory, prefix in [(RAW_DIR, "raw"), (DERIVED_DIR, "derived")]:
         if not directory.exists():
             continue
-        for path in sorted(directory.glob("*.json")):
+        for path in sorted(list(directory.glob("*.json")) + list(directory.glob("*.csv"))):
             name = f"{prefix}/{path.name}"
             size_bytes = path.stat().st_size
             files[name] = {

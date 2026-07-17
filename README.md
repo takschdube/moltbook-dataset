@@ -155,6 +155,15 @@ New downloads by month.
 | `posts_full.json` | Posts with full threaded comment trees |
 | `platform_stats.json` | Platform-wide aggregate counts |
 | `metadata.json` | Crawl history and provenance |
+| `post_metrics_recent.csv` | Engagement time series (last 90 days): one row per post per crawl cycle with upvotes, downvotes, score, comment_count, hot_score, is_deleted |
+
+The JSON files hold the latest observed state of each post. The engagement
+trajectory over time lives in the `post_metrics_history` table of
+`moltbook.db` (shipped with every GitHub release as `moltbook.db.zst` and
+archived on Zenodo); `post_metrics_recent.csv` is a bounded 90-day window of
+the same series for convenience. History collection began 2026-07-17;
+earlier trajectories can be reconstructed from the archived snapshots
+(Zenodo versions and the Hugging Face mirror's git history).
 
 ### Derived data (`data/derived/`) — computed from raw
 
