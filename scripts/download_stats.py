@@ -36,32 +36,33 @@ def load_zenodo_json():
 
 
 def get_zenodo_downloads():
-    """Get total downloads across all Zenodo versions."""
+    """Get total downloads across all Zenodo versions.
+
+    A record's plain stats fields (downloads, views, ...) are already the
+    all-versions aggregate for the whole concept; the per-version figures are
+    the version_* fields. Summing stats.downloads across version records
+    therefore multiplies the aggregate by the page size (the 10,800 bug of
+    2026-07), so read the aggregate once from the concept record instead.
+    """
     record = load_zenodo_json()
     if not record:
         return None
 
     concept_id = record["concept_record_id"]
-    token = os.getenv("ZENODO_TOKEN")
-    headers = {"Authorization": f"Bearer {token}"} if token else {}
 
-    # Get all versions
+    # The concept id redirects to the latest published version
     resp = requests.get(
-        f"https://zenodo.org/api/records/?q=conceptrecid:{concept_id}&all_versions=true&size=100",
-        headers=headers,
+        f"https://zenodo.org/api/records/{concept_id}",
         timeout=30,
     )
     if resp.status_code != 200:
         return None
 
-    hits = resp.json().get("hits", {}).get("hits", [])
-    total_downloads = sum(h.get("stats", {}).get("downloads", 0) for h in hits)
-    total_views = sum(h.get("stats", {}).get("views", 0) for h in hits)
-
+    stats = resp.json().get("stats", {})
     return {
-        "downloads": total_downloads,
-        "views": total_views,
-        "versions": len(hits),
+        "downloads": stats.get("downloads", 0),
+        "unique_downloads": stats.get("unique_downloads", 0),
+        "views": stats.get("views", 0),
         "url": record["url"],
     }
 

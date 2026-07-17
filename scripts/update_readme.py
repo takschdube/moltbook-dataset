@@ -270,7 +270,9 @@ def _downloads_from_ledger(ledger):
             "",
             "*Monthly figures are differences of month-end cumulative counts. "
             "Hugging Face is tracked from its all-time baseline, so its per-month "
-            "column begins once two checkpoints exist.*",
+            "column begins once two checkpoints exist. GitHub counts include the "
+            "pipeline's own release downloads (each run restores the previous "
+            "database from the latest release).*",
         ]
 
     lines += ["", DOWNLOADS_END]
