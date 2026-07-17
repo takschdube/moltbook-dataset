@@ -149,7 +149,6 @@ jobs:
       env:
         ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
       run: uv run python scripts/upload_to_zenodo.py
-      continue-on-error: true
 
     - name: Update README with latest stats
       if: always() && hashFiles('data/raw/posts.json') != ''
