@@ -113,13 +113,6 @@ jobs:
           --notes-file releases/RELEASE_NOTES.md \
           --latest
 
-    - name: Prune old releases
-      if: always() && hashFiles('releases/moltbook-dataset-*.zip') != ''
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: bash scripts/prune_releases.sh ${{ github.repository }}
-      continue-on-error: true
-
     - name: Collect download stats
       if: always() && hashFiles('data/raw/posts.json') != ''
       env:
