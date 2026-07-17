@@ -58,6 +58,23 @@ def save_zenodo_json(data):
     os.replace(tmp, str(ZENODO_JSON))
 
 
+def resolve_latest(record):
+    """Resolve the concept's live latest record (id, published_at).
+
+    ZENODO.json goes stale when the end-of-run commit is dropped (rebase
+    conflict against a moved main), so the stored pointer is a fallback,
+    not the source of truth. The concept id redirects to the latest
+    published version on the public API.
+    """
+    resp = requests.get(
+        f"{ZENODO_API}/records/{record['concept_record_id']}", timeout=30
+    )
+    if resp.status_code == 200:
+        r = resp.json()
+        return r["id"], r.get("created")
+    return record["latest_record_id"], record.get("updated_at")
+
+
 def find_existing_draft(concept_recid):
     """Find an unpublished draft of our record left behind by a crashed run."""
     resp = api("get", "/deposit/depositions", params={"status": "draft", "size": 50})
@@ -82,7 +99,7 @@ def get_or_create_draft():
     record = load_zenodo_json()
 
     if record:
-        record_id = record["latest_record_id"]
+        record_id, _ = resolve_latest(record)
         print(f"Creating new version of record {record_id}...")
 
         draft = None
@@ -240,12 +257,14 @@ def main():
     # is outside what Zenodo versioning is for and nobody cites an hour.
     # 20h threshold so normal cron drift never skips a day.
     record = load_zenodo_json()
-    if record and record.get("updated_at"):
-        last = datetime.fromisoformat(record["updated_at"])
-        age = datetime.now(timezone.utc) - last
-        if age < timedelta(hours=20):
-            print(f"Last publish {record['updated_at']} ({age} ago); daily cadence, skipping")
-            return
+    if record:
+        _, published_at = resolve_latest(record)
+        if published_at:
+            last = datetime.fromisoformat(published_at.replace("Z", "+00:00"))
+            age = datetime.now(timezone.utc) - last
+            if age < timedelta(hours=20):
+                print(f"Last publish {published_at} ({age} ago); daily cadence, skipping")
+                return
 
     print("=" * 60)
     print("Zenodo Upload")
