@@ -73,6 +73,12 @@ def load_data():
                 "size_mb": round(size_bytes / 1024 / 1024, 2),
             }
 
+            if path.suffix == ".csv":
+                # CSVs are packaged but not JSON-parsed; count data rows
+                with open(path, "r", encoding="utf-8") as f:
+                    files[name]["count"] = max(0, sum(1 for _ in f) - 1)
+                continue
+
             if path.name in STREAM_FILES and prefix == "raw":
                 # Stream large files
                 print(f"  Streaming {path.name}...")
