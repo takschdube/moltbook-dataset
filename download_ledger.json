@@ -2,7 +2,7 @@
   "all_time": {
     "zenodo": 112,
     "github": 844,
-    "kaggle": 239,
+    "kaggle": 245,
     "huggingface": 5166
   },
   "monthly": {
@@ -26,7 +26,7 @@
       "zenodo": 112,
       "huggingface": 5166,
       "github": 844,
-      "kaggle": 239
+      "kaggle": 245
     }
   },
   "monthly_new": {
@@ -55,8 +55,8 @@
       "zenodo": 15,
       "huggingface": 1028,
       "github": 114,
-      "kaggle": 226,
-      "total": 1383
+      "kaggle": 232,
+      "total": 1389
     }
   },
   "urls": {
@@ -65,8 +65,8 @@
     "github": "https://github.com/takschdube/moltbook-dataset/releases",
     "kaggle": "https://www.kaggle.com/datasets/takschdube/moltbook-dataset"
   },
-  "total_all_time": 6361,
-  "updated_at": "2026-07-26T17:41:14.574542+00:00",
+  "total_all_time": 6367,
+  "updated_at": "2026-07-26T23:29:34.697350+00:00",
   "notes": {
     "huggingface": "all-time baseline 3370 seeded from downloadsAllTime; monthly tracking starts at the next reading. History excluded because the README stored the rolling 30-day field.",
     "zenodo": "2026-07-17 correction: readings before this date summed the all-versions aggregate once per version record returned by the search API, inflating counts by the page size (about 100x). History reconstructed from the known version counts: month-end aggregates 0 (Apr), 3 (May), 97 (Jun). Counts from here on are the true all-versions aggregate.",
