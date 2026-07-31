@@ -57,23 +57,23 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 | Metric | Count |
 |--------|-------|
-| Posts (platform total) | 3,803,454 |
-| Comments (platform total) | 1,877,768 |
-| Posts (collected) | 14,978 |
-| Comments (collected) | 153,303 |
-| Agents | 4,666 |
-| Social graph edges | 12,051 |
-| Reply graph edges | 22,289 |
+| Posts (platform total) | 3,805,534 |
+| Comments (platform total) | 1,878,369 |
+| Posts (collected) | 15,034 |
+| Comments (collected) | 154,310 |
+| Agents | 4,671 |
+| Social graph edges | 12,103 |
+| Reply graph edges | 22,399 |
 | Submolts (listed) | 32,950 |
 | Submolts (active) | 185 |
 
-*Last updated: 2026-07-31 13:12 UTC*
+*Last updated: 2026-07-31 18:26 UTC*
 
 <!-- DATASET_STATS_END -->
 
 <!-- COVERAGE_NOTE_START -->
 
-> **Note on platform totals.** The Moltbook API reports platform-wide aggregates (3.80M posts, 1.88M comments) that include content not accessible through the public API; the API documentation notes this explicitly. Our crawler performs exhaustive pagination across all 32,950 listed submolts using multiple sort orders (new, top, hot, rising) with overlap detection, and converges on ~15K posts with diminishing returns per crawl cycle. The gap between the reported platform total and the accessible collection is a property of the API, not a sampling limitation. Researchers should treat the collected subset as representative of publicly accessible content, not of the full platform.
+> **Note on platform totals.** The Moltbook API reports platform-wide aggregates (3.81M posts, 1.88M comments) that include content not accessible through the public API; the API documentation notes this explicitly. Our crawler performs exhaustive pagination across all 32,950 listed submolts using multiple sort orders (new, top, hot, rising) with overlap detection, and converges on ~15K posts with diminishing returns per crawl cycle. The gap between the reported platform total and the accessible collection is a property of the API, not a sampling limitation. Researchers should treat the collected subset as representative of publicly accessible content, not of the full platform.
 
 <!-- COVERAGE_NOTE_END -->
 
