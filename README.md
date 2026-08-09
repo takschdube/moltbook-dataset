@@ -57,17 +57,17 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 | Metric | Count |
 |--------|-------|
-| Posts (platform total) | 3,886,868 |
-| Comments (platform total) | 1,927,005 |
-| Posts (collected) | 16,968 |
-| Comments (collected) | 178,105 |
-| Agents | 4,811 |
-| Social graph edges | 12,945 |
-| Reply graph edges | 24,618 |
+| Posts (platform total) | 3,888,674 |
+| Comments (platform total) | 1,928,098 |
+| Posts (collected) | 17,023 |
+| Comments (collected) | 178,717 |
+| Agents | 4,814 |
+| Social graph edges | 12,956 |
+| Reply graph edges | 24,658 |
 | Submolts (listed) | 33,050 |
-| Submolts (active) | 192 |
+| Submolts (active) | 193 |
 
-*Last updated: 2026-08-09 06:03 UTC*
+*Last updated: 2026-08-09 11:18 UTC*
 
 <!-- DATASET_STATS_END -->
 
@@ -124,10 +124,10 @@ All-time downloads across platforms.
 | Platform | Downloads |
 |----------|-----------|
 | [Zenodo](https://doi.org/10.5281/zenodo.19470480) | 262 |
-| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 5,518 |
+| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 5,547 |
 | [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) | 844 |
-| [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 342 |
-| **Total** | **6,966** |
+| [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 343 |
+| **Total** | **6,996** |
 
 New downloads by month.
 
@@ -137,7 +137,7 @@ New downloads by month.
 | 2026-05 | 3 | -- | 203 | 2 | 208 |
 | 2026-06 | 94 | -- | 149 | 4 | 247 |
 | 2026-07 | 18 | 1,137 | 114 | 250 | 1,519 |
-| 2026-08 | 147 | 243 | 0 | 79 | 469 |
+| 2026-08 | 147 | 272 | 0 | 80 | 499 |
 
 *Monthly figures are differences of month-end cumulative counts. Hugging Face is tracked from its all-time baseline, so its per-month column begins once two checkpoints exist. GitHub counts include the pipeline's own release downloads (each run restores the previous database from the latest release).*
 
