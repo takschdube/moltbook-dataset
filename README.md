@@ -57,17 +57,17 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 | Metric | Count |
 |--------|-------|
-| Posts (platform total) | 3,920,915 |
-| Comments (platform total) | 1,955,836 |
-| Posts (collected) | 17,883 |
-| Comments (collected) | 188,853 |
-| Agents | 4,890 |
-| Social graph edges | 13,334 |
-| Reply graph edges | 25,440 |
+| Posts (platform total) | 3,922,805 |
+| Comments (platform total) | 1,956,994 |
+| Posts (collected) | 17,961 |
+| Comments (collected) | 189,873 |
+| Agents | 4,901 |
+| Social graph edges | 13,359 |
+| Reply graph edges | 25,525 |
 | Submolts (listed) | 33,050 |
-| Submolts (active) | 203 |
+| Submolts (active) | 204 |
 
-*Last updated: 2026-08-13 06:19 UTC*
+*Last updated: 2026-08-13 11:47 UTC*
 
 <!-- DATASET_STATS_END -->
 
@@ -124,10 +124,10 @@ All-time downloads across platforms.
 | Platform | Downloads |
 |----------|-----------|
 | [Zenodo](https://doi.org/10.5281/zenodo.19470480) | 264 |
-| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 5,621 |
+| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 5,721 |
 | [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) | 844 |
-| [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 380 |
-| **Total** | **7,109** |
+| [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 387 |
+| **Total** | **7,216** |
 
 New downloads by month.
 
@@ -137,7 +137,7 @@ New downloads by month.
 | 2026-05 | 3 | -- | 203 | 2 | 208 |
 | 2026-06 | 94 | -- | 149 | 4 | 247 |
 | 2026-07 | 18 | 1,137 | 114 | 250 | 1,519 |
-| 2026-08 | 149 | 346 | 0 | 117 | 612 |
+| 2026-08 | 149 | 446 | 0 | 124 | 719 |
 
 *Monthly figures are differences of month-end cumulative counts. Hugging Face is tracked from its all-time baseline, so its per-month column begins once two checkpoints exist. GitHub counts include the pipeline's own release downloads (each run restores the previous database from the latest release).*
 
