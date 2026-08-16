@@ -79,7 +79,7 @@
     "kaggle": "https://www.kaggle.com/datasets/takschdube/moltbook-dataset"
   },
   "total_all_time": 7421,
-  "updated_at": "2026-08-16T11:00:16.397507+00:00",
+  "updated_at": "2026-08-16T16:58:46.676102+00:00",
   "notes": {
     "huggingface": "all-time baseline 3370 seeded from downloadsAllTime; monthly tracking starts at the next reading. History excluded because the README stored the rolling 30-day field.",
     "zenodo": "2026-07-17 correction: readings before this date summed the all-versions aggregate once per version record returned by the search API, inflating counts by the page size (about 100x). History reconstructed from the known version counts: month-end aggregates 0 (Apr), 3 (May), 97 (Jun). Counts from here on are the true all-versions aggregate.",
