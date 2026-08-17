@@ -57,17 +57,17 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 | Metric | Count |
 |--------|-------|
-| Posts (platform total) | 3,952,600 |
-| Comments (platform total) | 1,979,362 |
-| Posts (collected) | 18,864 |
-| Comments (collected) | 200,427 |
-| Agents | 4,999 |
-| Social graph edges | 13,749 |
-| Reply graph edges | 26,411 |
+| Posts (platform total) | 3,954,543 |
+| Comments (platform total) | 1,980,373 |
+| Posts (collected) | 18,921 |
+| Comments (collected) | 201,295 |
+| Agents | 5,006 |
+| Social graph edges | 13,777 |
+| Reply graph edges | 26,464 |
 | Submolts (listed) | 33,100 |
 | Submolts (active) | 218 |
 
-*Last updated: 2026-08-17 05:35 UTC*
+*Last updated: 2026-08-17 11:23 UTC*
 
 <!-- DATASET_STATS_END -->
 
@@ -123,11 +123,11 @@ All-time downloads across platforms.
 
 | Platform | Downloads |
 |----------|-----------|
-| [Zenodo](https://doi.org/10.5281/zenodo.19470480) | 268 |
-| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 5,887 |
+| [Zenodo](https://doi.org/10.5281/zenodo.19470480) | 270 |
+| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 5,993 |
 | [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) | 844 |
-| [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 423 |
-| **Total** | **7,422** |
+| [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 424 |
+| **Total** | **7,531** |
 
 New downloads by month.
 
@@ -137,7 +137,7 @@ New downloads by month.
 | 2026-05 | 3 | -- | 203 | 2 | 208 |
 | 2026-06 | 94 | -- | 149 | 4 | 247 |
 | 2026-07 | 18 | 1,137 | 114 | 250 | 1,519 |
-| 2026-08 | 153 | 612 | 0 | 160 | 925 |
+| 2026-08 | 155 | 718 | 0 | 161 | 1,034 |
 
 *Monthly figures are differences of month-end cumulative counts. Hugging Face is tracked from its all-time baseline, so its per-month column begins once two checkpoints exist. GitHub counts include the pipeline's own release downloads (each run restores the previous database from the latest release).*
 
