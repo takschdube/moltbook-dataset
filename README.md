@@ -57,17 +57,17 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 | Metric | Count |
 |--------|-------|
-| Posts (platform total) | 4,111,805 |
-| Comments (platform total) | 2,081,824 |
-| Posts (collected) | 23,183 |
-| Comments (collected) | 251,500 |
-| Agents | 5,417 |
-| Social graph edges | 15,427 |
-| Reply graph edges | 30,384 |
+| Posts (platform total) | 4,113,875 |
+| Comments (platform total) | 2,082,514 |
+| Posts (collected) | 23,247 |
+| Comments (collected) | 252,520 |
+| Agents | 5,423 |
+| Social graph edges | 15,528 |
+| Reply graph edges | 30,510 |
 | Submolts (listed) | 33,150 |
 | Submolts (active) | 240 |
 
-*Last updated: 2026-09-05 07:35 UTC*
+*Last updated: 2026-09-05 14:23 UTC*
 
 <!-- DATASET_STATS_END -->
 
@@ -123,11 +123,11 @@ All-time downloads across platforms.
 
 | Platform | Downloads |
 |----------|-----------|
-| [Zenodo](https://doi.org/10.5281/zenodo.19470480) | 284 |
-| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 7,015 |
+| [Zenodo](https://doi.org/10.5281/zenodo.19470480) | 286 |
+| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 7,096 |
 | [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) | 844 |
-| [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 561 |
-| **Total** | **8,704** |
+| [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 568 |
+| **Total** | **8,794** |
 
 New downloads by month.
 
@@ -138,7 +138,7 @@ New downloads by month.
 | 2026-06 | 94 | -- | 149 | 4 | 247 |
 | 2026-07 | 18 | 1,137 | 114 | 250 | 1,519 |
 | 2026-08 | 164 | 1,431 | 0 | 245 | 1,840 |
-| 2026-09 | 5 | 309 | 0 | 53 | 367 |
+| 2026-09 | 7 | 390 | 0 | 60 | 457 |
 
 *Monthly figures are differences of month-end cumulative counts. Hugging Face is tracked from its all-time baseline, so its per-month column begins once two checkpoints exist. GitHub counts include the pipeline's own release downloads (each run restores the previous database from the latest release).*
 
