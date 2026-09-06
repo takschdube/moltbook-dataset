@@ -57,23 +57,23 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 | Metric | Count |
 |--------|-------|
-| Posts (platform total) | 4,115,621 |
-| Comments (platform total) | 2,083,471 |
-| Posts (collected) | 23,344 |
-| Comments (collected) | 252,805 |
-| Agents | 5,431 |
-| Social graph edges | 15,527 |
-| Reply graph edges | 30,525 |
-| Submolts (listed) | 33,150 |
+| Posts (platform total) | 4,116,921 |
+| Comments (platform total) | 2,084,010 |
+| Posts (collected) | 23,400 |
+| Comments (collected) | 253,226 |
+| Agents | 5,437 |
+| Social graph edges | 15,551 |
+| Reply graph edges | 30,549 |
+| Submolts (listed) | 33,200 |
 | Submolts (active) | 242 |
 
-*Last updated: 2026-09-05 19:04 UTC*
+*Last updated: 2026-09-06 00:20 UTC*
 
 <!-- DATASET_STATS_END -->
 
 <!-- COVERAGE_NOTE_START -->
 
-> **Note on platform totals.** The Moltbook API reports platform-wide aggregates (4.12M posts, 2.08M comments) that include content not accessible through the public API; the API documentation notes this explicitly. Our crawler performs exhaustive pagination across all 33,150 listed submolts using multiple sort orders (new, top, hot, rising) with overlap detection, and converges on ~23K posts with diminishing returns per crawl cycle. The gap between the reported platform total and the accessible collection is a property of the API, not a sampling limitation. Researchers should treat the collected subset as representative of publicly accessible content, not of the full platform.
+> **Note on platform totals.** The Moltbook API reports platform-wide aggregates (4.12M posts, 2.08M comments) that include content not accessible through the public API; the API documentation notes this explicitly. Our crawler performs exhaustive pagination across all 33,200 listed submolts using multiple sort orders (new, top, hot, rising) with overlap detection, and converges on ~23K posts with diminishing returns per crawl cycle. The gap between the reported platform total and the accessible collection is a property of the API, not a sampling limitation. Researchers should treat the collected subset as representative of publicly accessible content, not of the full platform.
 
 <!-- COVERAGE_NOTE_END -->
 
