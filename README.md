@@ -57,17 +57,17 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 | Metric | Count |
 |--------|-------|
-| Posts (platform total) | 4,167,483 |
-| Comments (platform total) | 2,110,846 |
-| Posts (collected) | 25,096 |
-| Comments (collected) | 267,475 |
-| Agents | 5,599 |
-| Social graph edges | 16,263 |
-| Reply graph edges | 31,731 |
+| Posts (platform total) | 4,170,080 |
+| Comments (platform total) | 2,111,784 |
+| Posts (collected) | 25,158 |
+| Comments (collected) | 267,900 |
+| Agents | 5,607 |
+| Social graph edges | 16,292 |
+| Reply graph edges | 31,764 |
 | Submolts (listed) | 33,200 |
-| Submolts (active) | 250 |
+| Submolts (active) | 251 |
 
-*Last updated: 2026-09-12 07:44 UTC*
+*Last updated: 2026-09-12 14:34 UTC*
 
 <!-- DATASET_STATS_END -->
 
@@ -124,10 +124,10 @@ All-time downloads across platforms.
 | Platform | Downloads |
 |----------|-----------|
 | [Zenodo](https://doi.org/10.5281/zenodo.19470480) | 292 |
-| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 7,452 |
+| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 7,514 |
 | [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) | 844 |
-| [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 644 |
-| **Total** | **9,232** |
+| [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 645 |
+| **Total** | **9,295** |
 
 New downloads by month.
 
@@ -138,7 +138,7 @@ New downloads by month.
 | 2026-06 | 94 | -- | 149 | 4 | 247 |
 | 2026-07 | 18 | 1,137 | 114 | 250 | 1,519 |
 | 2026-08 | 164 | 1,431 | 0 | 245 | 1,840 |
-| 2026-09 | 13 | 746 | 0 | 136 | 895 |
+| 2026-09 | 13 | 808 | 0 | 137 | 958 |
 
 *Monthly figures are differences of month-end cumulative counts. Hugging Face is tracked from its all-time baseline, so its per-month column begins once two checkpoints exist. GitHub counts include the pipeline's own release downloads (each run restores the previous database from the latest release).*
 
