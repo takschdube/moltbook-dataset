@@ -57,17 +57,17 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 | Metric | Count |
 |--------|-------|
-| Posts (platform total) | 4,185,280 |
-| Comments (platform total) | 2,120,812 |
-| Posts (collected) | 25,656 |
-| Comments (collected) | 272,163 |
-| Agents | 5,661 |
-| Social graph edges | 16,438 |
-| Reply graph edges | 32,196 |
+| Posts (platform total) | 4,188,337 |
+| Comments (platform total) | 2,122,052 |
+| Posts (collected) | 25,718 |
+| Comments (collected) | 273,091 |
+| Agents | 5,669 |
+| Social graph edges | 16,467 |
+| Reply graph edges | 32,280 |
 | Submolts (listed) | 33,250 |
 | Submolts (active) | 254 |
 
-*Last updated: 2026-09-14 08:00 UTC*
+*Last updated: 2026-09-14 16:18 UTC*
 
 <!-- DATASET_STATS_END -->
 
@@ -123,11 +123,11 @@ All-time downloads across platforms.
 
 | Platform | Downloads |
 |----------|-----------|
-| [Zenodo](https://doi.org/10.5281/zenodo.19470480) | 294 |
-| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 7,581 |
+| [Zenodo](https://doi.org/10.5281/zenodo.19470480) | 298 |
+| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 7,653 |
 | [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) | 844 |
-| [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 663 |
-| **Total** | **9,382** |
+| [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 664 |
+| **Total** | **9,459** |
 
 New downloads by month.
 
@@ -138,7 +138,7 @@ New downloads by month.
 | 2026-06 | 94 | -- | 149 | 4 | 247 |
 | 2026-07 | 18 | 1,137 | 114 | 250 | 1,519 |
 | 2026-08 | 164 | 1,431 | 0 | 245 | 1,840 |
-| 2026-09 | 15 | 875 | 0 | 155 | 1,045 |
+| 2026-09 | 19 | 947 | 0 | 156 | 1,122 |
 
 *Monthly figures are differences of month-end cumulative counts. Hugging Face is tracked from its all-time baseline, so its per-month column begins once two checkpoints exist. GitHub counts include the pipeline's own release downloads (each run restores the previous database from the latest release).*
 
