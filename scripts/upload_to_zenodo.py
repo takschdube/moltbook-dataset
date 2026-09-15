@@ -253,17 +253,23 @@ def main():
         print("ZENODO_TOKEN not set, skipping Zenodo upload")
         return
 
-    # Daily cadence: the crawl runs every 6 hours, but 4-5 DOI versions a day
-    # is outside what Zenodo versioning is for and nobody cites an hour.
-    # 20h threshold so normal cron drift never skips a day.
+    # Monthly cadence. Each version stores another full copy of a corpus now
+    # running to several gigabytes, and a deposit has a finite quota, so a
+    # daily version would exhaust it inside a month to record a few thousand
+    # new posts. Fine-grained history lives in the Hugging Face revisions;
+    # Zenodo carries the citable snapshots, and nobody cites a day.
+    # ZENODO_MIN_HOURS overrides for a deliberate out-of-band version.
+    min_hours = int(os.getenv("ZENODO_MIN_HOURS", str(28 * 24)))
     record = load_zenodo_json()
     if record:
         _, published_at = resolve_latest(record)
         if published_at:
             last = datetime.fromisoformat(published_at.replace("Z", "+00:00"))
             age = datetime.now(timezone.utc) - last
-            if age < timedelta(hours=20):
-                print(f"Last publish {published_at} ({age} ago); daily cadence, skipping")
+            if age < timedelta(hours=min_hours):
+                days = age.days
+                print(f"Last publish {published_at} ({days}d ago); "
+                      f"monthly cadence, skipping")
                 return
 
     print("=" * 60)

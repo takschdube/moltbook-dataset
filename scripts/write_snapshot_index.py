@@ -23,6 +23,13 @@ HF_REPO = os.getenv("HF_DATASET_REPO", "takschdube/moltbook-dataset")
 
 
 def latest_hf_revision():
+    # The uploader writes the revision it just created, which is exact. Asking
+    # the API is the fallback for a run where the upload was skipped.
+    stamped = Path("hf_revision.txt")
+    if stamped.exists():
+        value = stamped.read_text(encoding="utf-8").strip()
+        if value:
+            return value
     try:
         from huggingface_hub import HfApi
     except ImportError:

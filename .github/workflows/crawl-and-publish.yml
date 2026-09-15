@@ -31,6 +31,17 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    # The database, its JSON exports and the release archive coexist on disk
+    # and together run to roughly 11 GB. A stock runner leaves about 14 GB
+    # free, so reclaim the preinstalled toolchains this job never uses.
+    - name: Reclaim runner disk
+      run: |
+        df -h / | tail -1
+        sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+                    /usr/local/share/boost "$AGENT_TOOLSDIRECTORY" || true
+        sudo apt-get clean || true
+        df -h / | tail -1
+
     - name: Install uv
       uses: astral-sh/setup-uv@v4
 
@@ -51,6 +62,7 @@ jobs:
         gh release download -p "moltbook.db.zst" -D /tmp/ 2>/dev/null || true
         if [ -f "/tmp/moltbook.db.zst" ]; then
           zstd -d /tmp/moltbook.db.zst -o data/raw/moltbook.db
+          rm -f /tmp/moltbook.db.zst
           echo "Restored database from latest release"
         else
           gh release download -p "moltbook.db" -D data/raw/ 2>/dev/null || true
@@ -99,6 +111,7 @@ jobs:
       run: |
         DATE=$(date -u +%Y-%m-%d)
         VERSION="v$(date -u +%Y.%m.%d-%H%M)"
+        echo "RELEASE_TAG=$VERSION" >> "$GITHUB_ENV"
         ZIP=$(ls releases/moltbook-dataset-*.zip | head -1)
 
         ASSETS="$ZIP"
@@ -106,6 +119,15 @@ jobs:
           zstd -3 -f data/raw/moltbook.db -o /tmp/moltbook.db.zst
           ASSETS="$ASSETS /tmp/moltbook.db.zst"
         fi
+
+        for asset in $ASSETS; do
+          SIZE=$(stat -c%s "$asset")
+          if [ "$SIZE" -gt 2000000000 ]; then
+            echo "ERROR: $asset is $SIZE bytes, past the 2 GB release asset limit."
+            echo "Split it or move it to the Hugging Face mirror before publishing."
+            exit 1
+          fi
+        done
 
         gh release create "$VERSION" \
           $ASSETS \
@@ -152,6 +174,7 @@ jobs:
       if: always() && hashFiles('data/raw/posts.json') != ''
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        RELEASE_TAG: ${{ env.RELEASE_TAG }}
       run: uv run python scripts/write_snapshot_index.py
       continue-on-error: true
       continue-on-error: true
@@ -169,6 +192,14 @@ jobs:
       env:
         ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
       run: uv run python scripts/upload_to_zenodo.py
+
+    # Peak disk is the database, its exports and the release archive together.
+    # The archive has reached its mirrors by this point.
+    - name: Release working copies
+      if: always()
+      run: |
+        rm -f releases/moltbook-dataset-*.zip /tmp/moltbook.db.zst
+        df -h / | tail -1
 
     - name: Update README with latest stats
       if: always() && hashFiles('data/raw/posts.json') != ''
