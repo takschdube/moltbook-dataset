@@ -140,14 +140,15 @@ def build_reply_graph(post_count):
     capturing who replied to whom within threads.
     Streams posts_full.json twice (index pass + count pass).
     """
-    # First pass: build a lookup of comment_id -> author_name
+    # First pass: build a lookup of comment_id -> (author_name, author_id)
     comment_authors = {}
 
     def index_comments(comments):
         for comment in comments:
-            author_name = (comment.get("author") or {}).get("name")
-            if comment.get("id") and author_name:
-                comment_authors[comment["id"]] = author_name
+            author = comment.get("author") or {}
+            name = author.get("name")
+            if comment.get("id") and name:
+                comment_authors[comment["id"]] = (name, comment.get("author_id") or author.get("id"))
             if comment.get("replies"):
                 index_comments(comment["replies"])
 
@@ -157,26 +158,78 @@ def build_reply_graph(post_count):
     # Second pass: count reply edges
     interactions = defaultdict(lambda: defaultdict(int))
 
-    def count_replies(comments):
+    def count_replies(comments, post_author):
         for comment in comments:
-            replier = (comment.get("author") or {}).get("name")
+            author = comment.get("author") or {}
+            replier = author.get("name")
+            replier_id = comment.get("author_id") or author.get("id")
             parent_id = comment.get("parent_id")
-            if replier and parent_id and parent_id in comment_authors:
-                parent_author = comment_authors[parent_id]
-                if replier != parent_author:
-                    interactions[replier][parent_author] += 1
+            # Depth-0 comments carry no parent_id; their parent is the post
+            # author. Requiring parent_id dropped every reply to a poster.
+            parent = comment_authors.get(parent_id) if parent_id else post_author
+            if replier and parent and parent[0] and replier != parent[0]:
+                interactions[(replier, replier_id)][parent] += 1
             if comment.get("replies"):
-                count_replies(comment["replies"])
+                count_replies(comment["replies"], post_author)
 
     for post in tqdm(stream_posts_full(), desc="  Counting", total=post_count):
-        count_replies(post.get("comments", []))
+        author = post.get("author") or {}
+        count_replies(post.get("comments", []),
+                      (author.get("name"), post.get("author_id") or author.get("id")))
 
     graph = []
-    for replier, targets in interactions.items():
-        for target, count in targets.items():
-            graph.append({"from": replier, "to": target, "replies": count})
+    for (replier, replier_id), targets in interactions.items():
+        for (target, target_id), count in targets.items():
+            graph.append({"from": replier, "from_id": replier_id,
+                          "to": target, "to_id": target_id, "replies": count})
 
     return graph
+
+
+def build_fetch_completeness(post_count):
+    """Classify every post by whether its comment layer can be trusted.
+
+    Mirrors scripts/completeness_audit.py, which runs the same classification
+    over a standalone export. See that file for what each class means.
+    """
+    def tree_size(comments):
+        return sum(1 + tree_size(c.get("replies")) for c in comments or [])
+
+    counts = defaultdict(int)
+    for post in tqdm(stream_posts_full(), desc="  Classifying", total=post_count):
+        retrieved = tree_size(post.get("comments"))
+        claimed = post.get("comment_count") or 0
+        if retrieved == 0:
+            cls = "never_had_comments" if claimed == 0 else "not_fetched"
+        elif retrieved >= claimed:
+            cls = "complete"
+        elif claimed - retrieved <= 2 and retrieved >= claimed * 0.9:
+            cls = "near_complete"
+        else:
+            cls = "partial"
+        counts[cls] += 1
+
+    total = sum(counts.values()) or 1
+    strict = counts["complete"] + counts["never_had_comments"]
+    return {
+        "total_posts": sum(counts.values()),
+        "complete": counts["complete"],
+        "near_complete": counts["near_complete"],
+        "partial": counts["partial"],
+        "never_had_comments": counts["never_had_comments"],
+        "not_fetched": counts["not_fetched"],
+        "usable_for_absence_claims": strict,
+        "usable_fraction": round(strict / total, 4),
+        "usable_fraction_including_near_complete": round(
+            (strict + counts["near_complete"]) / total, 4),
+        "note": (
+            "not_fetched means the platform reported comments but none were "
+            "retrieved; those posts cannot support a claim that replies were "
+            "absent. near_complete is short by at most two comments and at "
+            "least 90 percent retrieved, consistent with a comment deleted "
+            "after the count was taken. partial was truncated."
+        ),
+    }
 
 
 def build_activity_timeline(posts):
@@ -192,8 +245,12 @@ def build_activity_timeline(posts):
             daily[date]["posts"] += 1
             daily[date]["comments"] += post.get("comment_count", 0)
 
+    # "comments" is the platform's own count for posts created that day, which
+    # is not the same as the number of comments in this archive. See
+    # fetch_completeness.json for how much of the comment layer was retrieved.
     timeline = [
-        {"date": date, "posts": counts["posts"], "comments": counts["comments"]}
+        {"date": date, "posts": counts["posts"], "comments_reported_by_platform": counts["comments"],
+         "comments": counts["comments"]}
         for date, counts in sorted(daily.items())
     ]
 
@@ -295,6 +352,12 @@ def main():
     save_json(timeline, DERIVED_DIR / "activity_timeline.json")
     counts["timeline_days"] = len(timeline)
     del timeline
+
+    print("Fetch completeness:")
+    completeness = build_fetch_completeness(post_count)
+    save_json(completeness, DERIVED_DIR / "fetch_completeness.json")
+    counts["usable_for_absence_claims"] = completeness["usable_for_absence_claims"]
+    print(f"  {completeness['usable_fraction']:.1%} of posts have a trustworthy comment layer")
 
     print("Submolt stats:")
     submolt_stats = build_submolt_stats(posts)
