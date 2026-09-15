@@ -1010,32 +1010,29 @@ def fetch_all_comments(db, post_ids_to_fetch, existing_full_ids):
                 else:
                     record_fetch(db, post_id, "error", status, None, None)
 
-        for future in as_completed(future_to_meta):
-            handle_result(future)
-            completed += 1
-            pbar.update(1)
+        # as_completed fixes the set of futures it will yield at the moment it
+        # is called, so work submitted while iterating it is never handed back.
+        # Submitting into a set already being iterated meant every run stopped
+        # after the first batch without saying so, which is why so much of the
+        # archive has an empty comment array. Drain a wave, then top up.
+        while future_to_meta:
+            for future in as_completed(list(future_to_meta)):
+                handle_result(future)
+                future_to_meta.pop(future, None)
+                completed += 1
+                pbar.update(1)
 
-            # Checkpoint every 1000 posts
-            if completed % 1000 == 0:
-                db.commit()
+                # Checkpoint every 1000 posts
+                if completed % 1000 == 0:
+                    db.commit()
 
-            # Submit more work if we have time
-            if completed >= submitted:
-                if not has_time(reserve_minutes=10):
-                    logger.log(f"Time budget reached after {completed}/{total} comment fetches")
-                    timed_out = True
-                    break
-                submit_batch()
-            elif completed % batch_size == 0 and not has_time(reserve_minutes=10):
-                # Stop submitting new batches, but let in-flight work finish
-                logger.log(f"Time budget reached after {completed}/{total} comment fetches, draining in-flight requests")
+            if completed >= total:
+                break
+            if not has_time(reserve_minutes=10):
+                logger.log(f"Time budget reached after {completed}/{total} comment fetches")
                 timed_out = True
-                for remaining_future in as_completed(
-                    [f for f in future_to_meta if not f.done()]
-                ):
-                    handle_result(remaining_future)
-                    completed += 1
-                    pbar.update(1)
+                break
+            if not submit_batch():
                 break
 
     pbar.close()

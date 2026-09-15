@@ -134,6 +134,37 @@ def test_completeness_classification():
     assert r["usable_fraction"] == 0.5
 
 
+def test_every_queued_thread_is_fetched():
+    """The fetch pool submits work in batches while iterating completions.
+    as_completed only ever yields the futures it was given, so batches added
+    mid-iteration were dropped and each run quietly stopped after the first
+    hundred. This fails against that version."""
+    original, mc.DB_PATH = mc.DB_PATH, Path(tempfile.mkdtemp()) / "fetch.db"
+    db = mc.init_db()
+    mc.DB_PATH = original
+
+    queued = [f"post-{i}" for i in range(250)]   # more than one batch of 100
+    for pid in queued:
+        db.execute("INSERT INTO posts_full (id, data) VALUES (?, ?)",
+                   (pid, json.dumps({"id": pid, "comment_count": 1, "comments": []})))
+    db.commit()
+
+    calls = []
+    original_fetch = mc.fetch_comments_only
+    mc.fetch_comments_only = lambda pid: (calls.append(pid),
+                                          ([{"replies": []}], {"http": "200", "attempts": 1}))[1]
+    try:
+        mc.fetch_all_comments(db, queued, set(queued))
+    finally:
+        mc.fetch_comments_only = original_fetch
+
+    assert len(calls) == 250, f"only {len(calls)} of 250 threads were fetched"
+    stored = db.execute(
+        "SELECT COUNT(*) FROM comment_fetches WHERE outcome = 'ok'").fetchone()[0]
+    assert stored == 250, f"only {stored} of 250 fetches were recorded"
+    db.close()
+
+
 def test_backfill_targets_only_short_threads():
     """A backfill should re-fetch exactly what a reader would have to discard:
     threads holding fewer comments than the platform reports, inside the window
