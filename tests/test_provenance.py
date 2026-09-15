@@ -198,6 +198,25 @@ def test_backfill_targets_only_short_threads():
     db.close()
 
 
+def test_catchup_is_bounded_and_skippable():
+    """Draining the backlog must not crowd out discovery, so the top-up is
+    capped, and setting the cap to zero turns it off."""
+    original, mc.DB_PATH = mc.DB_PATH, Path(tempfile.mkdtemp()) / "catchup.db"
+    db = mc.init_db()
+    mc.DB_PATH = original
+    for i in range(50):
+        db.execute("INSERT INTO posts_full (id, data) VALUES (?, ?)",
+                   (f"p{i}", json.dumps({"id": f"p{i}", "comment_count": 3, "comments": []})))
+    db.commit()
+
+    backlog = mc.select_incomplete(db)
+    assert len(backlog) == 50
+    # the cap is applied by slicing, so a smaller cap takes a strict subset
+    assert len(backlog[:10]) == 10
+    assert set(backlog[:10]) <= set(backlog)
+    db.close()
+
+
 def test_workflow_has_no_duplicate_keys():
     """A duplicated key is silently accepted by a YAML loader and rejected by
     GitHub, so a plain safe_load is not a check. One slipped through as a

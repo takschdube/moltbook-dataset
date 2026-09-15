@@ -1214,6 +1214,18 @@ def crawl(mode="incremental"):
 
         post_ids_to_update = new_ids | updated_ids | hot_ids if (new_ids or updated_ids or hot_ids) else set()
 
+        # Work through the backlog as well. A cycle otherwise only ever fetches
+        # comments for posts that are new or currently active, so a thread
+        # missed once is never revisited and the shortfall only accumulates.
+        # Bounded so catching up cannot crowd out the discovery that has to
+        # happen every cycle; set COMMENT_CATCHUP=0 to skip it.
+        catchup = int(os.getenv("COMMENT_CATCHUP", "3000"))
+        if catchup > 0 and has_time(reserve_minutes=30):
+            backlog = [pid for pid in select_incomplete(db) if pid not in post_ids_to_update]
+            if backlog:
+                logger.log(f"Comment backlog: {len(backlog)} threads short, taking {min(len(backlog), catchup)}")
+                post_ids_to_update |= set(backlog[:catchup])
+
         if post_ids_to_update:
             existing_full_ids = {row[0] for row in db.execute("SELECT id FROM posts_full")}
             fetch_all_comments(db, post_ids_to_update, existing_full_ids)
