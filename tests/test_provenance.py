@@ -134,6 +134,38 @@ def test_completeness_classification():
     assert r["usable_fraction"] == 0.5
 
 
+def test_backfill_targets_only_short_threads():
+    """A backfill should re-fetch exactly what a reader would have to discard:
+    threads holding fewer comments than the platform reports, inside the window
+    asked for. Anything wider wastes requests against a rate limit."""
+    # Its own database file: init_db reuses one path, so tests otherwise see
+    # each other's rows.
+    original, mc.DB_PATH = mc.DB_PATH, Path(tempfile.mkdtemp()) / "backfill.db"
+    db = mc.init_db()
+    mc.DB_PATH = original
+    rows = [
+        # id, created_at, claimed, stored tree size
+        ("short_in_window", "2026-07-15T00:00:00Z", 5, 1),
+        ("complete_in_window", "2026-07-15T00:00:00Z", 2, 2),
+        ("empty_in_window", "2026-07-15T00:00:00Z", 0, 0),
+        ("short_before_window", "2026-06-01T00:00:00Z", 5, 0),
+        ("short_after_window", "2026-09-01T00:00:00Z", 5, 0),
+    ]
+    for pid, created, claimed, stored in rows:
+        comments = [{"replies": []} for _ in range(stored)]
+        db.execute("INSERT INTO posts_full (id, data) VALUES (?, ?)",
+                   (pid, json.dumps({"id": pid, "created_at": created,
+                                     "comment_count": claimed, "comments": comments})))
+    db.commit()
+
+    got = set(mc.select_incomplete(db, "2026-07-01", "2026-08-29"))
+    assert got == {"short_in_window"}, got
+    # without a window, every short thread qualifies regardless of date
+    assert set(mc.select_incomplete(db)) == {
+        "short_in_window", "short_before_window", "short_after_window"}
+    db.close()
+
+
 def test_workflow_has_no_duplicate_keys():
     """A duplicated key is silently accepted by a YAML loader and rejected by
     GitHub, so a plain safe_load is not a check. One slipped through as a

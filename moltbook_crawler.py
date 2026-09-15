@@ -1051,6 +1051,69 @@ def _fetch_comments_background(post_ids_to_fetch, existing_full_ids):
 
 # === MAIN ===
 
+def select_incomplete(db, since=None, until=None):
+    """Posts created in a date range whose stored comment tree is short.
+
+    Compares the platform's own comment_count against what was retrieved, which
+    is the same test consumers use, so a backfill targets exactly the threads a
+    reader would otherwise have to discard.
+    """
+    targets = []
+    for post_id, data in db.execute("SELECT id, data FROM posts_full"):
+        post = json.loads(data)
+        created = (post.get("created_at") or "")[:10]
+        if since and created < since:
+            continue
+        if until and created > until:
+            continue
+        if tree_size(post.get("comments")) < (post.get("comment_count") or 0):
+            targets.append(post_id)
+    return targets
+
+
+def backfill(since=None, until=None):
+    """Re-fetch comment trees for threads whose stored copy is short.
+
+    The comments endpoint returns a thread as it stands now, and every comment
+    carries created_at, so a window in the past is reconstructable from a fetch
+    today: filter by the timestamps rather than by when the fetch happened. The
+    exception is a comment deleted between then and now, which no fetch
+    recovers and which cannot be distinguished from one that never existed.
+    """
+    global _start_time
+    _start_time = datetime.now(timezone.utc)
+
+    logger.log("=" * 50)
+    logger.log(f"MOLTBOOK COMMENT BACKFILL - {since or 'start'} to {until or 'end'}")
+    if TIME_BUDGET_MINUTES > 0:
+        logger.log(f"Time budget: {TIME_BUDGET_MINUTES} minutes")
+    logger.log("=" * 50)
+
+    db = init_db()
+    targets = select_incomplete(db, since, until)
+    logger.log(f"{len(targets)} threads have fewer comments stored than reported")
+
+    if targets:
+        existing = {row[0] for row in db.execute("SELECT id FROM posts_full")}
+        fetch_all_comments(db, targets, existing)
+    else:
+        logger.log("nothing to backfill")
+
+    recovered = db.execute(
+        "SELECT COALESCE(SUM(n_comments), 0) FROM comment_fetches "
+        "WHERE outcome = 'ok' AND fetched_at = ?",
+        ((_start_time or datetime.now(timezone.utc)).isoformat(),),
+    ).fetchone()[0]
+    logger.log(f"Comments retrieved this pass: {recovered}")
+
+    # Carry the submolt count forward: a backfill does not enumerate them, and
+    # writing zero into the run history would misreport the corpus.
+    row = db.execute(
+        "SELECT submolts FROM crawl_runs ORDER BY started_at DESC LIMIT 1"
+    ).fetchone()
+    finalize(db, f"backfill:{since or ''}..{until or ''}", row[0] if row else 0)
+
+
 def crawl(mode="incremental"):
     """Run crawler in specified mode."""
     global _start_time
@@ -1131,6 +1194,16 @@ def crawl(mode="incremental"):
             existing_full_ids = {row[0] for row in db.execute("SELECT id FROM posts_full")}
             fetch_all_comments(db, post_ids_to_update, existing_full_ids)
 
+    finalize(db, mode, len(submolts))
+
+
+def finalize(db, mode, submolt_count):
+    """Export, record the run, and write the published artifacts.
+
+    Shared by the crawl and the backfill: both end by publishing the same
+    files, and a backfill that skipped this would leave its work in the
+    database and out of every mirror.
+    """
     # Fill in empty comments for posts without any
     ensure_all_posts_in_full(db)
 
@@ -1156,7 +1229,7 @@ def crawl(mode="incremental"):
          comments_total, requests, errors, schema_version)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        (started, datetime.now(timezone.utc).isoformat(), mode, len(submolts),
+        (started, datetime.now(timezone.utc).isoformat(), mode, submolt_count,
          post_count, post_full_count, comments_total,
          logger.stats["requests_made"], logger.stats["errors"], SCHEMA_VERSION),
     )
@@ -1181,7 +1254,7 @@ def crawl(mode="incremental"):
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "mode": mode,
         "stats": {
-            "submolts": len(submolts),
+            "submolts": submolt_count,
             "posts": post_count,
             "posts_full": post_full_count,
             "comments_total": comments_total,
@@ -1196,7 +1269,7 @@ def crawl(mode="incremental"):
     logger.log("=" * 50)
     logger.log("CRAWL COMPLETE")
     logger.log("=" * 50)
-    logger.log(f"Submolts:     {len(submolts)}")
+    logger.log(f"Submolts:     {submolt_count}")
     logger.log(f"Posts:        {post_count}")
     logger.log(f"Posts (full): {post_full_count}")
     logger.log(f"Data saved to: {RAW_DIR}/")
@@ -1206,8 +1279,12 @@ def crawl(mode="incremental"):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Moltbook Data Crawler")
-    parser.add_argument("--mode", choices=["full", "incremental"], default="incremental",
-                       help="Crawl mode: full (all data) or incremental (only new)")
+    parser.add_argument("--mode", choices=["full", "incremental", "backfill"],
+                       default="incremental",
+                       help="full (all data), incremental (only new), or backfill "
+                            "(re-fetch comment trees that are short, no discovery)")
+    parser.add_argument("--since", help="backfill: earliest post creation date, YYYY-MM-DD")
+    parser.add_argument("--until", help="backfill: latest post creation date, YYYY-MM-DD")
     parser.add_argument("--full", action="store_true", help="Shorthand for --mode=full")
     parser.add_argument("--time-budget", type=int, default=0,
                        help="Time budget in minutes (0 = unlimited). Crawler will stop "
@@ -1217,4 +1294,7 @@ if __name__ == "__main__":
     mode = "full" if args.full else args.mode
     TIME_BUDGET_MINUTES = args.time_budget
 
-    crawl(mode)
+    if mode == "backfill":
+        backfill(args.since, args.until)
+    else:
+        crawl(mode)

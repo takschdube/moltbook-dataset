@@ -14,6 +14,15 @@ on:
         options:
           - incremental
           - full
+          - backfill
+      since:
+        description: 'backfill only: earliest post creation date, YYYY-MM-DD'
+        required: false
+        type: string
+      until:
+        description: 'backfill only: latest post creation date, YYYY-MM-DD'
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -100,7 +109,17 @@ jobs:
         # derived build, a 1.1 GB release archive and a 3.3 GB mirror upload.
         # The platform produces on the order of a hundred posts per cycle, so
         # the crawl loses almost nothing for the headroom.
-        uv run python moltbook_crawler.py --mode "$MODE" --time-budget 250
+        ARGS=""
+        if [ "$MODE" = "backfill" ]; then
+          # A backfill re-fetches threads whose stored copy is shorter than the
+          # platform reports. It discovers nothing, so without a window it walks
+          # the whole corpus.
+          SINCE="${{ github.event.inputs.since }}"
+          UNTIL="${{ github.event.inputs.until }}"
+          [ -n "$SINCE" ] && ARGS="$ARGS --since $SINCE"
+          [ -n "$UNTIL" ] && ARGS="$ARGS --until $UNTIL"
+        fi
+        uv run python moltbook_crawler.py --mode "$MODE" --time-budget 250 $ARGS
 
     - name: Build derived datasets
       if: always() && hashFiles('data/raw/posts.json') != ''
