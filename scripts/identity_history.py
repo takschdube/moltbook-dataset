@@ -17,6 +17,8 @@ import sys
 import urllib.request
 
 REPO = "https://huggingface.co/datasets/takschdube/moltbook-dataset/resolve"
+# posts.json carried only id and name before the platform's schema change.
+DEFAULT_SOURCE = "raw/posts_full.json"
 # The platform renamed these partway through collection. Read both spellings
 # so a series spanning the change stays comparable.
 ALIASES = {
@@ -66,25 +68,41 @@ def revision_before(index, cutoff):
     return prior[-1] if prior else None
 
 
-def authors_at(sha):
-    """Author records from posts.json at one revision.
+def authors_from(stream):
+    """Author records keyed by account id, read from a posts export.
 
     The export format changed when storage moved to SQLite on 2026-03-31: older
     revisions are pretty-printed JSON, newer ones are one post per line. ijson
-    streams both without loading a half-gigabyte file into memory.
+    streams both without loading a multi-gigabyte file into memory.
     """
     import ijson
 
     seen = {}
-    with urllib.request.urlopen(f"{REPO}/{sha}/raw/posts.json") as r:
-        for post in ijson.items(r, "item"):
-            a = post.get("author")
-            if isinstance(a, dict) and a.get("id"):
-                seen[a["id"]] = a
+    for post in ijson.items(stream, "item"):
+        a = post.get("author")
+        if isinstance(a, dict) and a.get("id"):
+            seen[a["id"]] = a
     return seen
 
 
-def main(repo, out_path, dates):
+def authors_at(sha, source=DEFAULT_SOURCE):
+    """Author records at one revision.
+
+    Read posts_full.json rather than posts.json: before the platform's schema
+    change the listing endpoint returned only an account's id and name, so the
+    self-description exists only in the per-post responses. posts_full is large
+    but it is the only place the identity text lives for that period.
+    """
+    with urllib.request.urlopen(f"{REPO}/{sha}/{source}") as r:
+        return authors_from(r)
+
+
+def authors_from_file(path):
+    with open(path, "rb") as f:
+        return authors_from(f)
+
+
+def main(repo, out_path, dates, source=DEFAULT_SOURCE, local=None):
     index = crawl_index(repo, min(dates) + "T00:00:00", max(dates) + "T23:59:59")
     print(f"{len(index)} distinct crawls in range")
 
@@ -96,7 +114,7 @@ def main(repo, out_path, dates):
             print(f"{d}: no crawl found, skipped")
             continue
         observed, sha = hit
-        people = authors_at(sha)
+        people = authors_from_file(local[d]) if local and d in local else authors_at(sha, source)
         changed = 0
         for aid, a in people.items():
             vals = tuple(str(field(a, f)) for f in FIELDS)
@@ -114,4 +132,17 @@ def main(repo, out_path, dates):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3:])
+    args = sys.argv[1:]
+    source = DEFAULT_SOURCE
+    if "--source" in args:
+        i = args.index("--source")
+        source = args[i + 1]
+        del args[i:i + 2]
+    # --local YYYY-MM-DD=path reads an already-downloaded export for that date
+    local = {}
+    while "--local" in args:
+        i = args.index("--local")
+        date, _, path = args[i + 1].partition("=")
+        local[date] = path
+        del args[i:i + 2]
+    main(args[0], args[1], args[2:], source, local)

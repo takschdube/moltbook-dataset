@@ -189,44 +189,45 @@ def build_reply_graph(post_count):
 def build_fetch_completeness(post_count):
     """Classify every post by whether its comment layer can be trusted.
 
-    comment_count is the platform's figure and comments is what was retrieved,
-    so a nonzero count against an empty array is proof of non-retrieval rather
-    than a thread with no replies. Only never_had_comments and complete support
-    an absence claim.
+    Mirrors scripts/completeness_audit.py, which runs the same classification
+    over a standalone export. See that file for what each class means.
     """
     def tree_size(comments):
         return sum(1 + tree_size(c.get("replies")) for c in comments or [])
 
     counts = defaultdict(int)
     for post in tqdm(stream_posts_full(), desc="  Classifying", total=post_count):
-        got = tree_size(post.get("comments"))
+        retrieved = tree_size(post.get("comments"))
         claimed = post.get("comment_count") or 0
-        stamped = "comments_fetched_at" in post
-        if got == 0:
+        if retrieved == 0:
             cls = "never_had_comments" if claimed == 0 else "not_fetched"
-        elif got >= claimed:
+        elif retrieved >= claimed:
             cls = "complete"
+        elif claimed - retrieved <= 2 and retrieved >= claimed * 0.9:
+            cls = "near_complete"
         else:
             cls = "partial"
         counts[cls] += 1
-        if stamped and post.get("comments_fetched_at") is None:
-            counts["marked_not_fetched"] += 1
 
-    total = sum(counts[k] for k in ("never_had_comments", "not_fetched", "complete", "partial"))
-    usable = counts["never_had_comments"] + counts["complete"]
+    total = sum(counts.values()) or 1
+    strict = counts["complete"] + counts["never_had_comments"]
     return {
-        "total_posts": total,
+        "total_posts": sum(counts.values()),
         "complete": counts["complete"],
+        "near_complete": counts["near_complete"],
         "partial": counts["partial"],
         "never_had_comments": counts["never_had_comments"],
         "not_fetched": counts["not_fetched"],
-        "usable_for_absence_claims": usable,
-        "usable_fraction": round(usable / total, 4) if total else 0.0,
+        "usable_for_absence_claims": strict,
+        "usable_fraction": round(strict / total, 4),
+        "usable_fraction_including_near_complete": round(
+            (strict + counts["near_complete"]) / total, 4),
         "note": (
             "not_fetched means the platform reported comments but none were "
-            "retrieved. Those posts cannot support a claim that replies were "
-            "absent. partial means fewer comments were retrieved than the "
-            "platform reported."
+            "retrieved; those posts cannot support a claim that replies were "
+            "absent. near_complete is short by at most two comments and at "
+            "least 90 percent retrieved, consistent with a comment deleted "
+            "after the count was taken. partial was truncated."
         ),
     }
 

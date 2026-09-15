@@ -53,6 +53,11 @@ def main():
     ap.add_argument("--roots", nargs=2, metavar=("START", "END"), required=True)
     ap.add_argument("--response-hours", type=int, default=48)
     ap.add_argument("--identity", help="identity_history.csv, to attach affiliation text")
+    ap.add_argument("--identity-asof", default=None,
+                    help="observe identity at or before this date (default: the roots "
+                         "window start, so identity precedes the outcome). The archive "
+                         "cannot observe identity before its first crawl, which may be "
+                         "later than the baseline start.")
     ap.add_argument("--cohort", help="cohort.csv, so roots that drew no reply stay in the denominator")
     ap.add_argument("--classes", default="complete,never_had_comments")
     ap.add_argument("--roots-out", help="write a root-level summary here")
@@ -62,14 +67,20 @@ def main():
     r0, r1 = args.roots
     window = timedelta(hours=args.response_hours)
 
+    # Identity has to precede the outcome, not the baseline: the baseline only
+    # records which ties already existed. Defaulting to the roots start keeps
+    # the ordering the design needs while staying inside what the archive saw.
+    asof = args.identity_asof or r0
     identity = {}
     if args.identity:
         with open(args.identity, encoding="utf-8") as f:
-            for row in csv.DictReader(f):
-                # last observation at or before the baseline start
-                if row["observed_at"][:10] <= b0:
+            for row in sorted(csv.DictReader(f), key=lambda r: r["observed_at"]):
+                if row["observed_at"][:10] <= asof:
                     identity[row["id"]] = row.get("description", "")
-        print(f"identity text for {len(identity)} accounts as of {b0}", file=sys.stderr)
+        print(f"identity text for {len(identity)} accounts as of {asof}", file=sys.stderr)
+        if not identity:
+            print("  no observations that early; the archive's first crawl is later",
+                  file=sys.stderr)
 
     # Pass 1: index comment authors so a parent id resolves to a person.
     comment_author = {}
