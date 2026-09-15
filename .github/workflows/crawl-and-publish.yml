@@ -94,7 +94,13 @@ jobs:
         MOLTBOOK_BASE_URL: https://www.moltbook.com/api/v1
       run: |
         MODE="${{ github.event.inputs.mode || 'incremental' }}"
-        uv run python moltbook_crawler.py --mode "$MODE" --time-budget 280
+        # 250 rather than 280 against the 350 minute job limit. Recent runs
+        # finished between 262 and 307 minutes, and publishing a corpus of
+        # 418,383 posts adds roughly ten minutes over the old one: a larger
+        # derived build, a 1.1 GB release archive and a 3.3 GB mirror upload.
+        # The platform produces on the order of a hundred posts per cycle, so
+        # the crawl loses almost nothing for the headroom.
+        uv run python moltbook_crawler.py --mode "$MODE" --time-budget 250
 
     - name: Build derived datasets
       if: always() && hashFiles('data/raw/posts.json') != ''
