@@ -34,6 +34,10 @@ BASE_URL = os.getenv("MOLTBOOK_BASE_URL", "https://www.moltbook.com/api/v1")
 HEADERS = {"Authorization": f"Bearer {API_KEY}"}
 
 # Rate limiting
+# Bumped whenever the shape of an exported record changes. Recorded per crawl
+# in crawl_runs so a consumer can tell which schema produced a given snapshot.
+SCHEMA_VERSION = "2026.09.15"
+
 REQUEST_DELAY = float(os.getenv("REQUEST_DELAY", "0.5"))
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", "3"))
 COMMENT_WORKERS = int(os.getenv("COMMENT_WORKERS", "10"))
@@ -93,27 +97,42 @@ logger = CrawlLogger()
 
 # === HELPERS ===
 
-def make_request(endpoint, params=None):
-    """Make API request with retry logic."""
+def make_request(endpoint, params=None, status_out=None):
+    """Make API request with retry logic.
+
+    status_out: optional caller-owned dict. Receives the final http status (or
+    exception text) and the retry count, so callers can record per-request
+    provenance. Caller-owned rather than global because comment fetching runs
+    on a thread pool.
+    """
+    if status_out is None:
+        status_out = {}
+    status_out.setdefault("attempts", 0)
+    status_out.setdefault("http", None)
+
     if not API_KEY:
         logger.log("API_KEY not set! Check your .env file", "ERROR")
+        status_out["http"] = "no_api_key"
         return None
 
     url = f"{BASE_URL}{endpoint}"
     for attempt in range(MAX_RETRIES):
+        status_out["attempts"] = attempt + 1
         try:
             logger.stats["requests_made"] += 1
             resp = requests.get(url, headers=HEADERS, params=params, timeout=30)
+            status_out["http"] = str(resp.status_code)
             if resp.status_code == 200:
                 return resp.json()
             elif resp.status_code == 429:
                 logger.log("Rate limited. Waiting 60s...", "WARN")
                 time.sleep(60)
             else:
-                logger.log(f"Error {resp.status_code}: {resp.text[:100]}", "ERROR")
+                logger.log(f"Error {resp.status_code} on {endpoint}: {resp.text[:100]}", "ERROR")
                 logger.stats["errors"] += 1
         except Exception as e:
-            logger.log(f"Request failed: {e}", "ERROR")
+            status_out["http"] = f"exception: {type(e).__name__}"
+            logger.log(f"Request failed on {endpoint}: {e}", "ERROR")
             logger.stats["errors"] += 1
         time.sleep(REQUEST_DELAY * (attempt + 1))
     return None
@@ -212,8 +231,52 @@ def init_db():
             PRIMARY KEY (post_id, observed_at)
         )
     """)
+    # Per-thread comment fetch manifest. Without this, a post whose comments
+    # were never retrieved is indistinguishable from one with no comments:
+    # both end up as an empty array. One row per fetch attempt.
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS comment_fetches (
+            post_id TEXT NOT NULL,
+            fetched_at TEXT NOT NULL,
+            outcome TEXT NOT NULL,
+            http_status TEXT,
+            attempts INTEGER,
+            n_comments INTEGER,
+            claimed_count INTEGER,
+            PRIMARY KEY (post_id, fetched_at)
+        )
+    """)
+    # Crawl history lives here rather than in metadata.json, which is not
+    # restored between CI runs and so only ever held the current run.
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS crawl_runs (
+            started_at TEXT PRIMARY KEY,
+            finished_at TEXT,
+            mode TEXT,
+            submolts INTEGER,
+            posts INTEGER,
+            posts_full INTEGER,
+            comments_total INTEGER,
+            requests INTEGER,
+            errors INTEGER,
+            schema_version TEXT
+        )
+    """)
     db.commit()
     return db
+
+def record_fetch(db, post_id, outcome, status, n_comments, claimed_count):
+    """Append one row to the per-thread comment fetch manifest."""
+    db.execute(
+        """
+        INSERT OR REPLACE INTO comment_fetches
+        (post_id, fetched_at, outcome, http_status, attempts, n_comments, claimed_count)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """,
+        (post_id, (_start_time or datetime.now(timezone.utc)).isoformat(), outcome,
+         (status or {}).get("http"), (status or {}).get("attempts"),
+         n_comments, claimed_count),
+    )
 
 def store_post(db, post):
     """Write a post's latest state and append its engagement observation."""
@@ -332,6 +395,32 @@ def export_posts_full_json(db):
     logger.log(f"Exported {filepath} ({size:.2f} MB, {count} posts)")
     return count
 
+def export_comment_fetches_csv(db):
+    """Stream the per-thread comment fetch manifest to data/raw/comment_fetches.csv."""
+    filepath = RAW_DIR / "comment_fetches.csv"
+    tmp_path = str(filepath) + ".tmp"
+    cols = ["post_id", "fetched_at", "outcome", "http_status", "attempts",
+            "n_comments", "claimed_count"]
+    count = 0
+    with open(tmp_path, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(cols)
+        for row in db.execute(f"SELECT {', '.join(cols)} FROM comment_fetches ORDER BY fetched_at"):
+            w.writerow(row)
+            count += 1
+    os.replace(tmp_path, str(filepath))
+    logger.log(f"Exported {filepath} ({count} fetch records)")
+    return count
+
+def export_crawl_runs_json(db):
+    """Write the durable crawl history to data/raw/crawl_runs.json."""
+    cols = ["started_at", "finished_at", "mode", "submolts", "posts", "posts_full",
+            "comments_total", "requests", "errors", "schema_version"]
+    rows = [dict(zip(cols, r)) for r in
+            db.execute(f"SELECT {', '.join(cols)} FROM crawl_runs ORDER BY started_at")]
+    save_json(rows, "crawl_runs.json")
+    return len(rows)
+
 def ensure_all_posts_in_full(db):
     """Add empty-comments entries in posts_full for any post not yet there."""
     missing = db.execute("""
@@ -342,13 +431,17 @@ def ensure_all_posts_in_full(db):
     for post_id, data_str in missing:
         post = json.loads(data_str)
         post["comments"] = []
+        # Null marks "never fetched". Without it this row is indistinguishable
+        # from a thread that was fetched and genuinely had no comments.
+        post["comments_fetched_at"] = None
         db.execute(
             "INSERT INTO posts_full (id, data) VALUES (?, ?)",
             (post_id, json.dumps(post, ensure_ascii=False)),
         )
+        record_fetch(db, post_id, "not_attempted", None, None, post.get("comment_count"))
     if missing:
         db.commit()
-        logger.log(f"Added {len(missing)} posts with empty comments to posts_full")
+        logger.log(f"Added {len(missing)} posts to posts_full as not-yet-fetched placeholders")
 
 # === CRAWLERS ===
 
@@ -811,19 +904,29 @@ def fetch_all_posts(db):
     logger.log(f"Total posts in dataset: {total}")
     return total
 
+def tree_size(comments):
+    """Total comments in a nested reply tree, not just the top level."""
+    return sum(1 + tree_size(c.get("replies")) for c in comments or [])
+
 def fetch_post_with_comments(post_id):
-    """Fetch single post with full comment tree."""
-    resp = make_request(f"/posts/{post_id}")
+    """Fetch single post with full comment tree. Returns (post, comments, status)."""
+    st = {}
+    resp = make_request(f"/posts/{post_id}", status_out=st)
     if resp and resp.get("success"):
-        return resp.get("post"), resp.get("comments", [])
-    return None, []
+        return resp.get("post"), resp.get("comments", []), st
+    return None, [], st
 
 def fetch_comments_only(post_id):
-    """Fetch comments for a post (returns full nested tree in one response)."""
-    resp = make_request(f"/posts/{post_id}/comments")
+    """Fetch comments for a post (full nested tree in one response, no pagination).
+
+    Returns (comments, status). comments is None on failure, which is what
+    distinguishes a failed fetch from a thread that genuinely has none.
+    """
+    st = {}
+    resp = make_request(f"/posts/{post_id}/comments", status_out=st)
     if resp and resp.get("success"):
-        return resp.get("comments", [])
-    return None
+        return resp.get("comments", []), st
+    return None, st
 
 def fetch_all_comments(db, post_ids_to_fetch, existing_full_ids):
     """Fetch comments for posts using parallel requests. Writes directly to SQLite.
@@ -872,8 +975,9 @@ def fetch_all_comments(db, post_ids_to_fetch, existing_full_ids):
 
         def handle_result(future):
             post_id, is_refresh = future_to_meta[future]
+            now = datetime.now(timezone.utc).isoformat()
             if is_refresh:
-                comments = future.result()
+                comments, status = future.result()
                 if comments is not None:
                     row = db.execute(
                         "SELECT data FROM posts_full WHERE id = ?", (post_id,)
@@ -881,18 +985,30 @@ def fetch_all_comments(db, post_ids_to_fetch, existing_full_ids):
                     if row:
                         post_data = json.loads(row[0])
                         post_data["comments"] = comments
+                        post_data["comments_fetched_at"] = now
                         db.execute(
                             "INSERT OR REPLACE INTO posts_full (id, data) VALUES (?, ?)",
                             (post_id, json.dumps(post_data, ensure_ascii=False)),
                         )
+                        record_fetch(db, post_id, "ok", status, tree_size(comments),
+                                     post_data.get("comment_count"))
+                    else:
+                        record_fetch(db, post_id, "ok_orphan", status, tree_size(comments), None)
+                else:
+                    record_fetch(db, post_id, "error", status, None, None)
             else:
-                full_post, comments = future.result()
+                full_post, comments, status = future.result()
                 if full_post:
                     full_post["comments"] = comments
+                    full_post["comments_fetched_at"] = now
                     db.execute(
                         "INSERT OR REPLACE INTO posts_full (id, data) VALUES (?, ?)",
                         (post_id, json.dumps(full_post, ensure_ascii=False)),
                     )
+                    record_fetch(db, post_id, "ok", status, tree_size(comments),
+                                 full_post.get("comment_count"))
+                else:
+                    record_fetch(db, post_id, "error", status, None, None)
 
         for future in as_completed(future_to_meta):
             handle_result(future)
@@ -1028,7 +1144,39 @@ def crawl(mode="incremental"):
     export_posts_full_json(db)
     export_metrics_csv(db)
 
-    # Save metadata
+    comments_total = db.execute(
+        "SELECT COALESCE(SUM(n_comments), 0) FROM comment_fetches WHERE outcome = 'ok'"
+    ).fetchone()[0]
+
+    started = (_start_time or datetime.now(timezone.utc)).isoformat()
+    db.execute(
+        """
+        INSERT OR REPLACE INTO crawl_runs
+        (started_at, finished_at, mode, submolts, posts, posts_full,
+         comments_total, requests, errors, schema_version)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (started, datetime.now(timezone.utc).isoformat(), mode, len(submolts),
+         post_count, post_full_count, comments_total,
+         logger.stats["requests_made"], logger.stats["errors"], SCHEMA_VERSION),
+    )
+    db.commit()
+
+    export_comment_fetches_csv(db)
+    export_crawl_runs_json(db)
+
+    # Committed high-water mark. The CI restore step compares against this so a
+    # failed restore cannot publish a near-empty corpus as the new Latest, which
+    # is what silently destroyed the archive on 2026-06-20.
+    with open("corpus_state.json", "w", encoding="utf-8") as f:
+        json.dump({"posts": post_count, "posts_full": post_full_count,
+                   "comments_total": comments_total,
+                   "schema_version": SCHEMA_VERSION,
+                   "updated_at": datetime.now(timezone.utc).isoformat()},
+                  f, indent=2)
+    logger.log(f"Wrote corpus_state.json high-water mark: {post_count} posts")
+
+    # Retained for backward compatibility; crawl_runs.json is the durable record.
     crawl_info = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "mode": mode,
@@ -1036,6 +1184,7 @@ def crawl(mode="incremental"):
             "submolts": len(submolts),
             "posts": post_count,
             "posts_full": post_full_count,
+            "comments_total": comments_total,
             "requests": logger.stats["requests_made"],
             "errors": logger.stats["errors"]
         }

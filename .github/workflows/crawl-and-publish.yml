@@ -62,6 +62,20 @@ jobs:
           exit 1
         fi
 
+        # Existence is not enough. On 2026-06-20 a restore produced a database
+        # that opened cleanly but held almost nothing; the run published it as
+        # Latest and every later run restored the empty corpus, destroying
+        # 395,224 posts. Compare against the committed high-water mark and
+        # refuse to continue if the corpus collapsed.
+        RESTORED=$(sqlite3 data/raw/moltbook.db "SELECT COUNT(*) FROM posts" 2>/dev/null || echo 0)
+        EXPECTED=$(python3 -c "import json;print(json.load(open('corpus_state.json'))['posts'])" 2>/dev/null || echo 0)
+        echo "Restored $RESTORED posts; last run recorded $EXPECTED"
+        if [ "$EXPECTED" -gt 1000 ] && [ "$RESTORED" -lt $((EXPECTED * 90 / 100)) ]; then
+          echo "ERROR: restored corpus holds $RESTORED posts against an expected $EXPECTED."
+          echo "Refusing to crawl and publish over a good release. Investigate before rerunning."
+          exit 1
+        fi
+
     - name: Run crawler
       env:
         MOLTBOOK_API_KEY: ${{ secrets.MOLTBOOK_API_KEY }}
@@ -130,6 +144,16 @@ jobs:
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
       run: uv run python scripts/upload_to_huggingface.py
+
+    # The Hugging Face revision history is the only continuous record of this
+    # archive, so the tag-to-revision index has to be maintained. It stopped on
+    # 2026-07-17 because nothing ever wrote it after the initial backfill.
+    - name: Record snapshot index
+      if: always() && hashFiles('data/raw/posts.json') != ''
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      run: uv run python scripts/write_snapshot_index.py
+      continue-on-error: true
       continue-on-error: true
 
     - name: Upload to Kaggle
@@ -155,7 +179,7 @@ jobs:
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        git add README.md ZENODO.json download_ledger.json
+        git add README.md ZENODO.json download_ledger.json corpus_state.json snapshots.json
         git diff --cached --quiet || git commit -m "Update dataset stats [skip ci]"
         # These are generated files. If main moved during the crawl and the
         # rebase conflicts, drop this run's stats commit; the next run
