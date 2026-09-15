@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Retention for per-run (v*) releases: keep the last 14 days plus the first
 # release of each calendar month; delete the rest. History is preserved
-# elsewhere by design: archive/* releases (never touched here), daily Zenodo
-# DOI versions, the Hugging Face mirror's git history, and the
-# post_metrics_history table in the shipped database. Git tags are never
-# deleted; they remain the per-cycle lineage markers indexed by
-# snapshots.json.
+# elsewhere by design, at a different grain in each place: archive/* releases
+# (never touched here), monthly Zenodo DOI versions, one Hugging Face revision
+# per crawl with a full corpus snapshot daily, and the post_metrics_history
+# table in the shipped database. Git tags are never deleted; they remain the
+# per-cycle lineage markers indexed by snapshots.json.
 #
 # Usage: prune_releases.sh [owner/repo]   (DRY=1 to preview without deleting)
 set -euo pipefail
