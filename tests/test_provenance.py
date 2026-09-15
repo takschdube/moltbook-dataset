@@ -134,6 +134,37 @@ def test_completeness_classification():
     assert r["usable_fraction"] == 0.5
 
 
+def test_workflow_has_no_duplicate_keys():
+    """A duplicated key is silently accepted by a YAML loader and rejected by
+    GitHub, so a plain safe_load is not a check. One slipped through as a
+    repeated continue-on-error and every run failed before starting a job."""
+    import yaml
+
+    class StrictLoader(yaml.SafeLoader):
+        pass
+
+    def no_duplicates(loader, node, deep=False):
+        seen = set()
+        for key_node, _ in node.value:
+            key = loader.construct_object(key_node, deep=deep)
+            if key in seen:
+                raise AssertionError(f"duplicated key {key!r} at {key_node.start_mark}")
+            seen.add(key)
+        return yaml.SafeLoader.construct_mapping(loader, node, deep)
+
+    StrictLoader.add_constructor(
+        yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, no_duplicates)
+
+    for path in sorted((REPO / ".github" / "workflows").glob("*.yml")):
+        with open(path, encoding="utf-8") as f:
+            doc = yaml.load(f, StrictLoader)
+        steps = doc["jobs"]["crawl-and-publish"]["steps"]
+        assert steps, f"{path.name} has no steps"
+        # every step is either a shell command or an action, never both
+        for step in steps:
+            assert ("run" in step) != ("uses" in step), step.get("name")
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     for t in tests:
