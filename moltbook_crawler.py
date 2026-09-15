@@ -38,6 +38,9 @@ HEADERS = {"Authorization": f"Bearer {API_KEY}"}
 # in crawl_runs so a consumer can tell which schema produced a given snapshot.
 SCHEMA_VERSION = "2026.09.15"
 
+# How long a writer waits for the other connection's transaction before failing.
+BUSY_TIMEOUT_MS = int(os.getenv("SQLITE_BUSY_TIMEOUT_MS", "30000"))
+
 REQUEST_DELAY = float(os.getenv("REQUEST_DELAY", "0.5"))
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", "3"))
 COMMENT_WORKERS = int(os.getenv("COMMENT_WORKERS", "10"))
@@ -190,6 +193,11 @@ def init_db():
     db = sqlite3.connect(str(DB_PATH))
     db.execute("PRAGMA journal_mode=WAL")
     db.execute("PRAGMA synchronous=NORMAL")
+    # Comment fetching runs on a background thread with its own connection while
+    # the main thread is still writing posts. WAL permits one writer, and the
+    # default busy timeout is zero, so the loser of a race fails immediately
+    # rather than waiting. Wait instead.
+    db.execute(f"PRAGMA busy_timeout={BUSY_TIMEOUT_MS}")
     db.execute("""
         CREATE TABLE IF NOT EXISTS posts (
             id TEXT PRIMARY KEY,
@@ -1038,13 +1046,32 @@ def fetch_all_comments(db, post_ids_to_fetch, existing_full_ids):
     pbar.close()
     db.commit()
 
+    # Say so when a pass does not finish. The previous loop ended early every
+    # run and reported nothing, so the gap only showed up as empty comment
+    # arrays months later.
+    if completed < total:
+        reason = "time budget" if timed_out else "queue exhausted early"
+        logger.log(f"Comment fetch incomplete: {completed}/{total} threads ({reason})",
+                   "WARN")
+    else:
+        logger.log(f"Comment fetch complete: {completed}/{total} threads")
+    return completed, total
+
 def _fetch_comments_background(post_ids_to_fetch, existing_full_ids):
     """Run fetch_all_comments in a background thread with its own DB connection."""
     db = sqlite3.connect(str(DB_PATH))
     db.execute("PRAGMA journal_mode=WAL")
     db.execute("PRAGMA synchronous=NORMAL")
-    fetch_all_comments(db, post_ids_to_fetch, existing_full_ids)
-    db.close()
+    db.execute(f"PRAGMA busy_timeout={BUSY_TIMEOUT_MS}")
+    try:
+        fetch_all_comments(db, post_ids_to_fetch, existing_full_ids)
+    except Exception as e:
+        # A thread that dies takes its traceback with it and join() returns as
+        # though nothing happened, so say so here or the work vanishes quietly.
+        logger.log(f"Background comment fetch failed: {type(e).__name__}: {e}", "ERROR")
+        logger.stats["errors"] += 1
+    finally:
+        db.close()
 
 # === MAIN ===
 

@@ -154,10 +154,11 @@ def test_every_queued_thread_is_fetched():
     mc.fetch_comments_only = lambda pid: (calls.append(pid),
                                           ([{"replies": []}], {"http": "200", "attempts": 1}))[1]
     try:
-        mc.fetch_all_comments(db, queued, set(queued))
+        done = mc.fetch_all_comments(db, queued, set(queued))
     finally:
         mc.fetch_comments_only = original_fetch
 
+    assert done == (250, 250), f"reported {done}, expected every thread fetched"
     assert len(calls) == 250, f"only {len(calls)} of 250 threads were fetched"
     stored = db.execute(
         "SELECT COUNT(*) FROM comment_fetches WHERE outcome = 'ok'").fetchone()[0]
