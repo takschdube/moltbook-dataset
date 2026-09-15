@@ -162,7 +162,9 @@ def build_coverage_note(stats):
         f"platform total and the accessible collection is a property of the "
         f"API, not a sampling limitation. Researchers should treat the collected "
         f"subset as representative of publicly accessible content, not of the "
-        f"full platform.",
+        f"full platform. Separately, these figures describe a corpus rebuilding "
+        f"after the 2026-06-20 loss; see Collection integrity below. They are "
+        f"not a continuous count.",
         "",
         COVERAGE_NOTE_END,
     ]

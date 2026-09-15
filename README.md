@@ -73,9 +73,62 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 <!-- COVERAGE_NOTE_START -->
 
-> **Note on platform totals.** The Moltbook API reports platform-wide aggregates (4.19M posts, 2.12M comments) that include content not accessible through the public API; the API documentation notes this explicitly. Our crawler performs exhaustive pagination across all 33,250 listed submolts using multiple sort orders (new, top, hot, rising) with overlap detection, and converges on ~26K posts with diminishing returns per crawl cycle. The gap between the reported platform total and the accessible collection is a property of the API, not a sampling limitation. Researchers should treat the collected subset as representative of publicly accessible content, not of the full platform.
+> **Note on platform totals.** The Moltbook API reports platform-wide aggregates (4.19M posts, 2.12M comments) that include content not accessible through the public API; the API documentation notes this explicitly. Our crawler performs exhaustive pagination across all 33,250 listed submolts using multiple sort orders (new, top, hot, rising) with overlap detection, and converges on ~26K posts with diminishing returns per crawl cycle. The gap between the reported platform total and the accessible collection is a property of the API, not a sampling limitation. Researchers should treat the collected subset as representative of publicly accessible content, not of the full platform. Separately, these figures describe a corpus rebuilding after the 2026-06-20 loss; see Collection integrity below. They are not a continuous count.
 
 <!-- COVERAGE_NOTE_END -->
+
+## Collection integrity
+
+**This archive lost most of its contents on 2026-06-20 and has been rebuilding
+since.** The last crawl before the loss held 395,224 posts; the next held
+3,969. The job restores its working database from the previous release before
+each crawl, that restore returned a database which opened but held almost
+nothing, and the run published the result as the new Latest. Every later run
+restored the near-empty state.
+
+The current figures above describe the rebuild, not a continuous observation of
+the platform. Anyone studying June onward should know that an account with no
+recorded activity in that period may simply not have been re-collected yet.
+
+The pre-loss corpus is intact in this dataset's Hugging Face revision history
+at revision `0f8f0a37d15e` (crawl 2026-06-19T14:47:50Z), where
+`raw/posts_full.json` holds all 395,224 posts. It can be fetched directly:
+
+```
+https://huggingface.co/datasets/takschdube/moltbook-dataset/resolve/0f8f0a37d15e/raw/posts_full.json
+```
+
+A guard added on 2026-09-15 compares each restored database against a committed
+high-water mark in `corpus_state.json` and fails the run rather than publishing
+a collapse.
+
+### Comment coverage
+
+Posts whose comments were never retrieved were written with an empty `comments`
+array carrying no marker, which made them indistinguishable from threads that
+genuinely had no comments. Comment fetching is abandoned when the job's time
+budget expires, so this affects a large share of the archive rather than a few
+edge cases.
+
+Posts collected from 2026-09-15 carry `comments_fetched_at`, which is null when
+the comments were never fetched, and `raw/comment_fetches.csv` records one row
+per attempt with its outcome. For earlier data, `comment_count` against the
+stored `comments` array is a reliable test: a nonzero count with an empty array
+is proof of non-retrieval. `derived/fetch_completeness.json` reports the split,
+and `scripts/completeness_audit.py` reproduces it over any export.
+
+Measured over the intact pre-loss corpus, 71.1% of posts either have a complete
+comment layer or verifiably had no comments. Only those support a claim that a
+reply was absent.
+
+### Known defect in the published reply graph
+
+`derived/reply_graph.json` published before 2026-09-15 resolves parents through
+`parent_id`, which top-level comments do not carry because their parent is the
+post itself. It therefore omits every reply made directly to a poster, which is
+91.4% of comments in the January to February window. Rebuild from the raw
+nesting, or use `scripts/extract_reply_edges.py`.
+
 
 ## Citation
 
