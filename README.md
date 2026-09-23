@@ -440,6 +440,8 @@ Every zip contains all data files (preserving `raw/` and `derived/` directories)
 
 New snapshots are collected automatically every 6 hours. The crawler uses a time budget to stay within CI limits — if a single run can't finish (e.g. after a gap in collection), it saves its progress, publishes a partial release, and the next run picks up where it left off.
 
+Each run resumes from the release GitHub marks as Latest, and the pipeline sets that flag on every release it publishes. A release created by hand must pass `--latest=false`; otherwise the next run tries to restore from it and fails.
+
 ### Retention and the longitudinal archive
 
 Per-run releases are working copies and are pruned to a rolling 14-day
