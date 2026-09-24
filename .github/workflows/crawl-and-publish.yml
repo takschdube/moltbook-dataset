@@ -60,26 +60,31 @@ jobs:
     - name: Install dependencies
       run: uv sync
 
-    # Restore previous data from the release marked Latest. No tag argument:
-    # gh resolves the Latest flag, which is immune to list ordering (backdated
-    # archive releases sort first by creation date).
+    # Restore previous data from the release marked Latest. The flag is immune
+    # to list ordering (backdated archive releases sort first by creation
+    # date), but any release created without --latest=false takes it over: on
+    # 2026-09-15 a hand-made provenance release did, and eight days of runs
+    # failed here. Resolve the tag first so the log names the release used.
     - name: Download previous dataset
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         mkdir -p data/raw
-        gh release download -p "moltbook.db.zst" -D /tmp/ 2>/dev/null || true
+        LATEST=$(gh release view --json tagName --jq .tagName)
+        echo "Release marked Latest: $LATEST"
+        gh release download "$LATEST" -p "moltbook.db.zst" -D /tmp/ || true
         if [ -f "/tmp/moltbook.db.zst" ]; then
           zstd -d /tmp/moltbook.db.zst -o data/raw/moltbook.db
           rm -f /tmp/moltbook.db.zst
-          echo "Restored database from latest release"
+          echo "Restored database from $LATEST"
         else
-          gh release download -p "moltbook.db" -D data/raw/ 2>/dev/null || true
+          gh release download "$LATEST" -p "moltbook.db" -D data/raw/ || true
         fi
         if [ ! -f "data/raw/moltbook.db" ]; then
           # A silent fresh start would crawl an empty corpus and publish it
           # as Latest, cascading data loss. Fail instead.
-          echo "ERROR: could not restore moltbook.db from the latest release"
+          echo "ERROR: could not restore moltbook.db from $LATEST (assets: $(gh release view "$LATEST" --json assets --jq '[.assets[].name] | join(", ")'))"
+          echo "If another release took the Latest flag, move it back: gh release edit <tag holding moltbook.db.zst> --latest"
           exit 1
         fi
 
