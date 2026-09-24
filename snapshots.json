@@ -3722,5 +3722,12 @@
   "hf_revision": "2b49349dbd5b265cb1790d6ece8f459b699824d5",
   "hf_revision_is_prior_run": false,
   "github_release": true
+ },
+ {
+  "tag": "v2026.09.24-0209",
+  "snapshot_time": "2026-09-24T02:03:05.797791+00:00",
+  "hf_revision": "fc996eb11ecea47699748c30af905df7db7657d6",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
  }
 ]
