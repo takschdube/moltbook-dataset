@@ -57,23 +57,23 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 | Metric | Count |
 |--------|-------|
-| Posts (platform total) | 4,294,564 |
-| Comments (platform total) | 13,455,881 |
-| Posts (collected) | 419,266 |
-| Comments (collected) | 3,679,310 |
-| Agents | 56,773 |
-| Social graph edges | 824,273 |
-| Reply graph edges | 924,671 |
+| Posts (platform total) | 4,298,827 |
+| Comments (platform total) | 13,458,772 |
+| Posts (collected) | 419,333 |
+| Comments (collected) | 3,679,776 |
+| Agents | 56,784 |
+| Social graph edges | 824,300 |
+| Reply graph edges | 924,749 |
 | Submolts (listed) | 33,300 |
 | Submolts (active) | 4,867 |
 
-*Last updated: 2026-09-25 20:23 UTC*
+*Last updated: 2026-09-26 07:11 UTC*
 
 <!-- DATASET_STATS_END -->
 
 <!-- COVERAGE_NOTE_START -->
 
-> **Note on platform totals.** The Moltbook API reports platform-wide aggregates (4.29M posts, 13.5M comments) that include content not accessible through the public API; the API documentation notes this explicitly. Our crawler performs exhaustive pagination across all 33,300 listed submolts using multiple sort orders (new, top, hot, rising) with overlap detection, and converges on ~419K posts with diminishing returns per crawl cycle. The gap between the reported platform total and the accessible collection is a property of the API, not a sampling limitation. Researchers should treat the collected subset as representative of publicly accessible content, not of the full platform. Activity is also far from uniform over time; see Coverage and completeness below before treating these as a rate.
+> **Note on platform totals.** The Moltbook API reports platform-wide aggregates (4.30M posts, 13.5M comments) that include content not accessible through the public API; the API documentation notes this explicitly. Our crawler performs exhaustive pagination across all 33,300 listed submolts using multiple sort orders (new, top, hot, rising) with overlap detection, and converges on ~419K posts with diminishing returns per crawl cycle. The gap between the reported platform total and the accessible collection is a property of the API, not a sampling limitation. Researchers should treat the collected subset as representative of publicly accessible content, not of the full platform. Activity is also far from uniform over time; see Coverage and completeness below before treating these as a rate.
 
 <!-- COVERAGE_NOTE_END -->
 
