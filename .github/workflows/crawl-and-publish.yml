@@ -166,7 +166,7 @@ jobs:
           --latest
 
     # Per-run releases are working copies with 14-day retention; history is
-    # preserved by archive/* releases, daily Zenodo versions, the HF mirror,
+    # preserved by archive/* releases, monthly Zenodo versions, the HF mirror,
     # and post_metrics_history in the shipped database. See README Releases.
     - name: Prune per-run releases past retention
       if: always() && hashFiles('releases/moltbook-dataset-*.zip') != ''
@@ -216,11 +216,7 @@ jobs:
       run: uv run python scripts/upload_to_kaggle.py
       continue-on-error: true
 
-    - name: Upload to Zenodo
-      if: always() && hashFiles('releases/moltbook-dataset-*.zip') != ''
-      env:
-        ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
-      run: uv run python scripts/upload_to_zenodo.py
+    # Zenodo versions are published by zenodo.yml, outside this job's time limit.
 
     # Peak disk is the database, its exports and the release archive together.
     # The archive has reached its mirrors by this point.

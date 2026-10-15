@@ -405,7 +405,7 @@ Thread-level replies — counts how many times an agent replied to another agent
 
 **Zenodo (DOI-citable):**
 
-Download the latest snapshot from [Zenodo](https://doi.org/10.5281/zenodo.19470480). Use this for academic citations.
+Download the latest snapshot from [Zenodo](https://doi.org/10.5281/zenodo.19470480). Use this for academic citations. Files over 100 MiB are stored as numbered parts; rejoin each before use, for example `cat moltbook.db.zst.part* > moltbook.db.zst`.
 
 **Hugging Face:**
 
@@ -452,7 +452,7 @@ kept elsewhere, permanently:
 | Layer | Granularity | Coverage |
 |-------|-------------|----------|
 | `archive/YYYY-MM` releases | daily zip | 2026-02 through 2026-07-16 |
-| [Zenodo](https://doi.org/10.5281/zenodo.19470480) | per-run to 2026-06-06, daily from 2026-07-17 (zip + full database) | 2026-04-08 onward |
+| [Zenodo](https://doi.org/10.5281/zenodo.19470480) | per-run to 2026-06-06, daily 2026-07-17 to 2026-09-14, monthly after (zip + full database) | 2026-04-08 onward |
 | [Hugging Face mirror](https://huggingface.co/datasets/takschdube/moltbook-dataset) git history | every 6-hour upload | 2026-02-07 onward |
 | `post_metrics_history` table in `moltbook.db` | per post per cycle | 2026-07-17 onward |
 

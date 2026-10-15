@@ -1,0 +1,76 @@
+name: Publish Zenodo Version
+
+# Runs apart from the crawl so Zenodo's upload speed cannot push the crawl
+# past its job limit: in October 2026 Zenodo took 44 minutes to accept a
+# 1.2 GB archive. Daily; upload_to_zenodo.py publishes at most one version
+# every 28 days, and a failed attempt is retried the next day.
+on:
+  schedule:
+    - cron: '30 2 * * *'
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: zenodo
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+
+    - name: Set up Python
+      run: uv python install
+
+    - name: Install dependencies
+      run: uv sync
+
+    - name: Check cadence
+      id: cadence
+      env:
+        ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
+      run: |
+        if uv run python scripts/upload_to_zenodo.py --check; then
+          echo "due=true" >> "$GITHUB_OUTPUT"
+        fi
+
+    # Both assets from one tag: a crawl can move the Latest flag between two
+    # downloads, which would pair one snapshot's zip with another's database.
+    - name: Download Latest release
+      if: steps.cadence.outputs.due == 'true'
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        TAG=$(gh release view --json tagName --jq .tagName)
+        echo "Release marked Latest: $TAG"
+        mkdir -p releases
+        gh release download "$TAG" -p 'moltbook-dataset-*.zip' -D releases
+        gh release download "$TAG" -p 'moltbook.db.zst' -D /tmp
+
+    - name: Upload to Zenodo
+      if: steps.cadence.outputs.due == 'true'
+      timeout-minutes: 300
+      env:
+        ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
+        PYTHONUNBUFFERED: '1'
+      run: uv run python scripts/upload_to_zenodo.py
+
+    - name: Commit ZENODO.json
+      if: steps.cadence.outputs.due == 'true'
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add ZENODO.json
+        git diff --cached --quiet || git commit -m "Update Zenodo record [skip ci]"
+        git pull --rebase origin main || git rebase --skip
+        git push

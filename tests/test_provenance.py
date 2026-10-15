@@ -241,11 +241,11 @@ def test_workflow_has_no_duplicate_keys():
     for path in sorted((REPO / ".github" / "workflows").glob("*.yml")):
         with open(path, encoding="utf-8") as f:
             doc = yaml.load(f, StrictLoader)
-        steps = doc["jobs"]["crawl-and-publish"]["steps"]
-        assert steps, f"{path.name} has no steps"
-        # every step is either a shell command or an action, never both
-        for step in steps:
-            assert ("run" in step) != ("uses" in step), step.get("name")
+        for job in doc["jobs"].values():
+            assert job["steps"], f"{path.name} has no steps"
+            # every step is either a shell command or an action, never both
+            for step in job["steps"]:
+                assert ("run" in step) != ("uses" in step), step.get("name")
 
 
 if __name__ == "__main__":

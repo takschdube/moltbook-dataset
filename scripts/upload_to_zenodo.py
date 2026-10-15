@@ -1,21 +1,27 @@
 #!/usr/bin/env python3
 """
-Upload dataset to Zenodo — safe, no-draft, single-record versioning.
+Upload dataset to Zenodo: single-record versioning.
 
 Uses ZENODO.json in the repo root to track the deposit. On first run,
 creates a new deposit and publishes immediately. On subsequent runs,
 creates a new VERSION of the same deposit (same concept DOI).
 
-Never leaves drafts behind. Never creates duplicate deposits.
+Publishes only a complete version: the release zip and the database, every
+part verified. A failed upload leaves its draft for the next run to reuse.
+Never creates duplicate deposits.
 
 Usage:
     ZENODO_TOKEN=... uv run python scripts/upload_to_zenodo.py
+    uv run python scripts/upload_to_zenodo.py --check  # exit 0 if a version is due
 """
 
+import hashlib
+import io
 import json
 import os
 import subprocess
 import sys
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -26,11 +32,16 @@ ZENODO_API = "https://zenodo.org/api"
 ZENODO_JSON = Path("ZENODO.json")
 RELEASES_DIR = Path("releases")
 RAW_DIR = Path("data/raw")
-DERIVED_DIR = Path("data/derived")
 
 HF_REPO = "takschdube/moltbook-dataset"
 KAGGLE_URL = "https://www.kaggle.com/datasets/takschdube/moltbook-dataset"
 GITHUB_REPO = "https://github.com/takschdube/moltbook-dataset"
+
+# Zenodo took 240 MB in 23 seconds in September 2026; in October it took 44
+# minutes over a 1.2 GB archive, and most attempts ended in a 502 partway
+# through. Parts keep a failed attempt cheap to repeat.
+PART_SIZE = 100 * 1024 * 1024
+UPLOAD_ATTEMPTS = 5
 
 
 def api(method, endpoint, **kwargs):
@@ -59,7 +70,7 @@ def save_zenodo_json(data):
 
 
 def resolve_latest(record):
-    """Resolve the concept's live latest record (id, published_at).
+    """Resolve the concept's live latest record (id, published_at, file keys).
 
     ZENODO.json goes stale when the end-of-run commit is dropped (rebase
     conflict against a moved main), so the stored pointer is a fallback,
@@ -71,8 +82,46 @@ def resolve_latest(record):
     )
     if resp.status_code == 200:
         r = resp.json()
-        return r["id"], r.get("created")
-    return record["latest_record_id"], record.get("updated_at")
+        return r["id"], r.get("created"), [f["key"] for f in r.get("files", [])]
+    return record["latest_record_id"], record.get("updated_at"), None
+
+
+def complete(keys):
+    """Whether a version holds both the release zip and the database.
+
+    2026-10-15 was published without the database. A version like that does
+    not count toward the cadence, so the next run publishes a complete one.
+    """
+    return (any(k.startswith("moltbook-dataset-") for k in keys)
+            and any(k.startswith("moltbook.db.zst") for k in keys))
+
+
+def due():
+    """Whether a new version should be published now.
+
+    Monthly cadence. Each version stores another full copy of a corpus now
+    running to several gigabytes, and a deposit has a finite quota, so a
+    daily version would exhaust it inside a month to record a few thousand
+    new posts. Fine-grained history lives in the Hugging Face revisions;
+    Zenodo carries the citable snapshots, and nobody cites a day.
+    ZENODO_MIN_HOURS overrides for a deliberate out-of-band version.
+    """
+    min_hours = int(os.getenv("ZENODO_MIN_HOURS", str(28 * 24)))
+    record = load_zenodo_json()
+    if not record:
+        return True
+    _, published_at, keys = resolve_latest(record)
+    if keys is not None and not complete(keys):
+        print("Latest version lacks the zip or the database; publishing a complete one")
+        return True
+    if published_at:
+        last = datetime.fromisoformat(published_at.replace("Z", "+00:00"))
+        age = datetime.now(timezone.utc) - last
+        if age < timedelta(hours=min_hours):
+            print(f"Last publish {published_at} ({age.days}d ago); "
+                  f"monthly cadence, skipping")
+            return False
+    return True
 
 
 def find_existing_draft(concept_recid):
@@ -99,7 +148,7 @@ def get_or_create_draft():
     record = load_zenodo_json()
 
     if record:
-        record_id, _ = resolve_latest(record)
+        record_id, _, _ = resolve_latest(record)
         print(f"Creating new version of record {record_id}...")
 
         draft = None
@@ -154,6 +203,9 @@ def set_metadata(deposition_id):
             '<p>Contains posts, comments, agent profiles, social graphs, and activity '
             'timelines collected automatically every 6 hours. Designed for social '
             'network analysis, AI agent behavior research, and temporal community analysis.</p>'
+            f'<p>Files over {PART_SIZE // 2**20} MiB are stored as numbered parts. Rejoin '
+            'each before use, for example '
+            '<code>cat moltbook.db.zst.part* &gt; moltbook.db.zst</code>.</p>'
             f'<p>Full documentation: <a href="{GITHUB_REPO}">GitHub</a> | '
             f'<a href="https://huggingface.co/datasets/{HF_REPO}">Hugging Face</a> | '
             f'<a href="{KAGGLE_URL}">Kaggle</a></p>'
@@ -181,60 +233,71 @@ def set_metadata(deposition_id):
         print("Metadata updated")
 
 
+def put_part(bucket_url, key, data):
+    """PUT one object, retrying failures. True once Zenodo holds it intact."""
+    md5 = f"md5:{hashlib.md5(data).hexdigest()}"
+    for attempt in range(1, UPLOAD_ATTEMPTS + 1):
+        try:
+            # A file object, not bytes: requests sends bytes in one sendall,
+            # and the connect timeout would then cap the whole transfer.
+            resp = requests.put(
+                f"{bucket_url}/{key}",
+                data=io.BytesIO(data),
+                headers={
+                    "Authorization": f"Bearer {ZENODO_TOKEN}",
+                    "Content-Type": "application/octet-stream",
+                },
+                timeout=(60, 600),
+            )
+            if resp.status_code in (200, 201) and resp.json().get("checksum", md5) == md5:
+                return True
+            reason = f"{resp.status_code} {resp.text[:200]}"
+        except requests.RequestException as e:
+            reason = repr(e)[:200]
+        print(f"  {key}: attempt {attempt}/{UPLOAD_ATTEMPTS} failed: {reason}")
+        if attempt < UPLOAD_ATTEMPTS:
+            time.sleep(30 * attempt)
+    return False
+
+
 def upload_file(bucket_url, filepath, name):
-    """Upload a single file to the deposit bucket."""
+    """Upload a file, as name.part000, name.part001, ... when over PART_SIZE.
+
+    Stops at the first part that will not go up: an incomplete set is never
+    published, so uploading the rest would only waste time.
+    """
+    size = filepath.stat().st_size
+    n = max(1, -(-size // PART_SIZE))
     with open(filepath, "rb") as f:
-        resp = requests.put(
-            f"{bucket_url}/{name}",
-            data=f,
-            headers={
-                "Authorization": f"Bearer {ZENODO_TOKEN}",
-                "Content-Type": "application/octet-stream",
-            },
-        )
-    if resp.status_code in (200, 201):
-        size_mb = filepath.stat().st_size / 1024 / 1024
-        print(f"  Uploaded {name} ({size_mb:.1f} MB)")
-        return True
-    else:
-        print(f"  FAILED {name}: {resp.status_code}")
-        return False
+        for i in range(n):
+            key = name if n == 1 else f"{name}.part{i:03d}"
+            if not put_part(bucket_url, key, f.read(PART_SIZE)):
+                print(f"  FAILED {key}")
+                return False
+    print(f"  Uploaded {name} ({size / 1024 / 1024:.1f} MB in {n} part{'s' * (n > 1)})")
+    return True
 
 
 def upload_files(bucket_url):
-    """Upload the release zip plus the cumulative database.
+    """Upload the release zip plus the cumulative database. Both are required.
 
     The zip holds the latest-state JSON exports; the database additionally
     carries the full post_metrics_history time series, so archiving both
     keeps the longitudinal record complete on Zenodo.
     """
     zips = sorted(RELEASES_DIR.glob("moltbook-dataset-*.zip")) if RELEASES_DIR.exists() else []
-    if zips:
-        latest_zip = zips[-1]
-        print(f"Uploading {latest_zip.name}...")
-        ok = upload_file(bucket_url, latest_zip, latest_zip.name)
-
-        db_zst = Path("/tmp/moltbook.db.zst")  # produced by the release step
-        db_raw = RAW_DIR / "moltbook.db"
-        if not db_zst.exists() and db_raw.exists():
-            subprocess.run(
-                ["zstd", "-3", "-f", str(db_raw), "-o", str(db_zst)], check=False
-            )
-        if db_zst.exists():
-            ok = upload_file(bucket_url, db_zst, "moltbook.db.zst") and ok
-        return ok
-
-    # Fallback: upload individual files
-    print("No release zip found, uploading individual files...")
-    ok = True
-    for directory, prefix in [(RAW_DIR, "raw"), (DERIVED_DIR, "derived")]:
-        if not directory.exists():
-            continue
-        for filepath in sorted(directory.glob("*.json")):
-            name = f"{prefix}_{filepath.name}"
-            if not upload_file(bucket_url, filepath, name):
-                ok = False
-    return ok
+    db_zst = Path("/tmp/moltbook.db.zst")  # downloaded from the Latest release
+    db_raw = RAW_DIR / "moltbook.db"
+    if not db_zst.exists() and db_raw.exists():
+        subprocess.run(
+            ["zstd", "-3", "-f", str(db_raw), "-o", str(db_zst)], check=False
+        )
+    if not zips or not db_zst.exists():
+        print(f"ERROR: need a release zip and {db_zst}")
+        return False
+    print(f"Uploading {zips[-1].name} and {db_zst.name}...")
+    return (upload_file(bucket_url, zips[-1], zips[-1].name)
+            and upload_file(bucket_url, db_zst, "moltbook.db.zst"))
 
 
 def publish(deposition_id):
@@ -253,24 +316,8 @@ def main():
         print("ZENODO_TOKEN not set, skipping Zenodo upload")
         return
 
-    # Monthly cadence. Each version stores another full copy of a corpus now
-    # running to several gigabytes, and a deposit has a finite quota, so a
-    # daily version would exhaust it inside a month to record a few thousand
-    # new posts. Fine-grained history lives in the Hugging Face revisions;
-    # Zenodo carries the citable snapshots, and nobody cites a day.
-    # ZENODO_MIN_HOURS overrides for a deliberate out-of-band version.
-    min_hours = int(os.getenv("ZENODO_MIN_HOURS", str(28 * 24)))
-    record = load_zenodo_json()
-    if record:
-        _, published_at = resolve_latest(record)
-        if published_at:
-            last = datetime.fromisoformat(published_at.replace("Z", "+00:00"))
-            age = datetime.now(timezone.utc) - last
-            if age < timedelta(hours=min_hours):
-                days = age.days
-                print(f"Last publish {published_at} ({days}d ago); "
-                      f"monthly cadence, skipping")
-                return
+    if not due():
+        return
 
     print("=" * 60)
     print("Zenodo Upload")
@@ -283,11 +330,12 @@ def main():
     # Set metadata
     set_metadata(deposition_id)
 
-    # Upload files
+    # A published version cannot be changed (2026-10-15 went out without the
+    # database), so a failed upload stops here and the next run reuses the draft.
     if not upload_files(bucket_url):
-        print("WARNING: Some files failed to upload")
+        print("ERROR: upload incomplete, not publishing")
+        sys.exit(1)
 
-    # Publish — never leave a draft behind
     print("Publishing...")
     record = publish(deposition_id)
 
@@ -321,4 +369,6 @@ def main():
 
 
 if __name__ == "__main__":
+    if "--check" in sys.argv:
+        sys.exit(0 if ZENODO_TOKEN and due() else 1)
     main()
