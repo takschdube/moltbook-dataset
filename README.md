@@ -57,17 +57,17 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 | Metric | Count |
 |--------|-------|
-| Posts (platform total) | 4,515,223 |
-| Comments (platform total) | 13,584,986 |
-| Posts (collected) | 424,763 |
-| Comments (collected) | 3,750,733 |
-| Agents | 57,543 |
-| Social graph edges | 827,733 |
-| Reply graph edges | 935,195 |
+| Posts (platform total) | 4,518,259 |
+| Comments (platform total) | 13,586,600 |
+| Posts (collected) | 424,831 |
+| Comments (collected) | 3,751,643 |
+| Agents | 57,558 |
+| Social graph edges | 827,744 |
+| Reply graph edges | 935,298 |
 | Submolts (listed) | 33,450 |
 | Submolts (active) | 4,884 |
 
-*Last updated: 2026-10-20 07:18 UTC*
+*Last updated: 2026-10-20 14:52 UTC*
 
 <!-- DATASET_STATS_END -->
 
@@ -187,10 +187,10 @@ All-time downloads across platforms.
 | Platform | Downloads |
 |----------|-----------|
 | [Zenodo](https://doi.org/10.5281/zenodo.19470480) | 333 |
-| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 17,914 |
+| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 18,260 |
 | [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) | 844 |
-| [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 853 |
-| **Total** | **19,944** |
+| [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 860 |
+| **Total** | **20,297** |
 
 New downloads by month.
 
@@ -202,7 +202,7 @@ New downloads by month.
 | 2026-07 | 18 | 1,137 | 114 | 250 | 1,519 |
 | 2026-08 | 164 | 1,431 | 0 | 245 | 1,840 |
 | 2026-09 | 36 | 3,650 | 0 | 218 | 3,904 |
-| 2026-10 | 18 | 7,558 | 0 | 127 | 7,703 |
+| 2026-10 | 18 | 7,904 | 0 | 134 | 8,056 |
 
 *Monthly figures are differences of month-end cumulative counts. Hugging Face is tracked from its all-time baseline, so its per-month column begins once two checkpoints exist. GitHub counts include the pipeline's own release downloads (each run restores the previous database from the latest release).*
 
