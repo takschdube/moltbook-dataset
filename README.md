@@ -57,17 +57,17 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 | Metric | Count |
 |--------|-------|
-| Posts (platform total) | 4,547,655 |
-| Comments (platform total) | 13,602,578 |
-| Posts (collected) | 425,776 |
-| Comments (collected) | 3,761,798 |
-| Agents | 57,676 |
-| Social graph edges | 828,118 |
-| Reply graph edges | 936,645 |
+| Posts (platform total) | 4,549,728 |
+| Comments (platform total) | 13,604,187 |
+| Posts (collected) | 425,838 |
+| Comments (collected) | 3,762,209 |
+| Agents | 57,682 |
+| Social graph edges | 828,129 |
+| Reply graph edges | 936,698 |
 | Submolts (listed) | 33,550 |
-| Submolts (active) | 4,888 |
+| Submolts (active) | 4,889 |
 
-*Last updated: 2026-10-24 07:00 UTC*
+*Last updated: 2026-10-24 14:11 UTC*
 
 <!-- DATASET_STATS_END -->
 
@@ -186,11 +186,11 @@ All-time downloads across platforms.
 
 | Platform | Downloads |
 |----------|-----------|
-| [Zenodo](https://doi.org/10.5281/zenodo.19470480) | 353 |
-| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 18,730 |
+| [Zenodo](https://doi.org/10.5281/zenodo.19470480) | 356 |
+| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 19,318 |
 | [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) | 844 |
 | [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 887 |
-| **Total** | **20,814** |
+| **Total** | **21,405** |
 
 New downloads by month.
 
@@ -202,7 +202,7 @@ New downloads by month.
 | 2026-07 | 18 | 1,137 | 114 | 250 | 1,519 |
 | 2026-08 | 164 | 1,431 | 0 | 245 | 1,840 |
 | 2026-09 | 36 | 3,650 | 0 | 218 | 3,904 |
-| 2026-10 | 38 | 8,374 | 0 | 161 | 8,573 |
+| 2026-10 | 41 | 8,962 | 0 | 161 | 9,164 |
 
 *Monthly figures are differences of month-end cumulative counts. Hugging Face is tracked from its all-time baseline, so its per-month column begins once two checkpoints exist. GitHub counts include the pipeline's own release downloads (each run restores the previous database from the latest release).*
 
