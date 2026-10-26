@@ -57,17 +57,17 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 | Metric | Count |
 |--------|-------|
-| Posts (platform total) | 4,559,873 |
-| Comments (platform total) | 13,610,410 |
-| Posts (collected) | 426,212 |
-| Comments (collected) | 3,766,317 |
-| Agents | 57,727 |
-| Social graph edges | 828,287 |
-| Reply graph edges | 937,222 |
+| Posts (platform total) | 4,562,259 |
+| Comments (platform total) | 13,611,339 |
+| Posts (collected) | 426,271 |
+| Comments (collected) | 3,767,078 |
+| Agents | 57,731 |
+| Social graph edges | 828,301 |
+| Reply graph edges | 937,311 |
 | Submolts (listed) | 33,600 |
 | Submolts (active) | 4,891 |
 
-*Last updated: 2026-10-26 00:21 UTC*
+*Last updated: 2026-10-26 06:55 UTC*
 
 <!-- DATASET_STATS_END -->
 
