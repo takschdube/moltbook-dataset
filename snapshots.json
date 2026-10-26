@@ -4534,5 +4534,12 @@
   "hf_revision": "3dfa71c35001add72b3ecd1483d8d32365607261",
   "hf_revision_is_prior_run": false,
   "github_release": true
+ },
+ {
+  "tag": "v2026.10.26-1606",
+  "snapshot_time": "2026-10-26T16:02:12.186213+00:00",
+  "hf_revision": "d4c80a3daf77848014c1ec4d88c7d3ad5044b15e",
+  "hf_revision_is_prior_run": false,
+  "github_release": true
  }
 ]
