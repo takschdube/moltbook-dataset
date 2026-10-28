@@ -8,6 +8,7 @@ those apart.
 
 Run: uv run python tests/test_provenance.py
 """
+import base64
 import json
 from datetime import datetime, timedelta, timezone
 import os
@@ -431,6 +432,96 @@ def test_submolt_list_pages_by_number():
         mc.make_request, mc.SUBMOLT_PAGE = original_request, original_page
     assert len(submolts) == 12 == stats["submolt_count"]
     assert [p.get("page") for _, p in calls] == [1, 2, 3]
+
+
+# --- History shards (scripts/backfill_history.py).
+
+import backfill_history as bh  # noqa: E402
+
+
+def keyset_api(posts, fail_after=None):
+    """/posts?sort=new as the live API serves it: newest first, three a page, each
+    page starting below the (createdAt, id) its cursor encodes."""
+    order = sorted(posts, key=lambda p: (bh.when(p["created_at"]), p["id"]), reverse=True)
+    calls = []
+
+    def request(endpoint, params=None, status_out=None):
+        calls.append(dict(params or {}))
+        if fail_after is not None and len(calls) > fail_after:
+            return None
+        c = json.loads(base64.b64decode(params["cursor"]))
+        key = (bh.when(c["createdAt"]), c["id"])
+        rest = [p for p in order if (bh.when(p["created_at"]), p["id"]) < key]
+        page = rest[:3]
+        more = len(rest) > 3
+        return {"success": True, "posts": page, "has_more": more,
+                "next_cursor": bh.cursor(page[-1]["created_at"], page[-1]["id"]) if more else None}
+    return request, calls
+
+
+def history_posts():
+    days = ["2026-02-27", "2026-02-28", "2026-03-01", "2026-03-04", "2026-03-09", "2026-03-15",
+            "2026-03-20", "2026-03-31", "2026-04-01", "2026-04-02"]
+    return [{"id": f"h{i}", "created_at": f"{d}T12:00:00.000Z", "comment_count": i % 3} for i, d in enumerate(days)]
+
+
+def test_history_month_walk_resumes_after_a_failure():
+    """A month's walk that stops partway resumes below the oldest post it wrote
+    and ends with exactly that month's posts, each once."""
+    original_hist, bh.HIST = bh.HIST, Path(tempfile.mkdtemp())
+    original_request = mc.make_request
+    try:
+        mc.make_request, _ = keyset_api(history_posts(), fail_after=2)
+        bh.posts("2026-03")
+        assert not bh.manifest("2026-03")["posts_done"]
+        mc.make_request, calls = keyset_api(history_posts())
+        bh.posts("2026-03")
+        got = [p["id"] for p in bh.lines(bh.HIST / "posts-2026-03.jsonl")]
+        march = [p["id"] for p in history_posts() if p["created_at"].startswith("2026-03")]
+        assert sorted(got) == sorted(march) and len(got) == len(set(got)), got
+        assert bh.manifest("2026-03")["posts_done"] and bh.manifest("2026-03")["posts"] == len(march)
+        first = json.loads(base64.b64decode(calls[0]["cursor"]))
+        assert first["createdAt"].startswith("2026-03"), "the second run started over instead of resuming"
+    finally:
+        bh.HIST, mc.make_request = original_hist, original_request
+
+
+def test_history_comments_skip_threads_already_written():
+    original_hist, bh.HIST = bh.HIST, Path(tempfile.mkdtemp())
+    original_fetch = mc.fetch_comments_only
+    fetched = []
+    try:
+        with open(bh.HIST / "posts-2026-05.jsonl", "w") as f:
+            for pid, n in (("a", 2), ("b", 0), ("c", 5), ("d", 1)):
+                f.write(json.dumps({"id": pid, "created_at": "2026-05-02T00:00:00.000Z", "comment_count": n}) + "\n")
+        with open(bh.HIST / "comments-2026-05.jsonl", "w") as f:
+            f.write(json.dumps({"post_id": "a", "comments": []}) + "\n")
+        bh.save("2026-05", {**bh.manifest("2026-05"), "posts_done": True})
+        mc.fetch_comments_only = lambda pid: (fetched.append(pid), ((None if pid == "d" else [{"replies": []}]), {}))[1]
+        bh.comments("2026-05")
+        assert sorted(fetched) == ["c", "d"]   # a is written, b reports no comments
+        m = bh.manifest("2026-05")
+        assert m["threads"] == 2 and not m["threads_done"]   # d failed and waits for the next run
+        mc.fetch_comments_only = lambda pid: ([{"replies": []}], {})
+        bh.comments("2026-05")
+        assert bh.manifest("2026-05")["threads_done"]
+    finally:
+        bh.HIST, mc.fetch_comments_only = original_hist, original_fetch
+
+
+def test_history_next_step_and_bounds():
+    original_hist, bh.HIST = bh.HIST, Path(tempfile.mkdtemp())
+    try:
+        assert bh.next_step() == "2026-02 posts"
+        bh.save("2026-02", {**bh.manifest("2026-02"), "posts_done": True})
+        assert bh.next_step() == "2026-02 comments"
+        for m in bh.MONTHS:
+            bh.save(m, {**bh.manifest(m), "posts_done": True, "threads_done": True})
+        assert bh.next_step() == ""
+        assert bh.bounds("2026-02") == ("2026-02-01T00:00:00.000Z", "2026-03-01T00:00:00.000Z")
+        assert bh.bounds("2026-10")[1] == bh.END
+    finally:
+        bh.HIST = original_hist
 
 
 def test_workflow_has_no_duplicate_keys():

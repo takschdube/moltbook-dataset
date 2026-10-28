@@ -1,0 +1,123 @@
+name: Backfill History
+
+# Fills February to October 2026, which the offset-paged crawler reached only in
+# part, as monthly shards on the `history` release (scripts/backfill_history.py).
+# Each run takes the next unfinished step, posts then comments, month by month,
+# and resumes where the last run stopped; once every month is done it does
+# nothing. Runs sit between the crawls (00, 06, 12, 18 UTC) to spread the load.
+
+on:
+  schedule:
+    - cron: '0 3,9,15,21 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: history
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+
+    - name: Set up Python
+      run: uv python install
+
+    - name: Install dependencies
+      run: uv sync
+
+    # The release must never take the Latest flag: the crawl restores its
+    # database from the release marked Latest.
+    - name: Find the next step
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        mkdir -p history
+        if ! gh release view history >/dev/null 2>&1; then
+          gh release create history --title "History shards, February to October 2026" \
+            --notes "Monthly shards of every post the API serves, and their comment trees, for the months the offset-paged crawler reached only in part. See README, History shards." \
+            --latest=false
+        fi
+        gh release download history -p 'manifest-*.json' -D history/ || true
+        NEXT=$(uv run python scripts/backfill_history.py next)
+        echo "Next step: ${NEXT:-none, every month is done}"
+        echo "NEXT=$NEXT" >> "$GITHUB_ENV"
+
+    - name: Restore the month's shards
+      if: env.NEXT != ''
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        read -r MONTH _ <<< "$NEXT"
+        for kind in posts comments; do
+          gh release download history -p "$kind-$MONTH.jsonl.zst" -D history/ || true
+        done
+        for f in history/*.jsonl.zst; do
+          [ -f "$f" ] && zstd -d -f -q "$f" && rm "$f"
+        done
+        ls -la history/
+
+    - name: Backfill
+      if: env.NEXT != ''
+      env:
+        MOLTBOOK_API_KEY: ${{ secrets.MOLTBOOK_API_KEY }}
+        MOLTBOOK_BASE_URL: https://www.moltbook.com/api/v1
+        COMMENT_WORKERS: "6"
+      run: |
+        read -r MONTH STEP <<< "$NEXT"
+        uv run python scripts/backfill_history.py "$STEP" "$MONTH" --time-budget 300
+
+    # Upload whatever the run wrote, finished or not: the next run resumes from it.
+    - name: Upload the month's shards
+      if: always() && env.NEXT != ''
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        read -r MONTH _ <<< "$NEXT"
+        FILES=("history/manifest-$MONTH.json")
+        for kind in posts comments; do
+          f="history/$kind-$MONTH.jsonl"
+          if [ -f "$f" ]; then
+            zstd -T0 -10 -f -q "$f" -o "$f.zst"
+            SIZE=$(stat -c%s "$f.zst")
+            if [ "$SIZE" -gt 2000000000 ]; then
+              echo "ERROR: $f.zst is $SIZE bytes, past the 2 GB release asset limit."
+              exit 1
+            fi
+            FILES+=("$f.zst")
+          fi
+        done
+        gh release upload history "${FILES[@]}" --clobber
+
+    - name: Mirror finished months to Hugging Face
+      if: always() && env.NEXT != ''
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      run: |
+        read -r MONTH _ <<< "$NEXT"
+        uv run python - "$MONTH" <<'EOF'
+        import json, os, sys
+        from pathlib import Path
+        from huggingface_hub import HfApi
+        month = sys.argv[1]
+        m = json.loads(Path(f"history/manifest-{month}.json").read_text())
+        if not (m["posts_done"] and m["threads_done"]) or not os.getenv("HF_TOKEN"):
+            sys.exit(0)
+        api = HfApi(token=os.environ["HF_TOKEN"])
+        for name in (f"posts-{month}.jsonl.zst", f"comments-{month}.jsonl.zst", f"manifest-{month}.json"):
+            api.upload_file(path_or_fileobj=f"history/{name}", path_in_repo=f"history/{name}",
+                            repo_id=os.getenv("HF_REPO", "takschdube/moltbook-dataset"), repo_type="dataset",
+                            commit_message=f"history: {month}")
+        print(f"mirrored {month}")
+        EOF
+      continue-on-error: true
