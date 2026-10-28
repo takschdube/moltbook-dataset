@@ -57,17 +57,17 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 | Metric | Count |
 |--------|-------|
-| Posts (platform total) | 4,577,011 |
-| Comments (platform total) | 13,618,945 |
-| Posts (collected) | 426,672 |
-| Comments (collected) | 3,771,999 |
-| Agents | 57,810 |
-| Social graph edges | 828,470 |
-| Reply graph edges | 937,933 |
+| Posts (platform total) | 4,578,871 |
+| Comments (platform total) | 13,620,128 |
+| Posts (collected) | 426,736 |
+| Comments (collected) | 3,772,378 |
+| Agents | 57,818 |
+| Social graph edges | 828,475 |
+| Reply graph edges | 937,985 |
 | Submolts (listed) | 33,600 |
 | Submolts (active) | 4,892 |
 
-*Last updated: 2026-10-28 01:47 UTC*
+*Last updated: 2026-10-28 07:43 UTC*
 
 <!-- DATASET_STATS_END -->
 
@@ -186,11 +186,11 @@ All-time downloads across platforms.
 
 | Platform | Downloads |
 |----------|-----------|
-| [Zenodo](https://doi.org/10.5281/zenodo.19470480) | 426 |
+| [Zenodo](https://doi.org/10.5281/zenodo.19470480) | 438 |
 | [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 20,517 |
 | [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) | 844 |
 | [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 902 |
-| **Total** | **22,689** |
+| **Total** | **22,701** |
 
 New downloads by month.
 
@@ -202,7 +202,7 @@ New downloads by month.
 | 2026-07 | 18 | 1,137 | 114 | 250 | 1,519 |
 | 2026-08 | 164 | 1,431 | 0 | 245 | 1,840 |
 | 2026-09 | 36 | 3,650 | 0 | 218 | 3,904 |
-| 2026-10 | 111 | 10,161 | 0 | 176 | 10,448 |
+| 2026-10 | 123 | 10,161 | 0 | 176 | 10,460 |
 
 *Monthly figures are differences of month-end cumulative counts. Hugging Face is tracked from its all-time baseline, so its per-month column begins once two checkpoints exist. GitHub counts include the pipeline's own release downloads (each run restores the previous database from the latest release).*
 
