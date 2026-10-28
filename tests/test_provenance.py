@@ -9,6 +9,7 @@ those apart.
 Run: uv run python tests/test_provenance.py
 """
 import json
+from datetime import datetime, timedelta, timezone
 import os
 import sqlite3
 import sys
@@ -333,6 +334,90 @@ def test_backlog_takes_least_recently_fetched_first():
     db.commit()
     assert mc.select_incomplete(db) == ["never", "old", "recent"]
     db.close()
+
+
+# --- Listings. Moltbook pages its post listings by cursor and its submolt list by
+# page number, and ignores offset without an error: an offset request returns the
+# first page again. From mid-February 2026 each crawl saw the newest 50 posts of a
+# listing and the first page of submolts, which held 1-18% of the posts published
+# in each later month. These fakes ignore offset the way the live API does.
+
+def fake_listing(pages):
+    """/posts serves `pages` behind cursors "1", "2", ...; /submolts serves the
+    same items as numbered pages of `len(pages[0])`."""
+    calls = []
+
+    def request(endpoint, params=None, status_out=None):
+        params = dict(params or {})
+        calls.append((endpoint, params))
+        if endpoint == "/submolts":
+            flat = [{"name": p["id"]} for page in pages for p in page]
+            size = len(pages[0])
+            n = int(params.get("page") or 1)
+            return {"success": True, "count": len(flat), "submolts": flat[(n - 1) * size:n * size]}
+        i = int(params.get("cursor") or 0)
+        more = i + 1 < len(pages)
+        return {"success": True, "posts": pages[i], "has_more": more, "next_cursor": str(i + 1) if more else None}
+    return request, calls
+
+
+def listing_pages(start, pages, per_page=3, step_hours=6):
+    """Posts newest first, `step_hours` apart, cut into pages."""
+    posts = [{"id": f"p{i}", "created_at": (start - timedelta(hours=step_hours * i)).isoformat()}
+             for i in range(pages * per_page)]
+    return [posts[k:k + per_page] for k in range(0, len(posts), per_page)]
+
+
+def test_new_posts_walk_the_cursor_back_to_the_last_crawl():
+    """Every post since the last crawl, however many pages that takes, and no
+    further: past a day before the last crawl the walk would turn into an
+    unplanned backfill of history."""
+    original, mc.DB_PATH = mc.DB_PATH, Path(tempfile.mkdtemp()) / "listing.db"
+    db = mc.init_db()
+    mc.DB_PATH = original
+    now = datetime.now(timezone.utc)
+    pages = listing_pages(now, pages=10)          # 30 posts, 6 hours apart: 7.5 days
+    since = now - timedelta(days=2)
+    original_request = mc.make_request
+    mc.make_request, calls = fake_listing(pages)
+    try:
+        new_ids, _ = mc.fetch_posts_incremental(db, since=since)
+    finally:
+        mc.make_request = original_request
+    wanted = {p["id"] for page in pages for p in page if datetime.fromisoformat(p["created_at"]) >= since}
+    assert wanted <= new_ids, sorted(wanted - new_ids)
+    assert [p.get("cursor") for _, p in calls][:3] == [None, "1", "2"]
+    assert len(calls) < len(pages), "walked past a day before the last crawl"
+    db.close()
+
+
+def test_hot_and_submolt_scans_follow_the_cursor():
+    now = datetime.now(timezone.utc)
+    pages = listing_pages(now, pages=4)
+    original_request = mc.make_request
+    mc.make_request, calls = fake_listing(pages)
+    try:
+        hot_ids, _ = mc.fetch_hot_posts(set())
+        posts, exhausted = mc._crawl_submolt_pages("general", "new", 10, set())
+    finally:
+        mc.make_request = original_request
+    every = {p["id"] for page in pages for p in page}
+    assert hot_ids == every and {p["id"] for p in posts} == every and exhausted
+
+
+def test_submolt_list_pages_by_number():
+    """The list ignores offset; with it, the crawler listed the first page of
+    submolts thousands of times and never saw the rest."""
+    pages = listing_pages(datetime.now(timezone.utc), pages=3, per_page=4)
+    original_request = mc.make_request
+    mc.make_request, calls = fake_listing(pages)
+    original_page, mc.SUBMOLT_PAGE = mc.SUBMOLT_PAGE, 4
+    try:
+        submolts, stats = mc.fetch_submolts()
+    finally:
+        mc.make_request, mc.SUBMOLT_PAGE = original_request, original_page
+    assert len(submolts) == 12 == stats["submolt_count"]
+    assert [p.get("page") for _, p in calls] == [1, 2, 3]
 
 
 def test_workflow_has_no_duplicate_keys():
