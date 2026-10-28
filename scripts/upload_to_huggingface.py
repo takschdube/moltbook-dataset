@@ -24,6 +24,7 @@ Environment:
 import json
 import os
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -34,6 +35,7 @@ HF_REPO = os.getenv("HF_REPO", "takschdube/moltbook-dataset")
 RAW_DIR = Path("data/raw")
 DERIVED_DIR = Path("data/derived")
 LARGE_THRESHOLD = int(os.getenv("HF_LARGE_THRESHOLD", str(32 * 1024 * 1024)))
+UPLOAD_TRIES = int(os.getenv("HF_UPLOAD_TRIES", "3"))
 # Crawls run at 00, 06, 12 and 18 UTC. Sending large files only on the first of
 # the day keeps one full snapshot per day in the history.
 LARGE_UPLOAD_HOUR_BEFORE = 6
@@ -112,17 +114,23 @@ def main():
     if skipped:
         print(f"  holding {len(skipped)} large files for the daily snapshot: {', '.join(skipped)}")
 
-    try:
-        info = HfApi().create_commit(
-            repo_id=HF_REPO,
-            repo_type="dataset",
-            operations=operations,
-            commit_message=summary,
-            token=HF_TOKEN,
-        )
-    except Exception as e:
-        print(f"Upload failed: {e}")
-        return 1
+    # A transfer can time out partway (2026-10-27: "The read operation timed out"),
+    # and the crawl's files then wait six hours for the next run; retry first.
+    for attempt in range(UPLOAD_TRIES):
+        try:
+            info = HfApi().create_commit(
+                repo_id=HF_REPO,
+                repo_type="dataset",
+                operations=operations,
+                commit_message=summary,
+                token=HF_TOKEN,
+            )
+            break
+        except Exception as e:
+            print(f"Upload failed (attempt {attempt + 1} of {UPLOAD_TRIES}): {e}")
+            if attempt == UPLOAD_TRIES - 1:
+                return 1
+            time.sleep(60 * 2 ** attempt)
 
     revision = getattr(info, "oid", None) or ""
     print(f"  committed {summary}" + (f" as {revision[:12]}" if revision else ""))

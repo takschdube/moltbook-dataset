@@ -9,6 +9,7 @@ those apart.
 Run: uv run python tests/test_provenance.py
 """
 import json
+from datetime import datetime, timedelta, timezone
 import os
 import sqlite3
 import sys
@@ -215,6 +216,221 @@ def test_catchup_is_bounded_and_skippable():
     assert len(backlog[:10]) == 10
     assert set(backlog[:10]) <= set(backlog)
     db.close()
+
+
+def fake_api(pages, post=None, fail_page=None):
+    """Stand-in for make_request: the comments endpoint serves `pages` (lists of
+    top-level ids) behind cursors; the post endpoint answers without comments,
+    as the live API has since September 2026."""
+    calls = []
+
+    def request(endpoint, params=None, status_out=None):
+        calls.append((endpoint, dict(params or {})))
+        if status_out is not None:
+            status_out.update(http="200", attempts=1)
+        if not endpoint.endswith("/comments"):
+            return {"success": True, "post": post or {"id": "p", "comment_count": 0}}
+        i = int((params or {}).get("cursor") or 0)
+        if i == fail_page:
+            return None
+        more = i + 1 < len(pages)
+        return {"success": True, "count": sum(map(len, pages)), "has_more": more,
+                "next_cursor": str(i + 1) if more else None,
+                "comments": [{"id": c, "replies": [{"id": c + "r", "replies": []}]} for c in pages[i]]}
+    return request, calls
+
+
+def test_comments_follow_every_page():
+    """The endpoint pages since September 2026; the first page of a large
+    thread is not the thread."""
+    original = mc.make_request
+    mc.make_request, calls = fake_api([["a", "b"], ["c"], ["c", "d"]])
+    try:
+        comments, st = mc.fetch_comments_only("p")
+    finally:
+        mc.make_request = original
+    assert [c["id"] for c in comments] == ["a", "b", "c", "d"]   # c repeated across a page edge, kept once
+    assert mc.tree_size(comments) == 8                          # replies ride inside their parents
+    assert [p.get("cursor") for _, p in calls] == [None, "1", "2"]
+    assert all(p["sort"] == "new" and p["limit"] == mc.COMMENT_PAGE for _, p in calls)
+    assert st["http"] == "200"
+
+
+def test_a_failed_page_fails_the_fetch():
+    """Half a thread stored as if whole is the defect this file exists for."""
+    original = mc.make_request
+    mc.make_request, _ = fake_api([["a"], ["b"]], fail_page=1)
+    try:
+        comments, _ = mc.fetch_comments_only("p")
+    finally:
+        mc.make_request = original
+    assert comments is None
+
+
+def test_new_posts_take_comments_from_the_comments_endpoint():
+    """The post endpoint no longer carries comments; reading the missing key as
+    [] stored every new thread empty and marked it fetched."""
+    original = mc.make_request
+    mc.make_request, calls = fake_api([["a", "b"]], post={"id": "p", "comment_count": 4})
+    try:
+        post, comments, _ = mc.fetch_post_with_comments("p")
+    finally:
+        mc.make_request = original
+    assert post["id"] == "p" and mc.tree_size(comments) == 4
+    assert [e for e, _ in calls] == ["/posts/p", "/posts/p/comments"]
+
+
+def test_refresh_never_shrinks_a_stored_thread():
+    """A shorter answer (deletions, a dropped page) must not overwrite what the
+    archive already holds; a longer one replaces it."""
+    original, mc.DB_PATH = mc.DB_PATH, Path(tempfile.mkdtemp()) / "shrink.db"
+    db = mc.init_db()
+    mc.DB_PATH = original
+    five = [{"id": str(i), "replies": []} for i in range(5)]
+    for pid in ("shorter", "longer"):
+        db.execute("INSERT INTO posts_full (id, data) VALUES (?, ?)",
+                   (pid, json.dumps({"id": pid, "comment_count": 9, "comments": five})))
+    db.commit()
+    answers = {"shorter": [{"id": "x", "replies": []}] * 2, "longer": [{"id": "y", "replies": []}] * 7}
+    original_fetch = mc.fetch_comments_only
+    mc.fetch_comments_only = lambda pid: (answers[pid], {"http": "200", "attempts": 1})
+    try:
+        mc.fetch_all_comments(db, ["shorter", "longer"], {"shorter", "longer"})
+    finally:
+        mc.fetch_comments_only = original_fetch
+    stored = {pid: mc.tree_size(json.loads(d)["comments"]) for pid, d in db.execute("SELECT id, data FROM posts_full")}
+    assert stored == {"shorter": 5, "longer": 7}, stored
+    db.close()
+
+
+def test_new_post_without_its_comments_stays_unfetched():
+    """A post whose comment fetch failed is stored, but as never fetched, so the
+    backlog returns to it instead of trusting an empty array."""
+    original, mc.DB_PATH = mc.DB_PATH, Path(tempfile.mkdtemp()) / "nocomments.db"
+    db = mc.init_db()
+    mc.DB_PATH = original
+    original_fetch = mc.fetch_post_with_comments
+    mc.fetch_post_with_comments = lambda pid: ({"id": pid, "comment_count": 3}, None, {"http": "503", "attempts": 3})
+    try:
+        mc.fetch_all_comments(db, ["new"], set())
+    finally:
+        mc.fetch_post_with_comments = original_fetch
+    post = json.loads(db.execute("SELECT data FROM posts_full WHERE id = 'new'").fetchone()[0])
+    assert post["comments"] == [] and post["comments_fetched_at"] is None
+    assert db.execute("SELECT outcome FROM comment_fetches WHERE post_id = 'new'").fetchone()[0] == "error"
+    assert mc.select_incomplete(db) == ["new"]
+    db.close()
+
+
+def test_backlog_takes_least_recently_fetched_first():
+    """Threads that can never be completed must not hold the front of a capped
+    backlog every cycle."""
+    original, mc.DB_PATH = mc.DB_PATH, Path(tempfile.mkdtemp()) / "order.db"
+    db = mc.init_db()
+    mc.DB_PATH = original
+    for pid, fetched in (("recent", "2026-10-28T00:00:00"), ("never", None), ("old", "2026-09-01T00:00:00")):
+        db.execute("INSERT INTO posts_full (id, data) VALUES (?, ?)",
+                   (pid, json.dumps({"id": pid, "comment_count": 2, "comments": [], "comments_fetched_at": fetched})))
+    db.commit()
+    assert mc.select_incomplete(db) == ["never", "old", "recent"]
+    db.close()
+
+
+# --- Listings. Moltbook pages its post listings by cursor and its submolt list by
+# page number, and ignores offset without an error: an offset request returns the
+# first page again. From mid-February 2026 each crawl saw the newest 50 posts of a
+# listing and the first page of submolts, which held 1-18% of the posts published
+# in each later month. These fakes ignore offset the way the live API does.
+
+def fake_listing(pages):
+    """/posts serves `pages` behind cursors "1", "2", ...; /submolts serves the
+    same items as numbered pages of `len(pages[0])`."""
+    calls = []
+
+    def request(endpoint, params=None, status_out=None):
+        params = dict(params or {})
+        calls.append((endpoint, params))
+        if endpoint == "/submolts":
+            flat = [{"name": p["id"]} for page in pages for p in page]
+            size = len(pages[0])
+            n = int(params.get("page") or 1)
+            return {"success": True, "count": len(flat), "submolts": flat[(n - 1) * size:n * size]}
+        i = int(params.get("cursor") or 0)
+        more = i + 1 < len(pages)
+        return {"success": True, "posts": pages[i], "has_more": more, "next_cursor": str(i + 1) if more else None}
+    return request, calls
+
+
+def listing_pages(start, pages, per_page=3, step_hours=6):
+    """Posts newest first, `step_hours` apart, cut into pages."""
+    posts = [{"id": f"p{i}", "created_at": (start - timedelta(hours=step_hours * i)).isoformat()}
+             for i in range(pages * per_page)]
+    return [posts[k:k + per_page] for k in range(0, len(posts), per_page)]
+
+
+def test_new_posts_walk_the_cursor_back_to_the_last_crawl():
+    """Every post since the last crawl, however many pages that takes, and no
+    further: past a day before the last crawl the walk would turn into an
+    unplanned backfill of history."""
+    original, mc.DB_PATH = mc.DB_PATH, Path(tempfile.mkdtemp()) / "listing.db"
+    db = mc.init_db()
+    mc.DB_PATH = original
+    now = datetime.now(timezone.utc)
+    pages = listing_pages(now, pages=10)          # 30 posts, 6 hours apart: 7.5 days
+    since = now - timedelta(days=2)
+    original_request = mc.make_request
+    mc.make_request, calls = fake_listing(pages)
+    try:
+        new_ids, _ = mc.fetch_posts_incremental(db, since=since)
+    finally:
+        mc.make_request = original_request
+    wanted = {p["id"] for page in pages for p in page if datetime.fromisoformat(p["created_at"]) >= since}
+    assert wanted <= new_ids, sorted(wanted - new_ids)
+    assert [p.get("cursor") for _, p in calls][:3] == [None, "1", "2"]
+    assert len(calls) < len(pages), "walked past a day before the last crawl"
+    db.close()
+
+
+def test_hot_and_submolt_scans_follow_the_cursor():
+    now = datetime.now(timezone.utc)
+    pages = listing_pages(now, pages=4)
+    original_request = mc.make_request
+    mc.make_request, calls = fake_listing(pages)
+    try:
+        hot_ids, _ = mc.fetch_hot_posts(set())
+        posts, exhausted = mc._crawl_submolt_pages("general", "new", 10, set())
+    finally:
+        mc.make_request = original_request
+    every = {p["id"] for page in pages for p in page}
+    assert hot_ids == every and {p["id"] for p in posts} == every and exhausted
+
+
+def test_submolt_history_pass_is_off_by_default():
+    """With the full submolt list, even one page per submolt backfills history
+    from thousands of submolts; it waits for a storage plan."""
+    os.environ.pop("SUBMOLT_BACKFILL_PAGES", None)
+    original_request = mc.make_request
+    mc.make_request, calls = fake_listing([[{"id": "p0", "created_at": "2026-10-28T00:00:00+00:00"}]])
+    try:
+        got = mc.fetch_submolt_backfill(None, [{"name": "general"}])
+    finally:
+        mc.make_request = original_request
+    assert got == set() and calls == []
+
+
+def test_submolt_list_pages_by_number():
+    """The list ignores offset; with it, the crawler listed the first page of
+    submolts thousands of times and never saw the rest."""
+    pages = listing_pages(datetime.now(timezone.utc), pages=3, per_page=4)
+    original_request = mc.make_request
+    mc.make_request, calls = fake_listing(pages)
+    original_page, mc.SUBMOLT_PAGE = mc.SUBMOLT_PAGE, 4
+    try:
+        submolts, stats = mc.fetch_submolts()
+    finally:
+        mc.make_request, mc.SUBMOLT_PAGE = original_request, original_page
+    assert len(submolts) == 12 == stats["submolt_count"]
+    assert [p.get("page") for _, p in calls] == [1, 2, 3]
 
 
 def test_workflow_has_no_duplicate_keys():

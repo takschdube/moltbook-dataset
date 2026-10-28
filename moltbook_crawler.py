@@ -44,6 +44,9 @@ BUSY_TIMEOUT_MS = int(os.getenv("SQLITE_BUSY_TIMEOUT_MS", "30000"))
 REQUEST_DELAY = float(os.getenv("REQUEST_DELAY", "0.5"))
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", "3"))
 COMMENT_WORKERS = int(os.getenv("COMMENT_WORKERS", "10"))
+COMMENT_PAGE = 100   # the comments endpoint's largest page of top-level comments
+SUBMOLT_PAGE = 100   # the submolt list's largest page
+COMMENT_MAX_PAGES = int(os.getenv("COMMENT_MAX_PAGES", "200"))
 
 # Time budget (0 = unlimited)
 TIME_BUDGET_MINUTES = 0
@@ -453,22 +456,31 @@ def ensure_all_posts_in_full(db):
 
 # === CRAWLERS ===
 
+def page_params(params, cursor):
+    """A listing request's parameters, with the cursor of the page before it.
+
+    Moltbook's listings page by cursor (has_more, next_cursor) and ignore offset
+    without an error: an offset request returns the first page again.
+    """
+    return {**params, "cursor": cursor} if cursor else dict(params)
+
 def fetch_submolts():
-    """Fetch all submolts with pagination.
+    """Fetch all submolts, one numbered page at a time.
 
     The /submolts endpoint returns {success, submolts[], total_posts, total_comments, count}
-    where count is the total number of submolts. It does NOT return has_more/next_offset,
-    so we paginate using count to know when we've fetched everything.
+    where count is the total number of submolts. It pages by `page` (from 1, at most 100
+    per page) and ignores `offset`: every offset request returned the first page, so the
+    list held the same few dozen submolts thousands of times over. Duplicates are dropped
+    by name; the walk ends at an empty page or once `count` submolts are in hand.
     """
     logger.log("Fetching Submolts")
-    all_submolts = []
+    by_name = {}
     stats = {}
-    offset = 0
-    limit = 50
+    page = 1
     total_count = None
 
     while True:
-        resp = make_request("/submolts", {"limit": limit, "offset": offset})
+        resp = make_request("/submolts", {"limit": SUBMOLT_PAGE, "page": page})
         if not resp or not resp.get("success"):
             break
 
@@ -476,10 +488,11 @@ def fetch_submolts():
         if not submolts:
             break
 
-        all_submolts.extend(submolts)
+        for s in submolts:
+            by_name.setdefault(s.get("name"), s)
 
         # Capture platform stats and total count from first response
-        if offset == 0:
+        if page == 1:
             total_count = resp.get("count")
             stats = {
                 "total_posts": resp.get("total_posts"),
@@ -487,23 +500,25 @@ def fetch_submolts():
                 "crawled_at": datetime.now(timezone.utc).isoformat()
             }
 
-        # Stop when we've fetched all submolts (use count if available, else empty page)
-        if total_count is not None and len(all_submolts) >= total_count:
+        if total_count is not None and len(by_name) >= total_count:
             break
 
-        # Fallback: if fewer than limit returned, we've hit the last page
-        if len(submolts) < limit:
-            break
-
-        offset += limit
+        page += 1
         time.sleep(REQUEST_DELAY)
 
+    all_submolts = list(by_name.values())
     stats["submolt_count"] = len(all_submolts)
     logger.log(f"Found {len(all_submolts)} submolts (API reports {total_count} total)")
     return all_submolts, stats
 
 def fetch_posts_incremental(db, since=None):
-    """Fetch posts since last crawl. Returns (new_ids, updated_ids)."""
+    """Fetch posts since last crawl. Returns (new_ids, updated_ids).
+
+    The listing pages by cursor (has_more, next_cursor) and ignores `offset`, which
+    returned the first page on every request, so a crawl saw only the newest 50 posts.
+    The walk stops a day before the last crawl: past that it would run on into history
+    that this crawl is not meant to backfill.
+    """
     existing_ids = {row[0] for row in db.execute("SELECT id FROM posts")}
 
     since_str = since.strftime("%Y-%m-%d %H:%M UTC") if since else "beginning"
@@ -511,7 +526,7 @@ def fetch_posts_incremental(db, since=None):
 
     new_ids = set()
     updated_ids = set()
-    offset = 0
+    cursor = None
     limit = 50
     fetched = 0
     consecutive_known_batches = 0
@@ -523,7 +538,7 @@ def fetch_posts_incremental(db, since=None):
             logger.log("Time budget reached during post listing, stopping")
             break
 
-        resp = make_request("/posts", {"sort": "new", "limit": limit, "offset": offset})
+        resp = make_request("/posts", page_params({"sort": "new", "limit": limit}, cursor))
 
         if not resp or not resp.get("success"):
             logger.log("Failed to fetch posts", "ERROR")
@@ -567,10 +582,12 @@ def fetch_posts_incremental(db, since=None):
         if fetched % 1000 < limit:
             db.commit()
 
-        if not resp.get("has_more"):
+        if since and datetime.fromisoformat(posts[-1]["created_at"]) < since - timedelta(days=1):
             break
 
-        offset = resp.get("next_offset", offset + limit)
+        cursor = resp.get("next_cursor")
+        if not resp.get("has_more") or not cursor:
+            break
         time.sleep(REQUEST_DELAY)
 
     pbar.close()
@@ -593,7 +610,7 @@ def fetch_hot_posts(existing_post_ids):
             logger.log("Time budget reached, skipping remaining hot/rising scan")
             break
 
-        offset = 0
+        cursor = None
         pages = 0
         pbar = tqdm(desc=f"[{sort_order.title()}]", unit=" posts", dynamic_ncols=True)
 
@@ -602,7 +619,7 @@ def fetch_hot_posts(existing_post_ids):
                 logger.log("Time budget reached during hot/rising scan, stopping")
                 break
 
-            resp = make_request("/posts", {"sort": sort_order, "limit": 50, "offset": offset})
+            resp = make_request("/posts", page_params({"sort": sort_order, "limit": 50}, cursor))
 
             if not resp or not resp.get("success"):
                 break
@@ -619,10 +636,9 @@ def fetch_hot_posts(existing_post_ids):
             pbar.update(len(posts))
             pages += 1
 
-            if not resp.get("has_more"):
+            cursor = resp.get("next_cursor")
+            if not resp.get("has_more") or not cursor:
                 break
-
-            offset = resp.get("next_offset", offset + 50)
             time.sleep(REQUEST_DELAY)
 
         pbar.close()
@@ -631,17 +647,18 @@ def fetch_hot_posts(existing_post_ids):
     logger.log(f"Hot/Rising/Top: {len(hot_ids)} active posts ({len(new_posts)} new, {already_known} existing to refresh)")
     return hot_ids, new_posts
 
-def _crawl_submolt_pages(submolt_name, sort_order, start_offset, max_pages, known_ids_snapshot):
-    """Worker function: crawls pages of a single (submolt, sort) pair.
+def _crawl_submolt_pages(submolt_name, sort_order, max_pages, known_ids_snapshot):
+    """Worker function: crawls pages of a single (submolt, sort) pair from the top.
 
     Stateless — takes a read-only snapshot of known IDs. Returns the full list
-    of posts fetched (caller dedupes against the DB), the final offset reached,
-    and whether the submolt was fully paginated.
+    of posts fetched (caller dedupes against the DB) and whether the submolt was
+    fully paginated. Pages follow the listing's cursor; the offset it used to send
+    was ignored, so every page was the first one.
 
-    Returns: (posts_fetched, last_offset, exhausted)
+    Returns: (posts_fetched, exhausted)
     """
     all_posts = []
-    offset = start_offset
+    cursor = None
     pages = 0
     consecutive_known = 0
     exhausted = False
@@ -650,12 +667,7 @@ def _crawl_submolt_pages(submolt_name, sort_order, start_offset, max_pages, know
         if not has_time(reserve_minutes=20):
             break
 
-        resp = make_request("/posts", {
-            "submolt": submolt_name,
-            "sort": sort_order,
-            "limit": 50,
-            "offset": offset,
-        })
+        resp = make_request("/posts", page_params({"submolt": submolt_name, "sort": sort_order, "limit": 50}, cursor))
 
         if not resp or not resp.get("success"):
             break
@@ -670,7 +682,7 @@ def _crawl_submolt_pages(submolt_name, sort_order, start_offset, max_pages, know
         new_in_batch = sum(1 for p in posts if p["id"] not in known_ids_snapshot)
 
         pages += 1
-        offset = resp.get("next_offset", offset + 50)
+        cursor = resp.get("next_cursor")
 
         if new_in_batch == 0:
             consecutive_known += 1
@@ -679,13 +691,13 @@ def _crawl_submolt_pages(submolt_name, sort_order, start_offset, max_pages, know
         else:
             consecutive_known = 0
 
-        if not resp.get("has_more"):
+        if not resp.get("has_more") or not cursor:
             exhausted = True
             break
 
         time.sleep(REQUEST_DELAY)
 
-    return all_posts, offset, exhausted
+    return all_posts, exhausted
 
 
 def fetch_submolt_backfill(db, submolts):
@@ -702,7 +714,15 @@ def fetch_submolt_backfill(db, submolts):
     Returns:
         set of newly discovered post IDs
     """
-    max_pages = int(os.getenv("SUBMOLT_BACKFILL_PAGES", "20"))
+    # ponytail: off by default. The new-post walk follows the cursor through every
+    # submolt, so this pass now only adds history: with the full submolt list even
+    # one page each reaches posts from thousands of submolts never crawled, more
+    # than the release assets and the runner's disk hold. Set
+    # SUBMOLT_BACKFILL_PAGES above 0 once storage can take a historical backfill.
+    max_pages = int(os.getenv("SUBMOLT_BACKFILL_PAGES", "0"))
+    if max_pages <= 0:
+        logger.log("Submolt backfill off (SUBMOLT_BACKFILL_PAGES=0)")
+        return set()
     workers = int(os.getenv("SUBMOLT_WORKERS", "4"))
     # How long before an exhausted submolt becomes eligible for re-scanning
     refresh_hours = int(os.getenv("SUBMOLT_REFRESH_HOURS", "24"))
@@ -733,7 +753,7 @@ def fetch_submolt_backfill(db, submolts):
             if name:
                 submolt_post_counts[name] = submolt_post_counts.get(name, 0) + 1
 
-    # Build work queue: (name, sort, start_offset)
+    # Build work queue: (name, sort)
     now = datetime.now(timezone.utc)
     refresh_cutoff = now - timedelta(hours=refresh_hours)
 
@@ -743,8 +763,6 @@ def fetch_submolt_backfill(db, submolts):
             state = progress.get((name, sort_order), {})
             exhausted = state.get("exhausted", False)
             last_crawled_at = state.get("last_crawled_at")
-            last_offset = state.get("last_offset", 0)
-
             # Skip recently-exhausted pairs
             if exhausted and last_crawled_at:
                 try:
@@ -753,10 +771,8 @@ def fetch_submolt_backfill(db, submolts):
                         continue
                 except (ValueError, TypeError):
                     pass
-                # Re-eligible: reset offset to rescan from top
-                last_offset = 0
 
-            work_queue.append((name, sort_order, last_offset))
+            work_queue.append((name, sort_order))
 
     # Priority: submolts with fewest posts first (fill gaps)
     work_queue.sort(key=lambda w: submolt_post_counts.get(w[0], 0))
@@ -776,9 +792,9 @@ def fetch_submolt_backfill(db, submolts):
 
     with ThreadPoolExecutor(max_workers=workers) as executor:
         def submit_item(item):
-            name, sort_order, start_offset = item
+            name, sort_order = item
             return executor.submit(
-                _crawl_submolt_pages, name, sort_order, start_offset, max_pages, existing_ids
+                _crawl_submolt_pages, name, sort_order, max_pages, existing_ids
             )
 
         # Prime the pool with an initial batch
@@ -798,13 +814,13 @@ def fetch_submolt_backfill(db, submolts):
             # Wait for the next future to complete
             done_future = next(as_completed(futures))
             item = futures.pop(done_future)
-            name, sort_order, _ = item
+            name, sort_order = item
 
             try:
-                posts, last_offset, exhausted = done_future.result()
+                posts, exhausted = done_future.result()
             except Exception as e:
                 logger.log(f"Worker failed for {name}/{sort_order}: {e}", "WARN")
-                posts, last_offset, exhausted = [], 0, False
+                posts, exhausted = [], False
 
             # Dedupe and write to DB (main thread only)
             for post in posts:
@@ -820,7 +836,7 @@ def fetch_submolt_backfill(db, submolts):
                 (name, sort, last_offset, exhausted, last_crawled_at)
                 VALUES (?, ?, ?, ?, ?)
                 """,
-                (name, sort_order, last_offset, 1 if exhausted else 0, now.isoformat()),
+                (name, sort_order, 0, 1 if exhausted else 0, now.isoformat()),
             )
 
             completed += 1
@@ -854,7 +870,7 @@ def fetch_all_posts(db):
     logger.log("Fetching Posts (full mode, smart overlap detection)")
     existing_ids = {row[0] for row in db.execute("SELECT id FROM posts")}
     logger.log(f"Loaded {len(existing_ids)} existing post IDs")
-    offset = 0
+    cursor = None
     limit = 50
     fetched = 0
     consecutive_known_batches = 0
@@ -865,7 +881,7 @@ def fetch_all_posts(db):
             logger.log("Time budget reached during post listing, stopping")
             break
 
-        resp = make_request("/posts", {"sort": "new", "limit": limit, "offset": offset})
+        resp = make_request("/posts", page_params({"sort": "new", "limit": limit}, cursor))
 
         if not resp or not resp.get("success"):
             logger.log("Failed to fetch posts", "ERROR")
@@ -900,10 +916,9 @@ def fetch_all_posts(db):
         if fetched % 1000 < limit:
             db.commit()
 
-        if not resp.get("has_more"):
+        cursor = resp.get("next_cursor")
+        if not resp.get("has_more") or not cursor:
             break
-
-        offset = resp.get("next_offset", offset + limit)
         time.sleep(REQUEST_DELAY)
     pbar.close()
     db.commit()
@@ -917,24 +932,51 @@ def tree_size(comments):
     return sum(1 + tree_size(c.get("replies")) for c in comments or [])
 
 def fetch_post_with_comments(post_id):
-    """Fetch single post with full comment tree. Returns (post, comments, status)."""
+    """Fetch a post and its whole comment tree. Returns (post, comments, status).
+
+    The post endpoint stopped carrying comments in September 2026 (its response
+    is now just {success, post}), and reading the missing key as an empty list
+    stored every new post as a thread with no comments. The tree now comes from
+    the comments endpoint; comments is None when that fetch failed.
+    """
     st = {}
     resp = make_request(f"/posts/{post_id}", status_out=st)
-    if resp and resp.get("success"):
-        return resp.get("post"), resp.get("comments", []), st
-    return None, [], st
+    if not (resp and resp.get("success")):
+        return None, None, st
+    comments, st = fetch_comments_only(post_id)
+    return resp.get("post"), comments, st
 
 def fetch_comments_only(post_id):
-    """Fetch comments for a post (full nested tree in one response, no pagination).
+    """Fetch a post's whole comment tree, one page of top-level comments at a time.
+
+    Since September 2026 the endpoint pages: at most 100 top-level comments per
+    request (35 by default), each with its replies nested inside, plus has_more
+    and next_cursor. Reading only the first page stored the top of every large
+    thread as if it were the whole of it. sort=new keeps the cursor stable while
+    votes change during the walk.
 
     Returns (comments, status). comments is None on failure, which is what
     distinguishes a failed fetch from a thread that genuinely has none.
     """
-    st = {}
-    resp = make_request(f"/posts/{post_id}/comments", status_out=st)
-    if resp and resp.get("success"):
-        return resp.get("comments", []), st
-    return None, st
+    st, out, seen, cursor = {}, [], set(), None
+    for _ in range(COMMENT_MAX_PAGES):
+        params = {"limit": COMMENT_PAGE, "sort": "new"}
+        if cursor:
+            params["cursor"] = cursor
+        resp = make_request(f"/posts/{post_id}/comments", params=params, status_out=st)
+        if not (resp and resp.get("success")):
+            return None, st
+        for c in resp.get("comments") or []:
+            if c.get("id") not in seen:
+                seen.add(c.get("id"))
+                out.append(c)
+        cursor = resp.get("next_cursor")
+        if not resp.get("has_more") or not cursor:
+            return out, st
+    # ponytail: a thread longer than the page cap is stored as far as it got and
+    # stays short, so the backlog retries it; raise COMMENT_MAX_PAGES if many do
+    logger.log(f"Comment pages capped at {COMMENT_MAX_PAGES} for {post_id}", "WARN")
+    return out, st
 
 def fetch_all_comments(db, post_ids_to_fetch, existing_full_ids):
     """Fetch comments for posts using parallel requests. Writes directly to SQLite.
@@ -992,7 +1034,13 @@ def fetch_all_comments(db, post_ids_to_fetch, existing_full_ids):
                     ).fetchone()
                     if row:
                         post_data = json.loads(row[0])
-                        post_data["comments"] = comments
+                        # An archive keeps what it once retrieved: a fetch that
+                        # comes back shorter (deletions, a capped walk, a page
+                        # the API dropped) must not shrink the stored thread.
+                        # ponytail: the longer tree wins whole; merge by comment
+                        # id if new replies on a shrunk thread start to matter
+                        if tree_size(comments) >= tree_size(post_data.get("comments")):
+                            post_data["comments"] = comments
                         post_data["comments_fetched_at"] = now
                         db.execute(
                             "INSERT OR REPLACE INTO posts_full (id, data) VALUES (?, ?)",
@@ -1007,14 +1055,19 @@ def fetch_all_comments(db, post_ids_to_fetch, existing_full_ids):
             else:
                 full_post, comments, status = future.result()
                 if full_post:
-                    full_post["comments"] = comments
-                    full_post["comments_fetched_at"] = now
+                    # The post arrived but its comments did not: store it as
+                    # never fetched, so the backlog comes back for the thread.
+                    full_post["comments"] = comments or []
+                    full_post["comments_fetched_at"] = now if comments is not None else None
                     db.execute(
                         "INSERT OR REPLACE INTO posts_full (id, data) VALUES (?, ?)",
                         (post_id, json.dumps(full_post, ensure_ascii=False)),
                     )
-                    record_fetch(db, post_id, "ok", status, tree_size(comments),
-                                 full_post.get("comment_count"))
+                    if comments is None:
+                        record_fetch(db, post_id, "error", status, None, full_post.get("comment_count"))
+                    else:
+                        record_fetch(db, post_id, "ok", status, tree_size(comments),
+                                     full_post.get("comment_count"))
                 else:
                     record_fetch(db, post_id, "error", status, None, None)
 
@@ -1091,8 +1144,11 @@ def select_incomplete(db, since=None, until=None):
         if until and created > until:
             continue
         if tree_size(post.get("comments")) < (post.get("comment_count") or 0):
-            targets.append(post_id)
-    return targets
+            targets.append((post.get("comments_fetched_at") or "", post_id))
+    # Least recently fetched first. Some threads stay short for good (the count
+    # includes comments the API no longer serves); in table order they held the
+    # front of a capped backlog every cycle and the rest was never reached.
+    return [post_id for _, post_id in sorted(targets)]
 
 
 def backfill(since=None, until=None):
