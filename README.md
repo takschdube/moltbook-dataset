@@ -73,7 +73,7 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 <!-- COVERAGE_NOTE_START -->
 
-> **Note on platform totals.** The Moltbook API reports platform-wide aggregates (4.58M posts, 13.6M comments) that include content not accessible through the public API; the API documentation notes this explicitly. Our crawler performs exhaustive pagination across all 33,600 listed submolts using multiple sort orders (new, top, hot, rising) with overlap detection, and converges on ~427K posts with diminishing returns per crawl cycle. The gap between the reported platform total and the accessible collection is a property of the API, not a sampling limitation. Researchers should treat the collected subset as representative of publicly accessible content, not of the full platform. Activity is also far from uniform over time; see Coverage and completeness below before treating these as a rate.
+> **Note on platform totals.** The Moltbook API reports platform-wide aggregates (4.58M posts, 13.6M comments); this archive holds 427K posts. Until 28 October 2026 the crawler paged listings by offset, which the API ignores, so the archive holds every post to 7 February 2026 and a share of later ones. Since then it follows the API's cursors and collects every new post, and the months in between are being filled as history shards; see Coverage and completeness below, which also shows how unevenly activity is spread over time.
 
 <!-- COVERAGE_NOTE_END -->
 
@@ -86,6 +86,31 @@ week of February, then a few thousand a day, then a long tail from March
 onward. Any analysis that assumes a uniform rate across the collection period
 will be misled by that shape; `derived/activity_timeline.json` gives the daily
 counts.
+
+### Posts after 7 February 2026, and the history shards
+
+Until 28 October 2026 the crawler paged Moltbook's listings by offset, which the
+API ignores, so this archive holds every post to 7 February 2026 and a share of
+later ones. Measured in sampled hours against the API, it holds most ordinary
+posts to 15 February (posts in token-minting submolts are largely absent from
+9 February) and 1 to 18% of all posts from March to October. The crawler now
+follows the API's cursors and collects every new post.
+
+The months in between are being filled as monthly shards on the
+[`history` release](https://github.com/takschdube/moltbook-dataset/releases/tag/history)
+and in `history/` on the Hugging Face mirror:
+
+| File | Contents |
+|------|----------|
+| `posts-YYYY-MM.jsonl.zst` | Every post the API serves for the month, one JSON object per line, as `posts.json` stores them |
+| `comments-YYYY-MM.jsonl.zst` | One line per post that reports comments: `post_id`, `fetched_at`, `comment_count` and the nested `comments` tree |
+| `manifest-YYYY-MM.json` | Record counts, and whether the month's posts (`posts_done`) and threads (`threads_done`) are complete |
+
+The shards cover February to October 2026 and overlap the archive, so
+deduplicate posts by `id`. Until its manifest marks both parts done, a month
+holds what the backfill has reached so far. `scripts/backfill_history.py` writes
+the shards and `.github/workflows/history.yml` runs it four times a day between
+crawls.
 
 ### Whether a thread's comments can be trusted
 
@@ -455,6 +480,7 @@ kept elsewhere, permanently:
 | [Zenodo](https://doi.org/10.5281/zenodo.19470480) | per-run to 2026-06-06, daily 2026-07-17 to 2026-09-14, monthly after (zip + full database) | 2026-04-08 onward |
 | [Hugging Face mirror](https://huggingface.co/datasets/takschdube/moltbook-dataset) git history | every 6-hour upload | 2026-02-07 onward |
 | `post_metrics_history` table in `moltbook.db` | per post per cycle | 2026-07-17 onward |
+| `history` release | monthly shards of posts and comment trees | 2026-02 through 2026-10-28 |
 
 `snapshots.json` in the repo root maps every per-run release tag to its
 snapshot time and the exact Hugging Face revision holding that state, so any

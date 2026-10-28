@@ -139,7 +139,6 @@ def build_coverage_note(stats):
     total_posts = stats.get("total_posts")
     collected_posts = stats.get("posts_collected")
     total_comments = stats.get("total_comments")
-    submolt_count = stats.get("submolt_count")
 
     if not total_posts or not collected_posts:
         return None
@@ -147,23 +146,18 @@ def build_coverage_note(stats):
     tp = _abbreviate_number(total_posts)
     tc = _abbreviate_number(total_comments)
     cp = _abbreviate_number(collected_posts)
-    sc = format_number(submolt_count) if submolt_count else "--"
 
     lines = [
         COVERAGE_NOTE_START,
         "",
         f"> **Note on platform totals.** The Moltbook API reports platform-wide "
-        f"aggregates ({tp} posts, {tc} comments) that include content not "
-        f"accessible through the public API; the API documentation notes this "
-        f"explicitly. Our crawler performs exhaustive pagination across all "
-        f"{sc} listed submolts using multiple sort orders (new, top, hot, "
-        f"rising) with overlap detection, and converges on ~{cp} posts with "
-        f"diminishing returns per crawl cycle. The gap between the reported "
-        f"platform total and the accessible collection is a property of the "
-        f"API, not a sampling limitation. Researchers should treat the collected "
-        f"subset as representative of publicly accessible content, not of the "
-        f"full platform. Activity is also far from uniform over time; see "
-        f"Coverage and completeness below before treating these as a rate.",
+        f"aggregates ({tp} posts, {tc} comments); this archive holds {cp} posts. "
+        f"Until 28 October 2026 the crawler paged listings by offset, which the "
+        f"API ignores, so the archive holds every post to 7 February 2026 and a "
+        f"share of later ones. Since then it follows the API's cursors and "
+        f"collects every new post, and the months in between are being filled as "
+        f"history shards; see Coverage and completeness below, which also shows "
+        f"how unevenly activity is spread over time.",
         "",
         COVERAGE_NOTE_END,
     ]
