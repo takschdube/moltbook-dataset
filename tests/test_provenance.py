@@ -405,6 +405,19 @@ def test_hot_and_submolt_scans_follow_the_cursor():
     assert hot_ids == every and {p["id"] for p in posts} == every and exhausted
 
 
+def test_submolt_history_pass_is_off_by_default():
+    """With the full submolt list, even one page per submolt backfills history
+    from thousands of submolts; it waits for a storage plan."""
+    os.environ.pop("SUBMOLT_BACKFILL_PAGES", None)
+    original_request = mc.make_request
+    mc.make_request, calls = fake_listing([[{"id": "p0", "created_at": "2026-10-28T00:00:00+00:00"}]])
+    try:
+        got = mc.fetch_submolt_backfill(None, [{"name": "general"}])
+    finally:
+        mc.make_request = original_request
+    assert got == set() and calls == []
+
+
 def test_submolt_list_pages_by_number():
     """The list ignores offset; with it, the crawler listed the first page of
     submolts thousands of times and never saw the rest."""

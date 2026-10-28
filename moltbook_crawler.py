@@ -714,11 +714,15 @@ def fetch_submolt_backfill(db, submolts):
     Returns:
         set of newly discovered post IDs
     """
-    # ponytail: one page per (submolt, sort) is the reach this pass always had in
-    # effect (the ignored offset repeated the first page); deeper pages backfill
-    # history, which grows the corpus past what the release assets hold, so raise
-    # SUBMOLT_BACKFILL_PAGES only with a storage plan
-    max_pages = int(os.getenv("SUBMOLT_BACKFILL_PAGES", "1"))
+    # ponytail: off by default. The new-post walk follows the cursor through every
+    # submolt, so this pass now only adds history: with the full submolt list even
+    # one page each reaches posts from thousands of submolts never crawled, more
+    # than the release assets and the runner's disk hold. Set
+    # SUBMOLT_BACKFILL_PAGES above 0 once storage can take a historical backfill.
+    max_pages = int(os.getenv("SUBMOLT_BACKFILL_PAGES", "0"))
+    if max_pages <= 0:
+        logger.log("Submolt backfill off (SUBMOLT_BACKFILL_PAGES=0)")
+        return set()
     workers = int(os.getenv("SUBMOLT_WORKERS", "4"))
     # How long before an exhausted submolt becomes eligible for re-scanning
     refresh_hours = int(os.getenv("SUBMOLT_REFRESH_HOURS", "24"))
