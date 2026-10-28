@@ -15,12 +15,19 @@ Response: `{ success, posts[], has_more, next_offset }`
 ## Comments Endpoint (`GET /posts/{id}/comments`)
 | Param | Values |
 |-------|--------|
-| `sort` | `top`, `new`, `controversial` |
+| `sort` | `best` (default), `new`, `top`, `controversial` |
+| `limit` | top-level comments per page, at most 100 (default 35) |
+| `cursor` | the previous page's `next_cursor` |
 
-Response: `{ success, comments[] }`
+Response: `{ success, post_id, sort, count, has_more, next_cursor, comments[] }`. Since September 2026
+the endpoint pages: each page holds up to 100 top-level comments with their replies nested inside, and a
+thread is complete only when `has_more` is false. `count` is the thread total the API reports; deleted
+comments can leave it above what any walk returns. The crawler walks with `sort=new`, whose cursor is a
+creation time and does not shift as votes change.
 
 ## Full Post (`GET /posts/{id}`)
-Response: `{ success, post, comments[] }`
+Response: `{ success, post }`. Until September 2026 this also carried `comments[]`; it no longer does, so
+comments always come from the comments endpoint.
 
 ## Feed Endpoint (`GET /feed`)
 | Param | Values |

@@ -217,6 +217,124 @@ def test_catchup_is_bounded_and_skippable():
     db.close()
 
 
+def fake_api(pages, post=None, fail_page=None):
+    """Stand-in for make_request: the comments endpoint serves `pages` (lists of
+    top-level ids) behind cursors; the post endpoint answers without comments,
+    as the live API has since September 2026."""
+    calls = []
+
+    def request(endpoint, params=None, status_out=None):
+        calls.append((endpoint, dict(params or {})))
+        if status_out is not None:
+            status_out.update(http="200", attempts=1)
+        if not endpoint.endswith("/comments"):
+            return {"success": True, "post": post or {"id": "p", "comment_count": 0}}
+        i = int((params or {}).get("cursor") or 0)
+        if i == fail_page:
+            return None
+        more = i + 1 < len(pages)
+        return {"success": True, "count": sum(map(len, pages)), "has_more": more,
+                "next_cursor": str(i + 1) if more else None,
+                "comments": [{"id": c, "replies": [{"id": c + "r", "replies": []}]} for c in pages[i]]}
+    return request, calls
+
+
+def test_comments_follow_every_page():
+    """The endpoint pages since September 2026; the first page of a large
+    thread is not the thread."""
+    original = mc.make_request
+    mc.make_request, calls = fake_api([["a", "b"], ["c"], ["c", "d"]])
+    try:
+        comments, st = mc.fetch_comments_only("p")
+    finally:
+        mc.make_request = original
+    assert [c["id"] for c in comments] == ["a", "b", "c", "d"]   # c repeated across a page edge, kept once
+    assert mc.tree_size(comments) == 8                          # replies ride inside their parents
+    assert [p.get("cursor") for _, p in calls] == [None, "1", "2"]
+    assert all(p["sort"] == "new" and p["limit"] == mc.COMMENT_PAGE for _, p in calls)
+    assert st["http"] == "200"
+
+
+def test_a_failed_page_fails_the_fetch():
+    """Half a thread stored as if whole is the defect this file exists for."""
+    original = mc.make_request
+    mc.make_request, _ = fake_api([["a"], ["b"]], fail_page=1)
+    try:
+        comments, _ = mc.fetch_comments_only("p")
+    finally:
+        mc.make_request = original
+    assert comments is None
+
+
+def test_new_posts_take_comments_from_the_comments_endpoint():
+    """The post endpoint no longer carries comments; reading the missing key as
+    [] stored every new thread empty and marked it fetched."""
+    original = mc.make_request
+    mc.make_request, calls = fake_api([["a", "b"]], post={"id": "p", "comment_count": 4})
+    try:
+        post, comments, _ = mc.fetch_post_with_comments("p")
+    finally:
+        mc.make_request = original
+    assert post["id"] == "p" and mc.tree_size(comments) == 4
+    assert [e for e, _ in calls] == ["/posts/p", "/posts/p/comments"]
+
+
+def test_refresh_never_shrinks_a_stored_thread():
+    """A shorter answer (deletions, a dropped page) must not overwrite what the
+    archive already holds; a longer one replaces it."""
+    original, mc.DB_PATH = mc.DB_PATH, Path(tempfile.mkdtemp()) / "shrink.db"
+    db = mc.init_db()
+    mc.DB_PATH = original
+    five = [{"id": str(i), "replies": []} for i in range(5)]
+    for pid in ("shorter", "longer"):
+        db.execute("INSERT INTO posts_full (id, data) VALUES (?, ?)",
+                   (pid, json.dumps({"id": pid, "comment_count": 9, "comments": five})))
+    db.commit()
+    answers = {"shorter": [{"id": "x", "replies": []}] * 2, "longer": [{"id": "y", "replies": []}] * 7}
+    original_fetch = mc.fetch_comments_only
+    mc.fetch_comments_only = lambda pid: (answers[pid], {"http": "200", "attempts": 1})
+    try:
+        mc.fetch_all_comments(db, ["shorter", "longer"], {"shorter", "longer"})
+    finally:
+        mc.fetch_comments_only = original_fetch
+    stored = {pid: mc.tree_size(json.loads(d)["comments"]) for pid, d in db.execute("SELECT id, data FROM posts_full")}
+    assert stored == {"shorter": 5, "longer": 7}, stored
+    db.close()
+
+
+def test_new_post_without_its_comments_stays_unfetched():
+    """A post whose comment fetch failed is stored, but as never fetched, so the
+    backlog returns to it instead of trusting an empty array."""
+    original, mc.DB_PATH = mc.DB_PATH, Path(tempfile.mkdtemp()) / "nocomments.db"
+    db = mc.init_db()
+    mc.DB_PATH = original
+    original_fetch = mc.fetch_post_with_comments
+    mc.fetch_post_with_comments = lambda pid: ({"id": pid, "comment_count": 3}, None, {"http": "503", "attempts": 3})
+    try:
+        mc.fetch_all_comments(db, ["new"], set())
+    finally:
+        mc.fetch_post_with_comments = original_fetch
+    post = json.loads(db.execute("SELECT data FROM posts_full WHERE id = 'new'").fetchone()[0])
+    assert post["comments"] == [] and post["comments_fetched_at"] is None
+    assert db.execute("SELECT outcome FROM comment_fetches WHERE post_id = 'new'").fetchone()[0] == "error"
+    assert mc.select_incomplete(db) == ["new"]
+    db.close()
+
+
+def test_backlog_takes_least_recently_fetched_first():
+    """Threads that can never be completed must not hold the front of a capped
+    backlog every cycle."""
+    original, mc.DB_PATH = mc.DB_PATH, Path(tempfile.mkdtemp()) / "order.db"
+    db = mc.init_db()
+    mc.DB_PATH = original
+    for pid, fetched in (("recent", "2026-10-28T00:00:00"), ("never", None), ("old", "2026-09-01T00:00:00")):
+        db.execute("INSERT INTO posts_full (id, data) VALUES (?, ?)",
+                   (pid, json.dumps({"id": pid, "comment_count": 2, "comments": [], "comments_fetched_at": fetched})))
+    db.commit()
+    assert mc.select_incomplete(db) == ["never", "old", "recent"]
+    db.close()
+
+
 def test_workflow_has_no_duplicate_keys():
     """A duplicated key is silently accepted by a YAML loader and rejected by
     GitHub, so a plain safe_load is not a check. One slipped through as a
