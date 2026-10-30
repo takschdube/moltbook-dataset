@@ -91,7 +91,9 @@ def main():
         "snapshot_time": crawl_time(),
         "hf_revision": revision,
         "hf_revision_is_prior_run": False,
-        "github_release": True,
+        # The mirrors upload even when the GitHub release failed, as twice on
+        # 2026-10-29; the workflow sets RELEASE_CREATED once the release exists.
+        "github_release": os.getenv("RELEASE_CREATED") == "true",
     })
     INDEX.write_text(json.dumps(rows, indent=1) + "\n", encoding="utf-8")
     print(f"indexed {rows[-1]['tag']} -> {revision[:12]} ({len(rows)} rows)")

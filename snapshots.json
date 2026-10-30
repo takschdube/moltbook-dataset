@@ -4610,13 +4610,13 @@
   "snapshot_time": "2026-10-29T14:57:45.732753+00:00",
   "hf_revision": "841e3fdac05c84ea58c154655ca1fac94b53ae88",
   "hf_revision_is_prior_run": false,
-  "github_release": true
+  "github_release": false
  },
  {
   "tag": "v2026.10.30-0146",
   "snapshot_time": "2026-10-30T01:33:54.447851+00:00",
   "hf_revision": "1c436fc3ca81449ab6f1b7b543089ed8e1f0ff9a",
   "hf_revision_is_prior_run": false,
-  "github_release": true
+  "github_release": false
  }
 ]

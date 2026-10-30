@@ -54,8 +54,12 @@ jobs:
         TAG=$(gh release view --json tagName --jq .tagName)
         echo "Release marked Latest: $TAG"
         mkdir -p releases
-        gh release download "$TAG" -p 'moltbook-dataset-*.zip' -D releases
-        gh release download "$TAG" -p 'moltbook.db.zst' -D /tmp
+        gh release download "$TAG" -p 'moltbook-dataset-*.zip*' -D releases
+        gh release download "$TAG" -p 'moltbook.db.zst*' -D /tmp
+        # A file past 2 GiB is on the release in parts; ZIP[0] is the zip or its first part.
+        ZIP=(releases/moltbook-dataset-*.zip*)
+        bash scripts/release_parts.sh join "${ZIP[0]%.part000}"
+        bash scripts/release_parts.sh join /tmp/moltbook.db.zst
 
     - name: Upload to Zenodo
       if: steps.cadence.outputs.due == 'true'

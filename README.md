@@ -457,6 +457,9 @@ posts = json.loads((data / "raw" / "posts.json").read_text())
 **Direct download:**
 
 Download the latest zip from [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) and extract it.
+GitHub limits each release file to 2 GiB, so a file past 1.9 GB is attached as
+numbered parts; rejoin them first, for example
+`cat moltbook-dataset-2026-10-30.zip.part* > moltbook-dataset-2026-10-30.zip`.
 
 ## Releases
 

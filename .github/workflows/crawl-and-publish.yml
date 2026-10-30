@@ -72,7 +72,8 @@ jobs:
         mkdir -p data/raw
         LATEST=$(gh release view --json tagName --jq .tagName)
         echo "Release marked Latest: $LATEST"
-        gh release download "$LATEST" -p "moltbook.db.zst" -D /tmp/ || true
+        gh release download "$LATEST" -p "moltbook.db.zst*" -D /tmp/ || true
+        bash scripts/release_parts.sh join /tmp/moltbook.db.zst
         if [ -f "/tmp/moltbook.db.zst" ]; then
           zstd -d /tmp/moltbook.db.zst -o data/raw/moltbook.db
           rm -f /tmp/moltbook.db.zst
@@ -144,26 +145,27 @@ jobs:
         echo "RELEASE_TAG=$VERSION" >> "$GITHUB_ENV"
         ZIP=$(ls releases/moltbook-dataset-*.zip | head -1)
 
-        ASSETS="$ZIP"
+        ASSETS=("$ZIP")
         if [ -f "data/raw/moltbook.db" ]; then
           zstd -3 -f data/raw/moltbook.db -o /tmp/moltbook.db.zst
-          ASSETS="$ASSETS /tmp/moltbook.db.zst"
+          ASSETS+=(/tmp/moltbook.db.zst)
         fi
 
-        for asset in $ASSETS; do
-          SIZE=$(stat -c%s "$asset")
-          if [ "$SIZE" -gt 2000000000 ]; then
-            echo "ERROR: $asset is $SIZE bytes, past the 2 GB release asset limit."
-            echo "Split it or move it to the Hugging Face mirror before publishing."
-            exit 1
-          fi
+        # Release assets must be under 2 GiB. Since 2026-10-29 the archive is
+        # past that, so a larger file goes up in parts, which the restore above
+        # and zenodo.yml rejoin.
+        FILES=()
+        for asset in "${ASSETS[@]}"; do
+          LIST=$(bash scripts/release_parts.sh split "$asset")
+          mapfile -t -O "${#FILES[@]}" FILES <<< "$LIST"
         done
 
         gh release create "$VERSION" \
-          $ASSETS \
+          "${FILES[@]}" \
           --title "Moltbook Dataset $DATE" \
           --notes-file releases/RELEASE_NOTES.md \
           --latest
+        echo "RELEASE_CREATED=true" >> "$GITHUB_ENV"
 
     # Per-run releases are working copies with 14-day retention; history is
     # preserved by archive/* releases, monthly Zenodo versions, the HF mirror,
@@ -205,6 +207,7 @@ jobs:
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
         RELEASE_TAG: ${{ env.RELEASE_TAG }}
+        RELEASE_CREATED: ${{ env.RELEASE_CREATED }}
       run: uv run python scripts/write_snapshot_index.py
       continue-on-error: true
 
@@ -223,7 +226,7 @@ jobs:
     - name: Release working copies
       if: always()
       run: |
-        rm -f releases/moltbook-dataset-*.zip /tmp/moltbook.db.zst
+        rm -f releases/moltbook-dataset-*.zip* /tmp/moltbook.db.zst*
         df -h / | tail -1
 
     - name: Update README with latest stats
