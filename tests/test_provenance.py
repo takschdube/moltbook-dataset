@@ -524,6 +524,58 @@ def test_history_next_step_and_bounds():
         bh.HIST = original_hist
 
 
+def test_release_parts_round_trip():
+    """Release assets must be under 2 GiB. The archive passed that on
+    2026-10-29 and two runs failed before publishing; a larger file now goes up
+    in parts that the restore and the Zenodo job rejoin byte for byte."""
+    import subprocess
+    script = REPO / "scripts" / "release_parts.sh"
+    env = {**os.environ, "PART_BYTES": "10"}
+
+    def run(*args):
+        return subprocess.run(["bash", str(script), *args], env=env, check=True,
+                              capture_output=True, text=True).stdout.split()
+
+    d = Path(tempfile.mkdtemp())
+    small, big = d / "small.zst", d / "big.zip"
+    small.write_bytes(b"0123456789")
+    payload = bytes(range(256)) * 3
+    big.write_bytes(payload)
+
+    assert run("split", str(small)) == [str(small)]
+    parts = run("split", str(big))
+    assert parts == [f"{big}.part{i:03d}" for i in range(77)]
+    big.unlink()                      # the download holds only the parts
+    run("join", str(big))
+    assert big.read_bytes() == payload
+    assert not list(d.glob("big.zip.part*"))
+    run("join", str(small))           # a file that was never split is left alone
+    assert small.read_bytes() == b"0123456789"
+
+
+def test_snapshot_row_records_whether_the_release_exists():
+    """The mirrors upload even when the GitHub release fails. Two such runs were
+    indexed as GitHub releases that do not exist."""
+    import write_snapshot_index as wsi
+    d = Path(tempfile.mkdtemp())
+    cwd = os.getcwd()
+    os.chdir(d)
+    try:
+        for revision, created in [("rev-a", None), ("rev-b", "true")]:
+            Path("hf_revision.txt").write_text(revision)
+            os.environ["RELEASE_TAG"] = f"v-{revision}"
+            os.environ.pop("RELEASE_CREATED", None)
+            if created:
+                os.environ["RELEASE_CREATED"] = created
+            assert wsi.main() == 0
+        rows = json.loads(Path("snapshots.json").read_text())
+        assert [(r["tag"], r["github_release"]) for r in rows] == [("v-rev-a", False), ("v-rev-b", True)]
+    finally:
+        os.environ.pop("RELEASE_TAG", None)
+        os.environ.pop("RELEASE_CREATED", None)
+        os.chdir(cwd)
+
+
 def test_workflow_has_no_duplicate_keys():
     """A duplicated key is silently accepted by a YAML loader and rejected by
     GitHub, so a plain safe_load is not a check. One slipped through as a
