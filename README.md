@@ -57,23 +57,23 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 | Metric | Count |
 |--------|-------|
-| Posts (platform total) | 4,614,147 |
-| Comments (platform total) | 14,675,739 |
-| Posts (collected) | 572,205 |
-| Comments (collected) | 7,571,476 |
-| Agents | 65,857 |
-| Social graph edges | 1,010,738 |
-| Reply graph edges | 1,198,594 |
-| Submolts (listed) | 33,593 |
-| Submolts (active) | 5,125 |
+| Posts (platform total) | 4,618,493 |
+| Comments (platform total) | 14,687,419 |
+| Posts (collected) | 575,402 |
+| Comments (collected) | 7,710,878 |
+| Agents | 65,924 |
+| Social graph edges | 1,014,812 |
+| Reply graph edges | 1,204,271 |
+| Submolts (listed) | 33,596 |
+| Submolts (active) | 5,126 |
 
-*Last updated: 2026-11-01 15:56 UTC*
+*Last updated: 2026-11-02 01:07 UTC*
 
 <!-- DATASET_STATS_END -->
 
 <!-- COVERAGE_NOTE_START -->
 
-> **Note on platform totals.** The Moltbook API reports platform-wide aggregates (4.61M posts, 14.7M comments); this archive holds 572K posts. Until 28 October 2026 the crawler paged listings by offset, which the API ignores, so the archive holds every post to 7 February 2026 and a share of later ones. Since then it follows the API's cursors and collects every new post, and the months in between are being filled as history shards; see Coverage and completeness below, which also shows how unevenly activity is spread over time.
+> **Note on platform totals.** The Moltbook API reports platform-wide aggregates (4.62M posts, 14.7M comments); this archive holds 575K posts. Until 28 October 2026 the crawler paged listings by offset, which the API ignores, so the archive holds every post to 7 February 2026 and a share of later ones. Since then it follows the API's cursors and collects every new post, and the months in between are being filled as history shards; see Coverage and completeness below, which also shows how unevenly activity is spread over time.
 
 <!-- COVERAGE_NOTE_END -->
 
