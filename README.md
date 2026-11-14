@@ -57,23 +57,23 @@ A longitudinal dataset of social interactions from [Moltbook](https://www.moltbo
 
 | Metric | Count |
 |--------|-------|
-| Posts (platform total) | 4,761,497 |
-| Comments (platform total) | 15,097,870 |
-| Posts (collected) | 686,737 |
-| Comments (collected) | 12,136,211 |
-| Agents | 67,406 |
-| Social graph edges | 1,124,376 |
-| Reply graph edges | 1,358,180 |
-| Submolts (listed) | 33,721 |
-| Submolts (active) | 5,238 |
+| Posts (platform total) | 4,765,412 |
+| Comments (platform total) | 15,109,522 |
+| Posts (collected) | 689,885 |
+| Comments (collected) | 12,278,770 |
+| Agents | 67,446 |
+| Social graph edges | 1,128,030 |
+| Reply graph edges | 1,362,976 |
+| Submolts (listed) | 33,724 |
+| Submolts (active) | 5,241 |
 
-*Last updated: 2026-11-14 08:07 UTC*
+*Last updated: 2026-11-14 16:40 UTC*
 
 <!-- DATASET_STATS_END -->
 
 <!-- COVERAGE_NOTE_START -->
 
-> **Note on platform totals.** The Moltbook API reports platform-wide aggregates (4.76M posts, 15.1M comments); this archive holds 687K posts. Until 28 October 2026 the crawler paged listings by offset, which the API ignores, so the archive holds every post to 7 February 2026 and a share of later ones. Since then it follows the API's cursors and collects every new post, and the months in between are being filled as history shards; see Coverage and completeness below, which also shows how unevenly activity is spread over time.
+> **Note on platform totals.** The Moltbook API reports platform-wide aggregates (4.77M posts, 15.1M comments); this archive holds 690K posts. Until 28 October 2026 the crawler paged listings by offset, which the API ignores, so the archive holds every post to 7 February 2026 and a share of later ones. Since then it follows the API's cursors and collects every new post, and the months in between are being filled as history shards; see Coverage and completeness below, which also shows how unevenly activity is spread over time.
 
 <!-- COVERAGE_NOTE_END -->
 
@@ -211,11 +211,11 @@ All-time downloads across platforms.
 
 | Platform | Downloads |
 |----------|-----------|
-| [Zenodo](https://doi.org/10.5281/zenodo.19470480) | 782 |
-| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 24,381 |
+| [Zenodo](https://doi.org/10.5281/zenodo.19470480) | 957 |
+| [Hugging Face](https://huggingface.co/datasets/takschdube/moltbook-dataset) | 24,466 |
 | [GitHub Releases](https://github.com/takschdube/moltbook-dataset/releases) | 844 |
 | [Kaggle](https://www.kaggle.com/datasets/takschdube/moltbook-dataset) | 1,247 |
-| **Total** | **27,254** |
+| **Total** | **27,514** |
 
 New downloads by month.
 
@@ -228,7 +228,7 @@ New downloads by month.
 | 2026-08 | 164 | 1,431 | 0 | 245 | 1,840 |
 | 2026-09 | 36 | 3,650 | 0 | 218 | 3,904 |
 | 2026-10 | 254 | 11,443 | 0 | 197 | 11,894 |
-| 2026-11 | 213 | 2,582 | 0 | 324 | 3,119 |
+| 2026-11 | 388 | 2,667 | 0 | 324 | 3,379 |
 
 *Monthly figures are differences of month-end cumulative counts. Hugging Face is tracked from its all-time baseline, so its per-month column begins once two checkpoints exist. GitHub counts include the pipeline's own release downloads (each run restores the previous database from the latest release).*
 
